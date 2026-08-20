@@ -32,9 +32,22 @@ chaque navigateur/appareil, rien n'est envoyé sur un serveur. Au premier
 lancement, l'app se préremplit avec les films de l'Excel d'origine.
 
 Limite à avoir en tête : si tu vides le cache du navigateur ou changes
-d'appareil, les données ne suivent pas. Une piste d'évolution possible :
-ajouter un export/import JSON, ou brancher une vraie base (voir section
-Prochaines étapes).
+d'appareil, les données ne suivent pas.
+
+### Export / Import JSON
+
+Le bouton **Exporter (JSON)** télécharge un fichier `critique-films-AAAA-MM-JJ.json`
+contenant tous les films notés — pratique pour sauvegarder tes données ou les
+transférer vers un autre navigateur/appareil.
+
+Le bouton **Importer (JSON)** relit un fichier exporté de cette façon. Deux
+modes possibles, choisis via une boîte de confirmation au moment de l'import :
+
+- **OK** → remplace entièrement le catalogue actuel par le contenu du fichier
+- **Annuler** → ajoute les films du fichier à ceux déjà présents
+
+Un fichier mal formé (pas de tableau `films`, film sans titre ou sans
+critères) est rejeté sans toucher aux données existantes.
 
 ## La grille de notation (v1.2)
 
@@ -54,7 +67,6 @@ Chaque critère a une définition fixe, une échelle de repères (0 / 0.5 / 1) e
 
 ## Prochaines étapes possibles
 
-- Export/import JSON des données
 - Filtrer/trier par critère individuel, pas seulement par note globale
 - Champs additionnels (année, réalisateur, date de visionnage, nombre de fois vu)
 - Déploiement (GitHub Pages, Netlify) pour y accéder depuis n'importe où

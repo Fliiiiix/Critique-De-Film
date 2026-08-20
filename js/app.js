@@ -233,6 +233,76 @@ function handleDelete(){
   showToast('Film supprimé');
 }
 
+// --- Export / Import JSON ---
+
+function exportFilms(){
+  const data = {
+    app: 'critique-films',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    idCounter,
+    films
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `critique-films-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Export téléchargé');
+}
+
+function isValidImportedFilm(f){
+  return f && typeof f === 'object' && typeof f.title === 'string' && f.title.trim() && typeof f.crit === 'object' && f.crit !== null;
+}
+
+function importFilms(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try{
+      data = JSON.parse(reader.result);
+    }catch(e){
+      showToast('Fichier JSON invalide');
+      return;
+    }
+
+    const importedFilms = Array.isArray(data) ? data : data.films;
+    if(!Array.isArray(importedFilms) || !importedFilms.every(isValidImportedFilm)){
+      showToast('Format inattendu — import annulé');
+      return;
+    }
+
+    const replace = confirm(
+      `${importedFilms.length} film(s) trouvé(s) dans le fichier.\n\n` +
+      `OK → remplace le catalogue actuel\n` +
+      `Annuler → ajoute ces films aux films existants`
+    );
+
+    if(replace) films = [];
+
+    importedFilms.forEach(f => {
+      films.push({
+        id: idCounter++,
+        title: f.title.trim(),
+        crit: f.crit,
+        fav: !!f.fav,
+        added: typeof f.added === 'number' ? f.added : Date.now()
+      });
+    });
+
+    saveFilms();
+    render();
+    showToast(replace ? 'Catalogue remplacé' : 'Films ajoutés');
+  };
+  reader.onerror = () => showToast('Impossible de lire le fichier');
+  reader.readAsText(file);
+}
+
 document.getElementById('openAddBtn').addEventListener('click', () => openModal(null));
 document.getElementById('closeModal').addEventListener('click', closeModal);
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
@@ -243,6 +313,13 @@ document.getElementById('overlay').addEventListener('click', (e) => {
 });
 document.getElementById('search').addEventListener('input', render);
 document.getElementById('sortBy').addEventListener('change', render);
+document.getElementById('exportBtn').addEventListener('click', exportFilms);
+document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(file) importFilms(file);
+  e.target.value = ''; // permet de réimporter le même fichier
+});
 
 (function init(){
   buildSprockets();
