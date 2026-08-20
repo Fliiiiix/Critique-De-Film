@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Critique de films</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="sprockets" id="sprocketsTop"></div>
+<header>
+  <div class="container" style="padding:0;">
+    <div class="eyebrow">Grille de lecture personnelle</div>
+    <div class="title-row">
+      <h1>Critique de films</h1>
+      <div class="version-tag">v<b>1.2</b></div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Rechercher un film…">
+    <select id="sortBy">
+      <option value="note-desc">Note ↓</option>
+      <option value="note-asc">Note ↑</option>
+      <option value="title-asc">Titre A–Z</option>
+      <option value="fav-first">Favoris d'abord</option>
+      <option value="recent">Ajout récent</option>
+    </select>
+    <button class="btn" id="openAddBtn">+ Ajouter un film</button>
+  </div>
+  <div class="count-line" id="countLine"></div>
+  <div id="filmList"></div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle">Nouveau film</h2>
+      <button class="close-x" id="closeModal">✕</button>
+    </div>
+
+    <div class="field">
+      <label>Titre du film</label>
+      <input type="text" id="titleInput" placeholder="Ex. Paprika">
+    </div>
+
+    <div id="criteriaWrap"></div>
+
+    <div class="modal-footer">
+      <div class="live-score">Note calculée · <b id="liveScore">—</b> / 5</div>
+      <div class="right">
+        <button class="btn danger" id="deleteBtn" style="display:none;">Supprimer</button>
+        <button class="btn secondary" id="cancelBtn">Annuler</button>
+        <button class="btn" id="saveBtn">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

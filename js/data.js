@@ -1,0 +1,73 @@
+// Grille de critères — v1.2
+// Chaque critère a : une définition (périmètre exact), des repères de notation
+// (0 / 0.5 / 1) pour rester cohérent dans le temps, et des questions concrètes.
+const CRITERIA = [
+  { key:'scenario', label:"Scénario",
+    def:"L'histoire elle-même : intrigue, dialogues, personnages, thèmes.",
+    anchors:"0 → incohérente, dialogues plats, personnages creux\n0.5 → fonctionne, sans surprise ni relief particulier\n1 → maîtrisée, personnages qui évoluent, dialogues qui sonnent juste",
+    help:"・L'intrigue tient-elle debout sans trous logiques ?\n・Les personnages évoluent-ils de façon crédible ?\n・Les dialogues sonnent-ils naturels ou forcés ?\n・Le film a-t-il quelque chose à dire, au-delà de l'histoire racontée ?" },
+  { key:'mise_en_scene', label:"Mise en scène",
+    def:"Les choix du réalisateur : rythme, ambiance, prises de risque, vision d'ensemble.",
+    anchors:"0 → plate, aucune identité, subie plus que pensée\n0.5 → compétente, fait le travail sans surprendre\n1 → une vraie vision, des choix qui marquent, un rythme maîtrisé",
+    help:"・Le rythme sert-il l'histoire (ni trop lent, ni précipité) ?\n・Des choix de mise en scène te sont-ils restés en tête ?\n・L'ambiance voulue est-elle atteinte ?\n・Le réalisateur prend-il des risques ou joue-t-il la sécurité ?" },
+  { key:'jeu', label:"Jeu d'acteur",
+    def:"La performance des acteurs, indépendamment du personnage écrit.",
+    anchors:"0 → surjoué, sous-joué, ou en décalage avec le film\n0.5 → correct, fait le travail sans marquer\n1 → habité, crédible, tu oublies que ce sont des acteurs",
+    help:"・Les émotions semblent-elles authentiques ?\n・Le casting est-il bien choisi ?\n・Y a-t-il une vraie alchimie entre les acteurs ?\n・Un acteur sort-il du lot (en bien ou en mal) ?" },
+  { key:'esthetique', label:"Esthétique visuelle",
+    def:"Cadrage, lumière, couleurs, effets spéciaux, décors.",
+    anchors:"0 → terne, mal éclairé, effets qui sortent du film\n0.5 → propre techniquement, sans identité visuelle marquée\n1 → un vrai style visuel, des plans qui pourraient être des photos",
+    help:"・Des plans te reviennent-ils de mémoire ?\n・La lumière et les couleurs servent-elles l'émotion des scènes ?\n・Les effets spéciaux sont-ils crédibles ou visibles ?\n・Le film a-t-il une identité visuelle propre ?" },
+  { key:'son', label:"Son",
+    def:"Mixage, bruitages, ambiance sonore — hors musique.",
+    anchors:"0 → dialogues mal mixés, bruitages absents ou grossiers\n0.5 → propre, fait le travail sans se faire remarquer\n1 → immersif, le son raconte autant que l'image",
+    help:"・Comprends-tu les dialogues sans effort ?\n・L'ambiance sonore renforce-t-elle l'immersion ?\n・Le silence est-il utilisé intelligemment ?\n・Le son est-il cohérent avec l'image ?" },
+  { key:'musique', label:"Musique",
+    def:"La partition/bande originale, indépendamment du mixage sonore.",
+    anchors:"0 → absente, générique, ou gênante\n0.5 → correcte, illustrative, sans identité propre\n1 → mémorable, sert le film, reconnaissable hors contexte",
+    help:"・Est-elle mémorable après coup ?\n・Sert-elle les scènes ou les écrase-t-elle ?\n・A-t-elle une identité propre ?\n・L'écouterais-tu seule, hors du film ?" },
+  { key:'ressenti', label:"Ressenti global",
+    def:"Ton impact émotionnel et ta satisfaction globale, indépendamment des 6 critères techniques.",
+    anchors:"0 → ennui, indifférence, déception\n0.5 → sympathique, tu ne regrettes pas mais ça ne marque pas\n1 → marquant, tu y repenses, ça t'a transporté",
+    help:"・As-tu ressenti quelque chose de fort ?\n・Le film a-t-il tenu ses promesses par rapport à tes attentes ?\n・Y repenses-tu depuis ?\n・Le recommanderais-tu spontanément ?" },
+];
+
+// Films importés depuis l'Excel d'origine.
+// Ordre des valeurs c[] dans l'ancien référentiel :
+// [impression, scenario, realisation, jeu, image, son, musique]
+// -> remappé au chargement vers les nouvelles clés (voir OLD_ORDER_TO_NEW_KEY dans app.js)
+const SEED = [
+{t:'Paprika',c:[1,1,1,1,1,1,1],f:true},
+{t:'Miss détective',c:[1,0.6,0.4,1,0.5,0.7,0.5],f:true},
+{t:'Les Gardiens de la galaxie 2',c:[0.5,0.5,0.7,0.8,1,0.7,1],f:false},
+{t:'Avengers : l\'ère d\'ultron',c:[0.5,0.4,0.7,0.5,0.8,1,0.25],f:false},
+{t:'Ant man',c:[0.75,0.8,0.75,0.6,0.65,0.8,0.65],f:false},
+{t:'Captain america : civil war',c:[0.5,0.5,0.65,0.5,0.7,0.7,0.5],f:false},
+{t:'Black widow',c:[0.1,0.3,0.2,0.2,0.25,0.4,0.4],f:false},
+{t:'The Accidental Gateaway Driver',c:[0.7,0.85,0.9,0.9,0.8,0.8,0.7],f:false},
+{t:'Black Panther',c:[0.6,0.7,0.7,0.6,0.6,0.65,0.8],f:false},
+{t:'Spider-man : Homecoming',c:[0.7,0.6,0.75,0.7,0.8,0.65,0.7],f:false},
+{t:'Doctor Strange',c:[0.65,0.8,0.8,0.7,0.7,0.8,0.6],f:false},
+{t:'Thor : Ragnarok',c:[0.4,0.4,0.6,0.5,0.5,0.5,0.7],f:false},
+{t:'Ant-Man et la Guêpe',c:[0.75,0.75,0.65,0.65,0.75,0.8,0.5],f:false},
+{t:'Avengers : Infinity War',c:[0.9,0.8,0.6,0.8,0.8,0.6,0.75],f:false},
+{t:'Avengers : Endgame',c:[0.9,0.9,0.8,0.7,0.9,0.8,0.8],f:false},
+{t:'Traque à Boston ',c:[0.9,1,0.6,0.8,0.7,0.7,0.8],f:false},
+{t:'L\'amour ouf',c:[0.4,0.4,0.6,0.6,0.65,0.6,0.5],f:false},
+{t:'A working man ',c:[0.5,0.5,0.5,0.5,0.6,0.6,0.6],f:false},
+{t:'The Order',c:[0.8,0.9,0.75,0.9,0.8,0.9,0.8],f:false},
+{t:'Un Meurtre Parfait',c:[0.7,0.75,0.5,0.8,0.5,0.7,0.6],f:false},
+{t:'Burn After Reading',c:[0.8,0.85,0.85,0.85,0.7,0.7,0.65],f:true},
+{t:'Mr Wolf 2',c:[0.55,0.6,0.8,0.75,0.75,0.85,0.85],f:false},
+{t:'Du sang et des larmes',c:[0.85,1,0.85,0.85,0.9,0.85,0.7],f:true},
+{t:'Spider-man : Far From Home',c:[0.7,0.65,0.85,0.7,0.9,0.7,0.7],f:false},
+{t:'Shang-Chi et la légende des 10 anneaux',c:[0.45,0.5,0.5,0.5,0.6,0.6,0.65],f:false},
+{t:'Les Eternels',c:[0.35,0.3,0.65,0.45,0.6,0.4,0.35],f:false},
+{t:'Spider-man : No Way Home',c:[0.9,0.8,0.8,0.9,0.85,0.75,0.7],f:false},
+{t:'Doctor Strange In The Multiverse Of Madness',c:[0.7,0.75,0.8,0.65,0.75,0.65,0.65],f:false},
+{t:'Thor : Love And Thunder',c:[0.4,0.5,0.75,0.7,0.85,0.65,0.8],f:false},
+{t:'Black Panther : Wakanda Forever',c:[0.4,0.45,0.5,0.65,0.65,0.6,0.55],f:false},
+{t:'Ravage',c:[0.4,0.45,0.75,0.65,0.625,0.5,0.35],f:false},
+{t:'Nobody',c:[0.8,0.75,0.65,0.85,0.65,0.65,0.9],f:true},
+{t:'Superman (2025)',c:[0.7,0.65,0.7,0.65,0.8,0.6,0.7],f:false}
+];
