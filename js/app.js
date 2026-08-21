@@ -233,7 +233,6 @@ function openModal(id){
     release_year: film.releaseYear,
     title: film.title
   } : null;
-  document.getElementById('tmdbQuery').value = '';
   document.getElementById('tmdbResults').innerHTML = '';
   updateTmdbSelectedUI();
 

@@ -1,9 +1,12 @@
 // --- Recherche TMDB (affiche, résumé, année) ---
 // Docs : https://developer.themoviedb.org/reference/search-movie
-// Résultat choisi stocké dans tmdbSelected, lu par handleSave() (js/app.js)
-// au moment d'enregistrer le film.
+// Le champ "Titre du film" fait office de recherche : on interroge TMDB en
+// direct pendant la frappe (debounce), pas besoin d'un champ ni d'un bouton
+// séparés. Choisir un résultat renseigne aussi le titre. Résultat choisi
+// stocké dans tmdbSelected, lu par handleSave() (js/app.js) à l'enregistrement.
 
 let tmdbSelected = null; // { tmdb_id, poster_url, overview, release_year, title }
+let tmdbSearchTimer = null;
 
 async function searchTmdb(query){
   const url = `https://api.themoviedb.org/3/search/movie?language=fr-FR&query=${encodeURIComponent(query)}`;
@@ -39,7 +42,9 @@ function renderTmdbResults(results){
         <div class="tmdb-result-year">${year}</div>
       </div>
     `;
-    item.addEventListener('click', () => selectTmdbResult(r));
+    // mousedown (pas click) : se déclenche avant le blur du champ titre,
+    // qui sinon referme les résultats avant que le clic soit pris en compte.
+    item.addEventListener('mousedown', (e) => { e.preventDefault(); selectTmdbResult(r); });
     wrap.appendChild(item);
   });
 }
@@ -52,8 +57,8 @@ function selectTmdbResult(r){
     release_year: r.release_date ? parseInt(r.release_date.slice(0, 4), 10) : null,
     title: r.title
   };
+  document.getElementById('titleInput').value = r.title;
   document.getElementById('tmdbResults').innerHTML = '';
-  document.getElementById('tmdbQuery').value = '';
   updateTmdbSelectedUI();
 }
 
@@ -76,9 +81,7 @@ function updateTmdbSelectedUI(){
     tmdbSelected.title + (tmdbSelected.release_year ? ` (${tmdbSelected.release_year})` : '');
 }
 
-async function handleTmdbSearch(){
-  const query = document.getElementById('tmdbQuery').value.trim();
-  if(!query) return;
+async function handleTmdbSearch(query){
   const wrap = document.getElementById('tmdbResults');
   wrap.innerHTML = `<div class="tmdb-empty">Recherche…</div>`;
   try{
@@ -90,8 +93,18 @@ async function handleTmdbSearch(){
   }
 }
 
-document.getElementById('tmdbSearchBtn').addEventListener('click', handleTmdbSearch);
-document.getElementById('tmdbQuery').addEventListener('keydown', (e) => {
-  if(e.key === 'Enter'){ e.preventDefault(); handleTmdbSearch(); }
+document.getElementById('titleInput').addEventListener('input', () => {
+  clearTimeout(tmdbSearchTimer);
+  const query = document.getElementById('titleInput').value.trim();
+  if(query.length < 2){
+    document.getElementById('tmdbResults').innerHTML = '';
+    return;
+  }
+  tmdbSearchTimer = setTimeout(() => handleTmdbSearch(query), 350);
+});
+document.getElementById('titleInput').addEventListener('blur', () => {
+  // Léger délai pour laisser le mousedown sur un résultat s'exécuter avant
+  // que la liste ne disparaisse.
+  setTimeout(() => { document.getElementById('tmdbResults').innerHTML = ''; }, 150);
 });
 document.getElementById('tmdbClearBtn').addEventListener('click', clearTmdbSelection);

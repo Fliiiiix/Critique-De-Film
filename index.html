@@ -83,23 +83,15 @@
       <button class="close-x" id="closeModal">✕</button>
     </div>
 
-    <div class="field">
-      <label>Titre du film</label>
-      <input type="text" id="titleInput" placeholder="Ex. Paprika">
-    </div>
-
     <div class="field tmdb-search-field">
-      <label>Rechercher sur TMDB (affiche, résumé, année)</label>
-      <div class="tmdb-search-row">
-        <input type="text" id="tmdbQuery" placeholder="Titre à rechercher…">
-        <button class="btn secondary" id="tmdbSearchBtn" type="button">Rechercher</button>
-      </div>
+      <label>Titre du film</label>
+      <input type="text" id="titleInput" placeholder="Ex. Paprika" autocomplete="off">
       <div id="tmdbResults" class="tmdb-results"></div>
       <div id="tmdbSelected" class="tmdb-selected" style="display:none;">
         <img id="tmdbSelectedPoster" alt="Affiche">
         <div class="tmdb-selected-info">
           <div id="tmdbSelectedTitle"></div>
-          <button class="crit-help-toggle" id="tmdbClearBtn" type="button">Retirer</button>
+          <button class="crit-help-toggle" id="tmdbClearBtn" type="button">Retirer la fiche TMDB</button>
         </div>
       </div>
     </div>
@@ -177,23 +169,15 @@
     </div>
 
     <div class="wl-add-form">
-      <div class="field">
-        <label>Titre du film</label>
-        <input type="text" id="wlTitleInput" placeholder="Ex. Paprika">
-      </div>
-
       <div class="field tmdb-search-field">
-        <label>Rechercher sur TMDB (optionnel)</label>
-        <div class="tmdb-search-row">
-          <input type="text" id="wlTmdbQuery" placeholder="Titre à rechercher…">
-          <button class="btn secondary" id="wlTmdbSearchBtn" type="button">Rechercher</button>
-        </div>
+        <label>Titre du film</label>
+        <input type="text" id="wlTitleInput" placeholder="Ex. Paprika" autocomplete="off">
         <div id="wlTmdbResults" class="tmdb-results"></div>
         <div id="wlTmdbSelected" class="tmdb-selected" style="display:none;">
           <img id="wlTmdbSelectedPoster" alt="Affiche">
           <div class="tmdb-selected-info">
             <div id="wlTmdbSelectedTitle"></div>
-            <button class="crit-help-toggle" id="wlTmdbClearBtn" type="button">Retirer</button>
+            <button class="crit-help-toggle" id="wlTmdbClearBtn" type="button">Retirer la fiche TMDB</button>
           </div>
         </div>
       </div>

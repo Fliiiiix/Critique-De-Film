@@ -120,12 +120,14 @@ sur le projet (ajoute la colonne `manual_note`).
 
 ## Affiche, résumé & année (TMDB)
 
-Dans le formulaire, le champ **Rechercher sur TMDB** interroge l'API de
-[The Movie Database](https://www.themoviedb.org) (pas Letterboxd, qui n'a pas
-d'API publique) et propose une liste de résultats avec vignette — cliquer sur
-l'un préremplit affiche, résumé et année. Ces infos s'affichent ensuite dans
-la liste (vignette + année) et sont conservées si tu resauvegardes le film
-sans relancer de recherche.
+Le champ **Titre du film** fait aussi office de recherche : dès 2 caractères,
+l'app interroge en direct l'API de [The Movie Database](https://www.themoviedb.org)
+(pas Letterboxd, qui n'a pas d'API publique) et propose une liste de résultats
+avec vignette sous le champ — cliquer sur l'un renseigne le titre et préremplit
+affiche, résumé et année. Ces infos s'affichent ensuite dans la liste (vignette
++ année) et sont conservées si tu resauvegardes le film sans changer la
+sélection. Pas de fiche trouvée ou pas envie d'en choisir une ? Le titre tapé
+suffit, le film est enregistré normalement (juste sans affiche).
 
 Nécessite un token gratuit : compte sur themoviedb.org → menu profil →
 Paramètres → API → Créer une clé → coller le **Token d'accès en lecture

@@ -471,8 +471,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .field input[type="text"]{width:100%;}
 
-.tmdb-search-row{display:flex; gap:8px;}
-.tmdb-search-row input{flex:1;}
 .tmdb-results{
   margin-top:8px;
   display:flex;

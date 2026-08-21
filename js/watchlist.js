@@ -137,8 +137,11 @@ function startRatingFromWatchlist(item){
   convertingFromWatchlistId = item.id;
 }
 
-// --- Recherche TMDB pour le formulaire d'ajout rapide (instance séparée du
-// formulaire principal, voir js/tmdb.js pour searchTmdb()) ---
+// --- Recherche TMDB pour le formulaire d'ajout rapide ---
+// Le champ "Titre du film" fait aussi office de recherche (debounce pendant
+// la frappe), comme dans le formulaire principal — voir js/tmdb.js.
+
+let wlTmdbSearchTimer = null;
 
 function renderWlTmdbResults(results){
   const wrap = document.getElementById('wlTmdbResults');
@@ -159,7 +162,7 @@ function renderWlTmdbResults(results){
         <div class="tmdb-result-year">${year}</div>
       </div>
     `;
-    item.addEventListener('click', () => selectWlTmdbResult(r));
+    item.addEventListener('mousedown', (e) => { e.preventDefault(); selectWlTmdbResult(r); });
     wrap.appendChild(item);
   });
 }
@@ -172,12 +175,8 @@ function selectWlTmdbResult(r){
     release_year: r.release_date ? parseInt(r.release_date.slice(0, 4), 10) : null,
     title: r.title
   };
+  document.getElementById('wlTitleInput').value = r.title;
   document.getElementById('wlTmdbResults').innerHTML = '';
-  document.getElementById('wlTmdbQuery').value = '';
-  // La fiche TMDB choisie préremplit aussi le titre, comme dans le formulaire principal.
-  if(!document.getElementById('wlTitleInput').value.trim()){
-    document.getElementById('wlTitleInput').value = r.title;
-  }
   updateWlTmdbSelectedUI();
 }
 
@@ -200,9 +199,7 @@ function updateWlTmdbSelectedUI(){
     wlTmdbSelected.title + (wlTmdbSelected.release_year ? ` (${wlTmdbSelected.release_year})` : '');
 }
 
-async function handleWlTmdbSearch(){
-  const query = document.getElementById('wlTmdbQuery').value.trim();
-  if(!query) return;
+async function handleWlTmdbSearch(query){
   const wrap = document.getElementById('wlTmdbResults');
   wrap.innerHTML = `<div class="tmdb-empty">Recherche…</div>`;
   try{
@@ -220,8 +217,16 @@ document.getElementById('watchlistOverlay').addEventListener('click', (e) => {
   if(e.target.id === 'watchlistOverlay') closeWatchlist();
 });
 document.getElementById('wlAddBtn').addEventListener('click', handleAddToWatchlist);
-document.getElementById('wlTmdbSearchBtn').addEventListener('click', handleWlTmdbSearch);
-document.getElementById('wlTmdbQuery').addEventListener('keydown', (e) => {
-  if(e.key === 'Enter'){ e.preventDefault(); handleWlTmdbSearch(); }
+document.getElementById('wlTitleInput').addEventListener('input', () => {
+  clearTimeout(wlTmdbSearchTimer);
+  const query = document.getElementById('wlTitleInput').value.trim();
+  if(query.length < 2){
+    document.getElementById('wlTmdbResults').innerHTML = '';
+    return;
+  }
+  wlTmdbSearchTimer = setTimeout(() => handleWlTmdbSearch(query), 350);
+});
+document.getElementById('wlTitleInput').addEventListener('blur', () => {
+  setTimeout(() => { document.getElementById('wlTmdbResults').innerHTML = ''; }, 150);
 });
 document.getElementById('wlTmdbClearBtn').addEventListener('click', clearWlTmdbSelection);
