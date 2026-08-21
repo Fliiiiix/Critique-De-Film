@@ -95,3 +95,31 @@ create policy "Users can update own watchlist"
 create policy "Users can delete own watchlist"
   on public.watchlist for delete
   using (auth.uid() = user_id);
+
+-- Journal des visionnages (revisionnages), voir migrations/007.
+create table public.viewings (
+  id bigint generated always as identity primary key,
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  film_id bigint not null references public.films(id) on delete cascade,
+  watched_at bigint not null,
+  note text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.viewings enable row level security;
+
+create policy "Users can view own viewings"
+  on public.viewings for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own viewings"
+  on public.viewings for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own viewings"
+  on public.viewings for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own viewings"
+  on public.viewings for delete
+  using (auth.uid() = user_id);

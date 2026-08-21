@@ -16,6 +16,7 @@ async function showApp(){
   document.getElementById('userBar').style.display = '';
   await loadOrCreateProfile();
   await loadFilms();
+  await loadViewings();
   render();
 }
 

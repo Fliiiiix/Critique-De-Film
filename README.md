@@ -19,6 +19,7 @@ critique-films/
 ├── js/stats.js                       → page statistiques
 ├── js/achievements.js                → page succès (paliers + secrets)
 ├── js/watchlist.js                    → liste "à voir", séparée du catalogue noté
+├── js/journal.js                       → journal des visionnages, revisionnages
 └── supabase/
     ├── schema.sql                  → schéma complet (nouveau projet)
     └── migrations/                 → changements incrémentaux (projet déjà provisionné)
@@ -204,10 +205,27 @@ elles aussi automatiquement. Un peu d'animation (ouverture des fenêtres,
 survol des lignes de la liste, retour tactile sur les boutons) pour que ça
 reste agréable à l'usage.
 
+## Journal & revisionnages
+
+Chaque film noté a un ou plusieurs **visionnages** (table `viewings`, séparée
+de `films`) : la date où il a été noté compte comme premier visionnage,
+créé automatiquement. Dans le formulaire d'un film déjà enregistré, la
+section **Visionnages** permet d'ajouter une nouvelle date (+ note libre) —
+utile pour noter qu'on a revu un film, sans toucher à sa note. Un film revu
+affiche un badge `↻ ×N` dans la liste.
+
+Le bouton **📅 Journal** ouvre un historique chronologique de tous les
+visionnages (tous films confondus), groupés par mois, avec un badge pour
+distinguer un revisionnage du premier visionnage.
+
+Nécessite `supabase/migrations/007_add_viewings.sql`, qui rétro-remplit
+aussi un premier visionnage pour chaque film déjà présent (daté de son
+ajout) — rien à ressaisir à la main après la migration.
+
 ## Prochaines étapes possibles
 
 - Filtrer/trier par critère individuel, pas seulement par note globale
-- Journal chronologique / nombre de fois revu
+- Profil partageable (page publique en lecture seule)
 - Happenings façon Letterboxd (défis/événements autour d'une sélection de films)
 - Upload d'avatar réel (Supabase Storage) plutôt qu'une URL
 - Cache local (offline-first) pour continuer à consulter/noter sans réseau

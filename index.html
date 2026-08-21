@@ -56,6 +56,7 @@
         <button class="btn secondary" id="statsBtn" title="Statistiques"><span class="btn-icon">📊</span><span class="btn-label">Statistiques</span></button>
         <button class="btn secondary" id="achievementsBtn" title="Succès"><span class="btn-icon">🏆</span><span class="btn-label">Succès</span></button>
         <button class="btn secondary" id="watchlistBtn" title="À voir"><span class="btn-icon">🎞️</span><span class="btn-label">À voir</span></button>
+        <button class="btn secondary" id="journalBtn" title="Journal"><span class="btn-icon">📅</span><span class="btn-label">Journal</span></button>
       </div>
       <div class="menu-wrap" id="moreMenuWrap">
         <button class="btn secondary icon-only" id="moreMenuBtn" title="Plus d'options" aria-haspopup="true" aria-expanded="false">⋯</button>
@@ -122,6 +123,16 @@
     <div class="field">
       <label>Commentaire</label>
       <textarea id="reviewInput" placeholder="Tes impressions sur ce film…" rows="3"></textarea>
+    </div>
+
+    <div class="field" id="viewingsSection" style="display:none;">
+      <label>Visionnages</label>
+      <div id="viewingsList" class="viewings-list"></div>
+      <div class="viewings-add-row">
+        <input type="date" id="viewingDateInput">
+        <input type="text" id="viewingNoteInput" placeholder="Note (optionnel)…">
+        <button class="btn secondary" id="addViewingBtn" type="button">+ Revisionnage</button>
+      </div>
     </div>
 
     <div class="modal-footer">
@@ -199,6 +210,17 @@
   </div>
 </div>
 
+<!-- Modal journal -->
+<div class="overlay" id="journalOverlay">
+  <div class="modal journal-modal">
+    <div class="modal-head">
+      <h2>Journal</h2>
+      <button class="close-x" id="closeJournal">✕</button>
+    </div>
+    <div id="journalContent"></div>
+  </div>
+</div>
+
 <!-- Modal profil -->
 <div class="overlay" id="profileOverlay">
   <div class="modal">
@@ -235,6 +257,7 @@
 <script src="js/stats.js"></script>
 <script src="js/achievements.js"></script>
 <script src="js/watchlist.js"></script>
+<script src="js/journal.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/auth.js"></script>
 </body>

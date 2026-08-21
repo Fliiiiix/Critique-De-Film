@@ -96,6 +96,7 @@ function render(){
   filtered.forEach(f => {
     const note = getDisplayNote(f);
     const isManual = f.manualNote != null;
+    const rewatches = typeof rewatchCount === 'function' ? rewatchCount(f.id) : 0;
     const row = document.createElement('div');
     row.className = 'film-row';
     const sub = (isManual ? 'Note manuelle · ancien référentiel' : '7 critères notés') + (f.releaseYear ? ` · ${f.releaseYear}` : '');
@@ -105,7 +106,7 @@ function render(){
         ? `<img class="film-poster" src="${f.posterUrl}" alt="" loading="lazy">`
         : `<div class="film-poster film-poster-placeholder">🎬</div>`}
       <div class="film-main">
-        <div class="film-title">${escapeHtml(f.title)}${isManual ? '<span class="manual-badge" title="Note manuelle — référentiel différent">manuel</span>' : ''}${f.review ? '<span class="review-badge" title="Commentaire enregistré">💬</span>' : ''}</div>
+        <div class="film-title">${escapeHtml(f.title)}${isManual ? '<span class="manual-badge" title="Note manuelle — référentiel différent">manuel</span>' : ''}${f.review ? '<span class="review-badge" title="Commentaire enregistré">💬</span>' : ''}${rewatches > 1 ? `<span class="rewatch-badge" title="Revu ${rewatches} fois">↻ ×${rewatches}</span>` : ''}</div>
         <div class="film-sub">${sub}</div>
       </div>
       <button class="star-btn ${f.fav ? 'active' : ''}" data-id="${f.id}" title="Favori">${f.fav ? '★' : '☆'}</button>
@@ -239,6 +240,15 @@ function openModal(id){
   buildCriteriaInputs(film ? film.crit : null);
   updateManualVisibility();
 
+  // Visionnages : n'a de sens que pour un film déjà enregistré (le premier
+  // visionnage d'un nouveau film est créé automatiquement à la sauvegarde).
+  document.getElementById('viewingsSection').style.display = film ? '' : 'none';
+  if(film){
+    document.getElementById('viewingDateInput').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('viewingNoteInput').value = '';
+    renderViewingsSection(film.id);
+  }
+
   overlay.classList.add('open');
   document.getElementById('titleInput').focus();
 }
@@ -295,6 +305,9 @@ async function handleSave(){
     }
     films.push(rowToFilm(data));
 
+    // Premier visionnage automatique, daté de l'ajout — voir js/journal.js.
+    await addViewing(data.id, data.added);
+
     // Film créé depuis "✔ Noter" dans la watchlist (js/watchlist.js) :
     // on retire l'item d'origine maintenant que le film est bien enregistré.
     // En tâche de fond, sans bloquer la fermeture du formulaire.
@@ -320,6 +333,7 @@ async function handleDelete(){
     return;
   }
   films = films.filter(f => f.id !== editingId);
+  viewings = viewings.filter(v => v.filmId !== editingId); // supprimés en cascade côté base
   closeModal();
   render();
   showToast('Film supprimé');
@@ -384,6 +398,7 @@ function importFilms(file){
         return;
       }
       films = [];
+      viewings = []; // supprimés en cascade côté base avec leurs films (FK on delete cascade)
     }
 
     const rows = importedFilms.map(f => ({
@@ -407,6 +422,8 @@ function importFilms(file){
     }
 
     inserted.forEach(row => films.push(rowToFilm(row)));
+    // Premier visionnage automatique pour chaque film importé, daté de son "added".
+    await Promise.all(inserted.map(row => addViewing(row.id, row.added)));
     render();
     showToast(replace ? 'Catalogue remplacé' : 'Films ajoutés');
   };

@@ -98,6 +98,16 @@ const HIDDEN_ACHIEVEMENTS = [
     key: 'sans-affiche', icon: '🎞️', title: 'Sans affiche',
     desc: "Avoir 10 films ou plus sans fiche TMDB liée — l'ancien monde, avant les affiches.",
     check: films => films.filter(f => !f.tmdbId).length >= 10
+  },
+  {
+    key: 'revisionnage', icon: '🔁', title: 'Ça méritait un revisionnage',
+    desc: 'Avoir revu un même film au moins 3 fois (voir le Journal).',
+    check: () => {
+      if(typeof viewings === 'undefined') return false;
+      const counts = {};
+      viewings.forEach(v => { counts[v.filmId] = (counts[v.filmId] || 0) + 1; });
+      return Object.values(counts).some(c => c >= 3);
+    }
   }
 ];
 
