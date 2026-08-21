@@ -188,6 +188,22 @@ conseillé…). Deux actions par item :
 
 Nécessite `supabase/migrations/006_add_watchlist.sql`.
 
+## Interface responsive
+
+La barre d'outils regroupe désormais les actions par nature plutôt que de
+les aligner en vrac : recherche/tri, puis un groupe compact Statistiques /
+Succès / À voir (trois vues du catalogue), un menu **⋯** pour Export/Import
+(gestion des données, moins fréquent), et **+ Ajouter un film** en avant
+comme action principale.
+
+En dessous de 600px de large, la barre passe en colonne, les libellés des
+boutons de vue se réduisent à leurs icônes, et **+ Ajouter un film** est
+remplacé par un bouton flottant (FAB) en bas à droite — l'entête (pseudo,
+profil, déconnexion) et les grilles (statistiques, succès) se réorganisent
+elles aussi automatiquement. Un peu d'animation (ouverture des fenêtres,
+survol des lignes de la liste, retour tactile sur les boutons) pour que ça
+reste agréable à l'usage.
+
 ## Prochaines étapes possibles
 
 - Filtrer/trier par critère individuel, pas seulement par note globale

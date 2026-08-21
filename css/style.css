@@ -92,11 +92,105 @@ h1{
 }
 .toolbar{
   display:flex;
-  gap:12px;
+  justify-content:space-between;
   align-items:center;
   flex-wrap:wrap;
+  gap:12px;
   margin-bottom:24px;
 }
+.toolbar-search{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex:1;
+  min-width:240px;
+}
+.toolbar-search select{flex:none;}
+.toolbar-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+/* Statistiques / Succès / À voir : regroupés visuellement, ce sont trois
+   vues du même catalogue — pas des actions au même titre qu'Ajouter. */
+.btn-group{
+  display:flex;
+  gap:2px;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:5px;
+  padding:2px;
+}
+.btn-group .btn.secondary{
+  border:none;
+  border-radius:3px;
+  padding:9px 12px;
+}
+.btn-group .btn.secondary:hover{background:var(--surface-2); color:var(--text);}
+.btn-icon{margin-right:6px;}
+
+/* Menu "⋯" : Export/Import, actions de gestion des données, moins
+   fréquentes que le reste — sorties du flux principal de la barre. */
+.menu-wrap{position:relative;}
+.btn.icon-only{padding:10px 13px; font-size:15px; line-height:1;}
+.dropdown-menu{
+  display:none;
+  flex-direction:column;
+  gap:2px;
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:5px;
+  padding:6px;
+  min-width:190px;
+  box-shadow:0 10px 28px rgba(0,0,0,0.4);
+  z-index:60;
+  animation:menuIn .12s ease-out;
+}
+.menu-wrap.open .dropdown-menu{display:flex;}
+.dropdown-menu button{
+  background:none;
+  border:none;
+  color:var(--text);
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12.5px;
+  text-align:left;
+  padding:9px 10px;
+  border-radius:3px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.dropdown-menu button:hover{background:var(--surface-2); color:var(--amber);}
+@keyframes menuIn{from{opacity:0; transform:translateY(-4px);} to{opacity:1; transform:translateY(0);}}
+
+/* Bouton flottant "+ Ajouter", visible seulement en dessous de 600px (voir
+   media query) — remplace le bouton de la barre pour ne pas la surcharger. */
+.fab{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  position:fixed;
+  bottom:22px;
+  right:22px;
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  background:var(--amber);
+  color:#17140f;
+  border:none;
+  font-size:28px;
+  font-weight:600;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 6px 20px rgba(0,0,0,0.45);
+  z-index:40;
+  transition:transform .15s ease;
+}
+.fab:hover{transform:scale(1.06);}
+.fab:active{transform:scale(0.92);}
 input[type="text"], select, textarea{
   background:var(--surface);
   border:1px solid var(--hairline);
@@ -124,9 +218,10 @@ select{cursor:pointer;}
   cursor:pointer;
   font-weight:600;
   white-space:nowrap;
-  transition:opacity .15s;
+  transition:opacity .15s, transform .1s;
 }
 .btn:hover{opacity:0.85;}
+.btn:active{transform:scale(0.96);}
 .btn.secondary{
   background:transparent;
   color:var(--text-muted);
@@ -134,6 +229,19 @@ select{cursor:pointer;}
 }
 .btn.secondary:hover{color:var(--text); border-color:var(--amber-dim);}
 .btn.danger{background:var(--danger); color:#f4e9e4;}
+
+/* Focus clavier cohérent avec le thème, à la place de l'anneau bleu par défaut. */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+  outline:2px solid var(--amber-dim);
+  outline-offset:2px;
+}
+
+/* Scrollbar discrète, assortie au thème (Chrome/Edge + Firefox). */
+*{scrollbar-width:thin; scrollbar-color:var(--hairline) transparent;}
+::-webkit-scrollbar{width:10px; height:10px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--hairline); border-radius:5px; border:2px solid var(--bg);}
+::-webkit-scrollbar-thumb:hover{background:var(--amber-dim);}
 
 .count-line{
   font-family:'IBM Plex Mono', monospace;
@@ -152,10 +260,11 @@ select{cursor:pointer;}
   padding:14px 16px;
   margin-bottom:8px;
   cursor:pointer;
-  transition:border-color .15s, transform .1s;
+  transition:border-color .15s, transform .12s, box-shadow .12s;
   position:relative;
 }
-.film-row:hover{border-color:var(--amber-dim);}
+.film-row:hover{border-color:var(--amber-dim); transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,0.25);}
+.film-row:active{transform:translateY(0); box-shadow:none;}
 .film-row .holes{
   display:flex;
   flex-direction:column;
@@ -229,7 +338,9 @@ select{cursor:pointer;}
   color:var(--hairline);
   line-height:1;
   padding:4px;
+  transition:transform .15s ease, color .15s;
 }
+.star-btn:hover{transform:scale(1.15);}
 .star-btn.active{color:var(--amber);}
 
 .manual-badge{
@@ -301,7 +412,7 @@ select{cursor:pointer;}
   overflow-y:auto;
   z-index:50;
 }
-.overlay.open{display:flex;}
+.overlay.open{display:flex; animation:overlayIn .15s ease-out;}
 .modal{
   background:var(--surface);
   border:1px solid var(--hairline);
@@ -309,6 +420,12 @@ select{cursor:pointer;}
   width:100%;
   max-width:640px;
   padding:28px;
+  animation:modalIn .18s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes overlayIn{from{opacity:0;} to{opacity:1;}}
+@keyframes modalIn{from{opacity:0; transform:translateY(8px) scale(.98);} to{opacity:1; transform:translateY(0) scale(1);}}
+@media (prefers-reduced-motion:reduce){
+  .overlay.open, .modal{animation:none;}
 }
 .modal-head{
   display:flex;
@@ -818,13 +935,43 @@ input[type="range"]::-moz-range-thumb{
 }
 .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
+/* Tablette : la barre d'outils passe en deux rangées pleine largeur avant
+   que les libellés des boutons ne disparaissent (voir 600px ci-dessous). */
+@media (max-width:760px){
+  .toolbar{flex-direction:column; align-items:stretch;}
+  .toolbar-search{width:100%; min-width:0;}
+  .toolbar-actions{width:100%; justify-content:space-between;}
+}
+
 @media (max-width:600px){
   header{padding:8px 18px 20px;}
   .container{padding:0 18px;}
   h1{font-size:28px;}
-  .film-row{padding:12px;}
+  .film-row{padding:12px; gap:12px;}
+  .film-row .holes{display:none;}
   .film-title{font-size:15px;}
   .film-poster{width:30px; height:44px;}
   .stats-extremes{grid-template-columns:1fr;}
   .user-bar{position:static; margin-top:10px; flex-wrap:wrap;}
+
+  /* Recherche/tri en pleine largeur, groupe de vues en icônes seules,
+     "+ Ajouter" quitte la barre pour le bouton flottant (.fab). */
+  .toolbar-search{flex-direction:column; align-items:stretch;}
+  .toolbar-search select{width:100%;}
+  .btn-label{display:none;}
+  .btn-group .btn.secondary{padding:10px 12px; font-size:15px;}
+  .btn-icon{margin-right:0;}
+  #openAddBtn{display:none;}
+  .fab{display:flex;}
+
+  .overlay{padding:20px 12px;}
+  .modal{padding:20px;}
+  .ach-tier-grid, .ach-hidden-grid{grid-template-columns:1fr 1fr;}
+  .wl-row{flex-wrap:wrap;}
+  .wl-actions{width:100%; justify-content:flex-end; margin-top:10px;}
+}
+
+@media (max-width:380px){
+  .ach-tier-grid, .ach-hidden-grid{grid-template-columns:1fr;}
+  .stat-tiles{grid-template-columns:1fr 1fr;}
 }

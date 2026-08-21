@@ -41,25 +41,38 @@
 
 <div class="container" id="appContainer" style="display:none;">
   <div class="toolbar">
-    <input type="text" id="search" placeholder="Rechercher un film…">
-    <select id="sortBy">
-      <option value="note-desc">Note ↓</option>
-      <option value="note-asc">Note ↑</option>
-      <option value="title-asc">Titre A–Z</option>
-      <option value="fav-first">Favoris d'abord</option>
-      <option value="recent">Ajout récent</option>
-    </select>
-    <button class="btn secondary" id="statsBtn">📊 Statistiques</button>
-    <button class="btn secondary" id="achievementsBtn">🏆 Succès</button>
-    <button class="btn secondary" id="watchlistBtn">🎞️ À voir</button>
-    <button class="btn secondary" id="exportBtn">Exporter (JSON)</button>
-    <button class="btn secondary" id="importBtn">Importer (JSON)</button>
-    <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
-    <button class="btn" id="openAddBtn">+ Ajouter un film</button>
+    <div class="toolbar-search">
+      <input type="text" id="search" placeholder="Rechercher un film…">
+      <select id="sortBy">
+        <option value="note-desc">Note ↓</option>
+        <option value="note-asc">Note ↑</option>
+        <option value="title-asc">Titre A–Z</option>
+        <option value="fav-first">Favoris d'abord</option>
+        <option value="recent">Ajout récent</option>
+      </select>
+    </div>
+    <div class="toolbar-actions">
+      <div class="btn-group">
+        <button class="btn secondary" id="statsBtn" title="Statistiques"><span class="btn-icon">📊</span><span class="btn-label">Statistiques</span></button>
+        <button class="btn secondary" id="achievementsBtn" title="Succès"><span class="btn-icon">🏆</span><span class="btn-label">Succès</span></button>
+        <button class="btn secondary" id="watchlistBtn" title="À voir"><span class="btn-icon">🎞️</span><span class="btn-label">À voir</span></button>
+      </div>
+      <div class="menu-wrap" id="moreMenuWrap">
+        <button class="btn secondary icon-only" id="moreMenuBtn" title="Plus d'options" aria-haspopup="true" aria-expanded="false">⋯</button>
+        <div class="dropdown-menu" id="moreMenu">
+          <button id="exportBtn">⬇ Exporter (JSON)</button>
+          <button id="importBtn">⬆ Importer (JSON)</button>
+        </div>
+      </div>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
+      <button class="btn" id="openAddBtn">+ Ajouter un film</button>
+    </div>
   </div>
   <div class="count-line" id="countLine"></div>
   <div id="filmList"></div>
 </div>
+
+<button class="fab" id="fabAddBtn" title="Ajouter un film" aria-label="Ajouter un film">+</button>
 
 <!-- Modal -->
 <div class="overlay" id="overlay">

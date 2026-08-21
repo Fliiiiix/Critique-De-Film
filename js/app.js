@@ -420,6 +420,7 @@ document.getElementById('manualScoreSlider').addEventListener('input', (e) => {
   updateLiveScore();
 });
 document.getElementById('openAddBtn').addEventListener('click', () => openModal(null));
+document.getElementById('fabAddBtn').addEventListener('click', () => openModal(null));
 document.getElementById('closeModal').addEventListener('click', closeModal);
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
 document.getElementById('saveBtn').addEventListener('click', handleSave);
@@ -435,6 +436,26 @@ document.getElementById('importFile').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if(file) importFilms(file);
   e.target.value = ''; // permet de réimporter le même fichier
+});
+
+// --- Menu "⋯" (Exporter / Importer) ---
+function toggleMoreMenu(open){
+  const wrap = document.getElementById('moreMenuWrap');
+  const btn = document.getElementById('moreMenuBtn');
+  const isOpen = open !== undefined ? open : !wrap.classList.contains('open');
+  wrap.classList.toggle('open', isOpen);
+  btn.setAttribute('aria-expanded', String(isOpen));
+}
+document.getElementById('moreMenuBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  toggleMoreMenu();
+});
+document.getElementById('moreMenu').addEventListener('click', () => toggleMoreMenu(false));
+document.addEventListener('click', (e) => {
+  if(!document.getElementById('moreMenuWrap').contains(e.target)) toggleMoreMenu(false);
+});
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape') toggleMoreMenu(false);
 });
 
 // L'initialisation (chargement des films + premier rendu) est déclenchée par
