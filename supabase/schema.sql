@@ -237,14 +237,34 @@ create table public.group_members (
 
 alter table public.group_members enable row level security;
 
+-- Vérifie l'appartenance à un groupe en SECURITY DEFINER (même pattern que
+-- find_user_by_email plus haut) : une policy sur group_members qui
+-- s'auto-interroge dans sa propre USING clause provoque une récursion
+-- infinie côté Postgres (42P17) — voir migrations/013 pour l'historique.
+create or replace function public.is_group_member(p_group_id bigint, p_user_id uuid default auth.uid())
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.group_members
+    where group_id = p_group_id and user_id = p_user_id
+  );
+$$;
+
+revoke all on function public.is_group_member(bigint, uuid) from public;
+grant execute on function public.is_group_member(bigint, uuid) to authenticated;
+
+-- Le propriétaire voit toujours son propre groupe directement par owner_id,
+-- sans dépendre de group_members : le trigger qui l'y ajoute (plus bas)
+-- s'exécute après l'évaluation de cette policy pour le RETURNING de
+-- l'insert (js/groups.js), donc une dépendance exclusive à
+-- is_group_member() échoue à la création — voir migrations/014.
 create policy "Members can view their groups"
   on public.groups for select
-  using (
-    exists (
-      select 1 from public.group_members gm
-      where gm.group_id = groups.id and gm.user_id = auth.uid()
-    )
-  );
+  using (owner_id = auth.uid() or public.is_group_member(id));
 
 create policy "Users can create groups"
   on public.groups for insert
@@ -260,12 +280,7 @@ create policy "Owner can delete group"
 
 create policy "Members can view fellow group members"
   on public.group_members for select
-  using (
-    exists (
-      select 1 from public.group_members gm
-      where gm.group_id = group_members.group_id and gm.user_id = auth.uid()
-    )
-  );
+  using (public.is_group_member(group_id));
 
 create policy "Owner can add members"
   on public.group_members for insert
