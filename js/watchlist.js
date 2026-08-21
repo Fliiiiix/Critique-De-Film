@@ -29,6 +29,7 @@ async function loadWatchlist(){
     posterUrl: row.poster_url || null,
     overview: row.overview || null,
     releaseYear: row.release_year || null,
+    originalTitle: row.original_title || null,
     added: row.added
   }));
 }
@@ -81,8 +82,8 @@ async function handleAddToWatchlist(){
   }
   const note = document.getElementById('wlNoteInput').value.trim() || null;
   const tmdbFields = wlTmdbSelected
-    ? { tmdb_id: wlTmdbSelected.tmdb_id, poster_url: wlTmdbSelected.poster_url, overview: wlTmdbSelected.overview, release_year: wlTmdbSelected.release_year }
-    : { tmdb_id: null, poster_url: null, overview: null, release_year: null };
+    ? { tmdb_id: wlTmdbSelected.tmdb_id, poster_url: wlTmdbSelected.poster_url, overview: wlTmdbSelected.overview, release_year: wlTmdbSelected.release_year, original_title: wlTmdbSelected.original_title }
+    : { tmdb_id: null, poster_url: null, overview: null, release_year: null, original_title: null };
 
   const { data, error } = await supabaseClient
     .from('watchlist')
@@ -99,6 +100,7 @@ async function handleAddToWatchlist(){
     id: data.id, title, note,
     tmdbId: tmdbFields.tmdb_id, posterUrl: tmdbFields.poster_url,
     overview: tmdbFields.overview, releaseYear: tmdbFields.release_year,
+    originalTitle: tmdbFields.original_title,
     added: data.added
   });
   renderWatchlist();
@@ -130,7 +132,8 @@ function startRatingFromWatchlist(item){
   if(item.tmdbId){
     tmdbSelected = {
       tmdb_id: item.tmdbId, poster_url: item.posterUrl,
-      overview: item.overview, release_year: item.releaseYear, title: item.title
+      overview: item.overview, release_year: item.releaseYear, title: item.title,
+      original_title: item.originalTitle
     };
     updateTmdbSelectedUI();
   }
@@ -173,7 +176,8 @@ function selectWlTmdbResult(r){
     poster_url: r.poster_path ? TMDB_IMG_BASE + r.poster_path : null,
     overview: r.overview || null,
     release_year: r.release_date ? parseInt(r.release_date.slice(0, 4), 10) : null,
-    title: r.title
+    title: r.title,
+    original_title: r.original_title && r.original_title !== r.title ? r.original_title : null
   };
   document.getElementById('wlTitleInput').value = r.title;
   document.getElementById('wlTmdbResults').innerHTML = '';

@@ -27,8 +27,28 @@ function rowToFilm(row){
     tmdbId: row.tmdb_id || null,
     posterUrl: row.poster_url || null,
     overview: row.overview || null,
-    releaseYear: row.release_year || null
+    releaseYear: row.release_year || null,
+    originalTitle: row.original_title || null
   };
+}
+
+// Normalise pour une comparaison insensible aux accents/casse — "amelie"
+// doit matcher "Amélie" et "féroces" doit matcher "feroces".
+// Plage Unicode des diacritiques combinants (U+0300-U+036F), construite via
+// String.fromCharCode plutôt qu'un échappement \uXXXX en dur dans le regex.
+const DIACRITICS_RE = new RegExp('[' + String.fromCharCode(0x0300) + '-' + String.fromCharCode(0x036f) + ']', 'g');
+function normalizeSearch(str){
+  return str.normalize('NFD').replace(DIACRITICS_RE, '').toLowerCase();
+}
+
+// Titre FR + titre VO (si connu et différent) : sert de base à la recherche,
+// pour retrouver un film aussi bien par son titre français que son titre
+// original ("créatures féroces" ↔ "fierce creatures"), sans traduction —
+// juste les deux titres que TMDB associe déjà au même film.
+function getSearchTerms(film){
+  const terms = [normalizeSearch(film.title)];
+  if(film.originalTitle) terms.push(normalizeSearch(film.originalTitle));
+  return terms;
 }
 
 // Note affichée : la note manuelle prime sur la note calculée depuis la grille,
@@ -71,10 +91,12 @@ function buildSprockets(){
 function render(){
   const list = document.getElementById('filmList');
   const countLine = document.getElementById('countLine');
-  const search = document.getElementById('search').value.trim().toLowerCase();
+  const search = normalizeSearch(document.getElementById('search').value.trim());
   const sortBy = document.getElementById('sortBy').value;
 
-  let filtered = films.filter(f => f.title.toLowerCase().includes(search));
+  // Matche le titre FR ou le titre VO (ex. "créatures féroces" trouve aussi
+  // "Fierce Creatures"), accents/casse ignorés — voir getSearchTerms().
+  let filtered = films.filter(f => !search || getSearchTerms(f).some(t => t.includes(search)));
 
   filtered.sort((a,b) => {
     if(sortBy === 'note-desc') return (getDisplayNote(b)||0) - (getDisplayNote(a)||0);
@@ -270,8 +292,8 @@ async function handleSave(){
   const manualNote = manual ? parseFloat(document.getElementById('manualScoreSlider').value) : null;
   const review = document.getElementById('reviewInput').value.trim() || null;
   const tmdbFields = tmdbSelected
-    ? { tmdb_id: tmdbSelected.tmdb_id, poster_url: tmdbSelected.poster_url, overview: tmdbSelected.overview, release_year: tmdbSelected.release_year }
-    : { tmdb_id: null, poster_url: null, overview: null, release_year: null };
+    ? { tmdb_id: tmdbSelected.tmdb_id, poster_url: tmdbSelected.poster_url, overview: tmdbSelected.overview, release_year: tmdbSelected.release_year, original_title: tmdbSelected.original_title }
+    : { tmdb_id: null, poster_url: null, overview: null, release_year: null, original_title: null };
 
   if(editingId){
     const { error } = await supabaseClient.from('films')
@@ -291,6 +313,7 @@ async function handleSave(){
     film.posterUrl = tmdbFields.poster_url;
     film.overview = tmdbFields.overview;
     film.releaseYear = tmdbFields.release_year;
+    film.originalTitle = tmdbFields.original_title;
   }else{
     const { data, error } = await supabaseClient
       .from('films')
@@ -410,7 +433,8 @@ function importFilms(file){
       tmdb_id: f.tmdbId || null,
       poster_url: f.posterUrl || null,
       overview: f.overview || null,
-      release_year: f.releaseYear || null
+      release_year: f.releaseYear || null,
+      original_title: f.originalTitle || null
     }));
 
     const { data: inserted, error: insError } = await supabaseClient.from('films').insert(rows).select();

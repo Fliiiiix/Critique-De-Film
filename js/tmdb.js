@@ -5,7 +5,7 @@
 // séparés. Choisir un résultat renseigne aussi le titre. Résultat choisi
 // stocké dans tmdbSelected, lu par handleSave() (js/app.js) à l'enregistrement.
 
-let tmdbSelected = null; // { tmdb_id, poster_url, overview, release_year, title }
+let tmdbSelected = null; // { tmdb_id, poster_url, overview, release_year, title, original_title }
 let tmdbSearchTimer = null;
 
 async function searchTmdb(query){
@@ -55,7 +55,11 @@ function selectTmdbResult(r){
     poster_url: r.poster_path ? TMDB_IMG_BASE + r.poster_path : null,
     overview: r.overview || null,
     release_year: r.release_date ? parseInt(r.release_date.slice(0, 4), 10) : null,
-    title: r.title
+    title: r.title,
+    // Titre en langue d'origine (déjà renvoyé par /search/movie, pas d'appel
+    // TMDB supplémentaire) — permet à la recherche du catalogue de matcher
+    // le titre FR ou VO indifféremment, voir getSearchTerms() dans app.js.
+    original_title: r.original_title && r.original_title !== r.title ? r.original_title : null
   };
   document.getElementById('titleInput').value = r.title;
   document.getElementById('tmdbResults').innerHTML = '';

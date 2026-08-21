@@ -20,6 +20,10 @@ create table public.films (
   poster_url text,
   overview text,
   release_year integer,
+  -- Titre en langue d'origine, à côté du titre FR ci-dessus — pour que la
+  -- recherche matche indifféremment "créatures féroces" ou "fierce creatures"
+  -- sans traduction automatique (voir migrations/008).
+  original_title text,
   created_at timestamptz not null default now()
 );
 
@@ -74,6 +78,7 @@ create table public.watchlist (
   poster_url text,
   overview text,
   release_year integer,
+  original_title text,
   added bigint not null,
   created_at timestamptz not null default now()
 );

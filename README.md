@@ -118,6 +118,10 @@ Un film noté ainsi est visuellement distingué dans la liste : badge `manuel`
 d'amber. Nécessite d'avoir exécuté `supabase/migrations/002_add_manual_note.sql`
 sur le projet (ajoute la colonne `manual_note`).
 
+Pour convertir en masse des films déjà notés via la grille vers la note
+manuelle (en gardant leur note calculée actuelle) : script
+`supabase/scripts/migrate-to-manual-note.js`.
+
 ## Affiche, résumé & année (TMDB)
 
 Le champ **Titre du film** fait aussi office de recherche : dès 2 caractères,
@@ -137,6 +141,18 @@ la clé anon Supabase, il est fait pour tourner côté client (lecture seule).
 Sans token configuré, la recherche échoue proprement (message d'erreur
 affiché, reste de l'app inchangé). Nécessite d'avoir exécuté
 `supabase/migrations/004_add_tmdb_fields.sql`.
+
+### Recherche multilingue (titre FR / VO)
+
+La barre de recherche du catalogue matche aussi bien le titre français que le
+titre en langue d'origine (ex. taper "créatures féroces" ou "fierce
+creatures" trouve le même film) — sans traduction automatique, juste les deux
+titres que TMDB associe déjà au film (`title` en `fr-FR`, `original_title`
+renvoyé dans la même réponse). Les accents et la casse sont aussi ignorés
+("amelie" trouve "Amélie"). Nécessite `supabase/migrations/008_add_original_title.sql`.
+Le titre VO n'est renseigné qu'à partir du prochain ajout/modification d'un
+film lié à une fiche TMDB — pour les films déjà en base, script de rattrapage
+dans `supabase/scripts/backfill-original-title.js`.
 
 ## Commentaire libre
 
