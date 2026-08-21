@@ -14,7 +14,7 @@ async function showApp(){
   document.getElementById('authContainer').style.display = 'none';
   document.getElementById('appContainer').style.display = '';
   document.getElementById('userBar').style.display = '';
-  document.getElementById('userEmail').textContent = currentUser.email;
+  await loadOrCreateProfile();
   await loadFilms();
   render();
 }

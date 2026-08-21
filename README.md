@@ -11,8 +11,12 @@ critique-films/
 ├── css/style.css             → tout le style (thème pellicule/salle de projection)
 ├── js/data.js                  → les 7 critères (définitions, repères, questions) + SEED (films de l'Excel, migration uniquement)
 ├── js/supabaseConfig.js        → clés du projet Supabase (URL + clé publique anon)
-├── js/auth.js                   → connexion par lien magique, bascule écran connexion/app
-├── js/app.js                     → logique (rendu, CRUD via Supabase, formulaire de notation)
+├── js/tmdbConfig.js             → clé API TMDB
+├── js/auth.js                    → connexion par lien magique, bascule écran connexion/app
+├── js/profile.js                  → profil par utilisateur (pseudo + avatar)
+├── js/app.js                       → logique (rendu, CRUD via Supabase, formulaire de notation)
+├── js/tmdb.js                       → recherche TMDB (affiche, résumé, année)
+├── js/stats.js                       → page statistiques
 └── supabase/
     ├── schema.sql                  → schéma complet (nouveau projet)
     └── migrations/                 → changements incrémentaux (projet déjà provisionné)
@@ -111,8 +115,50 @@ Un film noté ainsi est visuellement distingué dans la liste : badge `manuel`
 d'amber. Nécessite d'avoir exécuté `supabase/migrations/002_add_manual_note.sql`
 sur le projet (ajoute la colonne `manual_note`).
 
+## Affiche, résumé & année (TMDB)
+
+Dans le formulaire, le champ **Rechercher sur TMDB** interroge l'API de
+[The Movie Database](https://www.themoviedb.org) (pas Letterboxd, qui n'a pas
+d'API publique) et propose une liste de résultats avec vignette — cliquer sur
+l'un préremplit affiche, résumé et année. Ces infos s'affichent ensuite dans
+la liste (vignette + année) et sont conservées si tu resauvegardes le film
+sans relancer de recherche.
+
+Nécessite une clé API gratuite : compte sur themoviedb.org → menu profil →
+Paramètres → API → Créer une clé → coller dans `js/tmdbConfig.js`. Comme la
+clé anon Supabase, elle est faite pour tourner côté client (lecture seule).
+Sans clé configurée, la recherche échoue proprement (message d'erreur affiché,
+reste de l'app inchangé). Nécessite d'avoir exécuté
+`supabase/migrations/004_add_tmdb_fields.sql`.
+
+## Commentaire libre
+
+Un champ **Commentaire** dans le formulaire permet de noter tes impressions
+en texte libre, en plus de la note. Un film commenté affiche un petit 💬 à
+côté de son titre dans la liste. Nécessite
+`supabase/migrations/003_add_review.sql`.
+
+## Profil (pseudo + avatar)
+
+Le bouton **Profil** (en haut à droite, une fois connecté) permet de définir
+un pseudo et une image d'avatar (URL d'une image, pas d'upload pour l'instant)
+affichés à la place de l'email brut. Chaque utilisateur a son propre profil,
+isolé par RLS comme le reste — l'app supporte plusieurs comptes indépendants
+(chacun avec son catalogue privé) dès lors qu'ils se connectent avec leur
+propre email. Nécessite `supabase/migrations/005_add_profiles.sql`.
+
+## Statistiques
+
+Le bouton **📊 Statistiques** ouvre un aperçu calculé à la volée depuis les
+films chargés (pas de requête dédiée) : nombre de films, note moyenne,
+favoris, répartition grille/note manuelle, distribution des notes, activité
+par mois, film le mieux et le moins bien noté.
+
 ## Prochaines étapes possibles
 
 - Filtrer/trier par critère individuel, pas seulement par note globale
-- Champs additionnels (année, réalisateur, date de visionnage, nombre de fois vu)
+- Watchlist séparée des films déjà notés
+- Journal chronologique / nombre de fois revu
+- Succès (cumulatifs, cachés, défis thématiques façon Letterboxd)
+- Upload d'avatar réel (Supabase Storage) plutôt qu'une URL
 - Cache local (offline-first) pour continuer à consulter/noter sans réseau

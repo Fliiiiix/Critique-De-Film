@@ -22,7 +22,12 @@ function rowToFilm(row){
     crit: row.crit,
     fav: row.fav,
     added: row.added,
-    manualNote: row.manual_note != null ? parseFloat(row.manual_note) : null
+    manualNote: row.manual_note != null ? parseFloat(row.manual_note) : null,
+    review: row.review || null,
+    tmdbId: row.tmdb_id || null,
+    posterUrl: row.poster_url || null,
+    overview: row.overview || null,
+    releaseYear: row.release_year || null
   };
 }
 
@@ -93,11 +98,15 @@ function render(){
     const isManual = f.manualNote != null;
     const row = document.createElement('div');
     row.className = 'film-row';
+    const sub = (isManual ? 'Note manuelle · ancien référentiel' : '7 critères notés') + (f.releaseYear ? ` · ${f.releaseYear}` : '');
     row.innerHTML = `
       <div class="holes"><span></span><span></span><span></span></div>
+      ${f.posterUrl
+        ? `<img class="film-poster" src="${f.posterUrl}" alt="" loading="lazy">`
+        : `<div class="film-poster film-poster-placeholder">🎬</div>`}
       <div class="film-main">
-        <div class="film-title">${escapeHtml(f.title)}${isManual ? '<span class="manual-badge" title="Note manuelle — référentiel différent">manuel</span>' : ''}</div>
-        <div class="film-sub">${isManual ? 'Note manuelle · ancien référentiel' : '7 critères notés'}</div>
+        <div class="film-title">${escapeHtml(f.title)}${isManual ? '<span class="manual-badge" title="Note manuelle — référentiel différent">manuel</span>' : ''}${f.review ? '<span class="review-badge" title="Commentaire enregistré">💬</span>' : ''}</div>
+        <div class="film-sub">${sub}</div>
       </div>
       <button class="star-btn ${f.fav ? 'active' : ''}" data-id="${f.id}" title="Favori">${f.fav ? '★' : '☆'}</button>
       <div class="counter ${isManual ? 'manual' : ''}">${note !== null ? note.toFixed(1) : '—'}</div>
@@ -209,6 +218,21 @@ function openModal(id){
   document.getElementById('manualScoreSlider').value = sliderVal;
   document.getElementById('manualScoreVal').textContent = sliderVal.toFixed(2);
 
+  document.getElementById('reviewInput').value = film && film.review ? film.review : '';
+
+  // Reprend l'affiche/résumé TMDB déjà enregistrés (s'il y en a) comme point de
+  // départ — une nouvelle recherche les remplace, "Retirer" les efface.
+  tmdbSelected = (film && film.tmdbId) ? {
+    tmdb_id: film.tmdbId,
+    poster_url: film.posterUrl,
+    overview: film.overview,
+    release_year: film.releaseYear,
+    title: film.title
+  } : null;
+  document.getElementById('tmdbQuery').value = '';
+  document.getElementById('tmdbResults').innerHTML = '';
+  updateTmdbSelectedUI();
+
   buildCriteriaInputs(film ? film.crit : null);
   updateManualVisibility();
 
@@ -231,9 +255,15 @@ async function handleSave(){
   // En mode manuel, la grille n'est pas utilisée : crit vide, note = manual_note.
   const crit = manual ? {} : readCriteriaFromForm();
   const manualNote = manual ? parseFloat(document.getElementById('manualScoreSlider').value) : null;
+  const review = document.getElementById('reviewInput').value.trim() || null;
+  const tmdbFields = tmdbSelected
+    ? { tmdb_id: tmdbSelected.tmdb_id, poster_url: tmdbSelected.poster_url, overview: tmdbSelected.overview, release_year: tmdbSelected.release_year }
+    : { tmdb_id: null, poster_url: null, overview: null, release_year: null };
 
   if(editingId){
-    const { error } = await supabaseClient.from('films').update({ title, crit, manual_note: manualNote }).eq('id', editingId);
+    const { error } = await supabaseClient.from('films')
+      .update({ title, crit, manual_note: manualNote, review, ...tmdbFields })
+      .eq('id', editingId);
     if(error){
       showToast('Erreur de sauvegarde — réessaie');
       console.error(error);
@@ -243,10 +273,15 @@ async function handleSave(){
     film.title = title;
     film.crit = crit;
     film.manualNote = manualNote;
+    film.review = review;
+    film.tmdbId = tmdbFields.tmdb_id;
+    film.posterUrl = tmdbFields.poster_url;
+    film.overview = tmdbFields.overview;
+    film.releaseYear = tmdbFields.release_year;
   }else{
     const { data, error } = await supabaseClient
       .from('films')
-      .insert({ title, crit, fav: false, added: Date.now(), manual_note: manualNote })
+      .insert({ title, crit, fav: false, added: Date.now(), manual_note: manualNote, review, ...tmdbFields })
       .select()
       .single();
     if(error){
@@ -280,7 +315,7 @@ async function handleDelete(){
 function exportFilms(){
   const data = {
     app: 'critique-films',
-    version: 2,
+    version: 3,
     exportedAt: new Date().toISOString(),
     films
   };
@@ -341,7 +376,12 @@ function importFilms(file){
       crit: f.crit,
       fav: !!f.fav,
       added: typeof f.added === 'number' ? f.added : Date.now(),
-      manual_note: typeof f.manualNote === 'number' ? f.manualNote : null
+      manual_note: typeof f.manualNote === 'number' ? f.manualNote : null,
+      review: f.review || null,
+      tmdb_id: f.tmdbId || null,
+      poster_url: f.posterUrl || null,
+      overview: f.overview || null,
+      release_year: f.releaseYear || null
     }));
 
     const { data: inserted, error: insError } = await supabaseClient.from('films').insert(rows).select();

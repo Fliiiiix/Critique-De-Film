@@ -14,10 +14,12 @@
     <div class="eyebrow">Grille de lecture personnelle</div>
     <div class="title-row">
       <h1>Critique de films</h1>
-      <div class="version-tag">v<b>1.3</b></div>
+      <div class="version-tag">v<b>1.4</b></div>
     </div>
     <div class="user-bar" id="userBar" style="display:none;">
-      <span id="userEmail"></span>
+      <img id="userAvatar" class="user-avatar" alt="">
+      <span id="userDisplayName"></span>
+      <button class="btn secondary" id="editProfileBtn">Profil</button>
       <button class="btn secondary" id="logoutBtn">Déconnexion</button>
     </div>
   </div>
@@ -47,6 +49,7 @@
       <option value="fav-first">Favoris d'abord</option>
       <option value="recent">Ajout récent</option>
     </select>
+    <button class="btn secondary" id="statsBtn">📊 Statistiques</button>
     <button class="btn secondary" id="exportBtn">Exporter (JSON)</button>
     <button class="btn secondary" id="importBtn">Importer (JSON)</button>
     <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
@@ -69,6 +72,22 @@
       <input type="text" id="titleInput" placeholder="Ex. Paprika">
     </div>
 
+    <div class="field tmdb-search-field">
+      <label>Rechercher sur TMDB (affiche, résumé, année)</label>
+      <div class="tmdb-search-row">
+        <input type="text" id="tmdbQuery" placeholder="Titre à rechercher…">
+        <button class="btn secondary" id="tmdbSearchBtn" type="button">Rechercher</button>
+      </div>
+      <div id="tmdbResults" class="tmdb-results"></div>
+      <div id="tmdbSelected" class="tmdb-selected" style="display:none;">
+        <img id="tmdbSelectedPoster" alt="Affiche">
+        <div class="tmdb-selected-info">
+          <div id="tmdbSelectedTitle"></div>
+          <button class="crit-help-toggle" id="tmdbClearBtn" type="button">Retirer</button>
+        </div>
+      </div>
+    </div>
+
     <label class="manual-toggle-label">
       <input type="checkbox" id="manualToggle">
       <span>Note manuelle — bypasse la grille</span>
@@ -85,6 +104,11 @@
 
     <div id="criteriaWrap"></div>
 
+    <div class="field">
+      <label>Commentaire</label>
+      <textarea id="reviewInput" placeholder="Tes impressions sur ce film…" rows="3"></textarea>
+    </div>
+
     <div class="modal-footer">
       <div class="live-score"><span id="liveScoreLabel">Note calculée</span> · <b id="liveScore">—</b> / 5</div>
       <div class="right">
@@ -96,12 +120,52 @@
   </div>
 </div>
 
+<!-- Modal statistiques -->
+<div class="overlay" id="statsOverlay">
+  <div class="modal stats-modal">
+    <div class="modal-head">
+      <h2>Statistiques</h2>
+      <button class="close-x" id="closeStats">✕</button>
+    </div>
+    <div id="statsContent"></div>
+  </div>
+</div>
+
+<!-- Modal profil -->
+<div class="overlay" id="profileOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Ton profil</h2>
+      <button class="close-x" id="closeProfile">✕</button>
+    </div>
+    <div class="field">
+      <label>Pseudo</label>
+      <input type="text" id="displayNameInput" placeholder="Ton pseudo">
+    </div>
+    <div class="field">
+      <label>Avatar (URL d'une image)</label>
+      <input type="text" id="avatarUrlInput" placeholder="https://…">
+    </div>
+    <div class="modal-footer">
+      <div></div>
+      <div class="right">
+        <button class="btn secondary" id="cancelProfileBtn">Annuler</button>
+        <button class="btn" id="saveProfileBtn">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabaseConfig.js"></script>
+<script src="js/tmdbConfig.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
+<script src="js/tmdb.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/profile.js"></script>
 <script src="js/auth.js"></script>
 </body>
 </html>
