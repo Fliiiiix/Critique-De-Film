@@ -336,8 +336,12 @@ async function openFriendProfile(userId){
   content.appendChild(listWrap);
 }
 
+// Referme aussi la liste "Amis" en dessous : sans ça, fermer le profil d'un
+// ami ramène sur un autre modal plutôt que sur son propre catalogue — on se
+// retrouve coincé à naviguer entre modals au lieu de revenir à l'app.
 function closeFriendProfile(){
   document.getElementById('friendProfileOverlay').classList.remove('open');
+  closeFriends();
 }
 
 document.getElementById('closeFriendProfile').addEventListener('click', closeFriendProfile);
