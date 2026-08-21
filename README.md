@@ -17,6 +17,7 @@ critique-films/
 ├── js/app.js                       → logique (rendu, CRUD via Supabase, formulaire de notation)
 ├── js/tmdb.js                       → recherche TMDB (affiche, résumé, année)
 ├── js/stats.js                       → page statistiques
+├── js/achievements.js                → page succès (paliers + secrets)
 └── supabase/
     ├── schema.sql                  → schéma complet (nouveau projet)
     └── migrations/                 → changements incrémentaux (projet déjà provisionné)
@@ -156,11 +157,27 @@ films chargés (pas de requête dédiée) : nombre de films, note moyenne,
 favoris, répartition grille/note manuelle, distribution des notes, activité
 par mois, film le mieux et le moins bien noté.
 
+## Succès
+
+Le bouton **🏆 Succès** ouvre une page calculée elle aussi à la volée depuis
+les films chargés (pas de table dédiée, pas de migration nécessaire) :
+
+- **Paliers** : 4 séries cumulatives (Cinéphile, Grand favori, Critique en
+  chef, Archiviste) avec un badge bronze/argent/or selon les seuils atteints
+  et une barre de progression vers le palier suivant.
+- **Secrets** : 10 succès cachés, plus insolites (ex. avoir donné 0.5/5 à un
+  film, avoir ajouté un film entre minuit et 5h du matin…) — invisibles
+  (`???`) tant qu'ils ne sont pas débloqués, pour garder la surprise.
+
+Comme les statistiques, tout se recalcule à chaque ouverture à partir de
+l'état actuel du catalogue : pas d'historique à maintenir, un succès peut se
+"reverrouiller" si les films concernés sont supprimés ou modifiés.
+
 ## Prochaines étapes possibles
 
 - Filtrer/trier par critère individuel, pas seulement par note globale
 - Watchlist séparée des films déjà notés
 - Journal chronologique / nombre de fois revu
-- Succès (cumulatifs, cachés, défis thématiques façon Letterboxd)
+- Happenings façon Letterboxd (défis/événements autour d'une sélection de films)
 - Upload d'avatar réel (Supabase Storage) plutôt qu'une URL
 - Cache local (offline-first) pour continuer à consulter/noter sans réseau

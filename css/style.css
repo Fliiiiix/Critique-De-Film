@@ -667,6 +667,103 @@ input[type="range"]::-moz-range-thumb{
   color:var(--amber);
 }
 
+/* Succès */
+.achievements-modal{max-width:760px;}
+.ach-summary{
+  background:var(--bg);
+  border:1px solid var(--hairline);
+  border-radius:4px;
+  padding:16px 18px;
+  text-align:center;
+  margin-bottom:28px;
+}
+.ach-summary-count{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:26px;
+  font-weight:600;
+  color:var(--amber);
+  font-variant-numeric:tabular-nums;
+}
+.ach-summary-label{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10.5px;
+  letter-spacing:0.04em;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  margin-top:2px;
+}
+.ach-summary-bar{
+  height:6px;
+  background:var(--surface-2);
+  border-radius:3px;
+  overflow:hidden;
+  margin-top:12px;
+}
+.ach-summary-fill{height:100%; background:var(--amber); border-radius:3px;}
+
+.ach-tier-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+  gap:10px;
+}
+.ach-tier-card{
+  background:var(--bg);
+  border:1px solid var(--hairline);
+  border-radius:4px;
+  padding:14px;
+}
+.ach-tier-head{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+.ach-tier-icon{font-size:17px;}
+.ach-tier-label{font-family:'Fraunces', serif; font-size:14.5px;}
+.ach-tier-medals{margin-bottom:10px; font-size:16px; letter-spacing:2px;}
+.ach-medal{filter:grayscale(1) opacity(0.35);}
+.ach-medal.earned{filter:none;}
+.ach-tier-bar{
+  height:5px;
+  background:var(--surface-2);
+  border-radius:3px;
+  overflow:hidden;
+  margin-bottom:8px;
+}
+.ach-tier-fill{height:100%; background:var(--teal); border-radius:3px;}
+.ach-tier-progress{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  color:var(--text-muted);
+}
+
+.ach-hidden-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+  gap:10px;
+}
+.ach-hidden-card{
+  background:var(--bg);
+  border:1px solid var(--hairline);
+  border-radius:4px;
+  padding:14px 12px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+}
+.ach-hidden-card.locked{opacity:0.55;}
+.ach-hidden-icon{font-size:22px;}
+.ach-hidden-title{font-family:'Fraunces', serif; font-size:13.5px;}
+.ach-hidden-card.locked .ach-hidden-title{
+  font-family:'IBM Plex Mono', monospace;
+  color:var(--text-muted);
+  letter-spacing:0.1em;
+}
+.ach-hidden-desc{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10.5px;
+  color:var(--text-muted);
+  line-height:1.4;
+}
+.ach-hidden-card.unlocked{border-color:var(--amber-dim);}
+
 .toast{
   position:fixed;
   bottom:24px;

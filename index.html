@@ -50,6 +50,7 @@
       <option value="recent">Ajout récent</option>
     </select>
     <button class="btn secondary" id="statsBtn">📊 Statistiques</button>
+    <button class="btn secondary" id="achievementsBtn">🏆 Succès</button>
     <button class="btn secondary" id="exportBtn">Exporter (JSON)</button>
     <button class="btn secondary" id="importBtn">Importer (JSON)</button>
     <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
@@ -131,6 +132,17 @@
   </div>
 </div>
 
+<!-- Modal succès -->
+<div class="overlay" id="achievementsOverlay">
+  <div class="modal stats-modal achievements-modal">
+    <div class="modal-head">
+      <h2>Succès</h2>
+      <button class="close-x" id="closeAchievements">✕</button>
+    </div>
+    <div id="achievementsContent"></div>
+  </div>
+</div>
+
 <!-- Modal profil -->
 <div class="overlay" id="profileOverlay">
   <div class="modal">
@@ -165,6 +177,7 @@
 <script src="js/app.js"></script>
 <script src="js/tmdb.js"></script>
 <script src="js/stats.js"></script>
+<script src="js/achievements.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/auth.js"></script>
 </body>
