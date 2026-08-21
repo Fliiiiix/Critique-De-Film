@@ -251,6 +251,26 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin-bottom:18px;
 }
 
+.friend-avatar{
+  width:36px; height:36px;
+  border-radius:50%;
+  object-fit:cover;
+  border:1px solid var(--hairline);
+  flex:none;
+}
+.friend-avatar-placeholder{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--surface-2);
+  font-size:16px;
+  opacity:0.6;
+}
+/* Catalogue d'un ami : même carte que les films perso mais non cliquable
+   (lecture seule) — pas de curseur pointeur ni d'effet de survol interactif. */
+.friend-film-row{cursor:default;}
+.friend-film-row:hover{border-color:var(--hairline); transform:none; box-shadow:none;}
+
 .pagination{
   display:flex;
   align-items:center;

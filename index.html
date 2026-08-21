@@ -57,6 +57,7 @@
         <button class="btn secondary" id="achievementsBtn" title="Succès"><span class="btn-icon">🏆</span><span class="btn-label">Succès</span></button>
         <button class="btn secondary" id="watchlistBtn" title="À voir"><span class="btn-icon">🎞️</span><span class="btn-label">À voir</span></button>
         <button class="btn secondary" id="journalBtn" title="Journal"><span class="btn-icon">📅</span><span class="btn-label">Journal</span></button>
+        <button class="btn secondary" id="friendsBtn" title="Amis"><span class="btn-icon">👥</span><span class="btn-label">Amis</span></button>
       </div>
       <div class="menu-wrap" id="moreMenuWrap">
         <button class="btn secondary icon-only" id="moreMenuBtn" title="Plus d'options" aria-haspopup="true" aria-expanded="false">⋯</button>
@@ -206,6 +207,48 @@
   </div>
 </div>
 
+<!-- Modal amis -->
+<div class="overlay" id="friendsOverlay">
+  <div class="modal watchlist-modal">
+    <div class="modal-head">
+      <h2>Amis</h2>
+      <button class="close-x" id="closeFriends">✕</button>
+    </div>
+
+    <div class="field">
+      <label>Ajouter un ami (email exact ou pseudo)</label>
+      <input type="text" id="friendSearchInput" placeholder="toi@example.com ou pseudo" autocomplete="off">
+      <div id="friendSearchResults" class="tmdb-results"></div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-section-title">Demandes reçues</div>
+      <div class="wl-list" id="friendRequestsIn"></div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-section-title">Demandes envoyées</div>
+      <div class="wl-list" id="friendRequestsOut"></div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-section-title">Mes amis</div>
+      <div class="wl-list" id="friendsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal profil d'un ami (lecture seule : catalogue + stats) -->
+<div class="overlay" id="friendProfileOverlay">
+  <div class="modal stats-modal">
+    <div class="modal-head">
+      <h2 id="friendProfileTitle">Profil</h2>
+      <button class="close-x" id="closeFriendProfile">✕</button>
+    </div>
+    <div id="friendProfileContent"></div>
+  </div>
+</div>
+
 <!-- Modal profil -->
 <div class="overlay" id="profileOverlay">
   <div class="modal">
@@ -249,6 +292,7 @@
 <script src="js/watchlist.js"></script>
 <script src="js/journal.js"></script>
 <script src="js/profile.js"></script>
+<script src="js/friends.js"></script>
 <script src="js/auth.js"></script>
 </body>
 </html>

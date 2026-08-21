@@ -20,6 +20,7 @@ critique-films/
 ├── js/achievements.js                → page succès (paliers + secrets)
 ├── js/watchlist.js                    → liste "à voir", séparée du catalogue noté
 ├── js/journal.js                       → journal des visionnages, revisionnages
+├── js/friends.js                        → amis (demande/acceptation) + profil en lecture seule
 └── supabase/
     ├── schema.sql                  → schéma complet (nouveau projet)
     └── migrations/                 → changements incrémentaux (projet déjà provisionné)
@@ -240,8 +241,29 @@ Nécessite `supabase/migrations/007_add_viewings.sql`, qui rétro-remplit
 aussi un premier visionnage pour chaque film déjà présent (daté de son
 ajout) — rien à ressaisir à la main après la migration.
 
+## Amis
+
+Le bouton **👥 Amis** permet d'ajouter un ami par pseudo (recherche partielle)
+ou par email (correspondance exacte uniquement), d'accepter/refuser les
+demandes reçues, et de voir le **catalogue et les statistiques** d'un ami une
+fois la demande acceptée — en lecture seule, aucune interaction n'est possible
+sur ses films. Une demande croisée (vous demandez à quelqu'un qui vous avait
+déjà demandé) est acceptée automatiquement plutôt que de créer un doublon.
+
+Techniquement : table `friendships` (une ligne par relation, statut
+pending/accepted/declined) + une policy RLS qui ouvre la lecture de `films`
+aux amis acceptés (en plus de la sienne propre, jamais en écriture) + une
+fonction `find_user_by_email` en `SECURITY DEFINER` pour chercher un email
+exact sans exposer toute la table `auth.users` côté client. Nécessite
+`supabase/migrations/009_add_friendships.sql`.
+
+Première brique d'un axe plus large (groupes famille/amis, proposition et
+discussion de films, votes) — voir « Prochaines étapes possibles ».
+
 ## Prochaines étapes possibles
 
+- Groupes (famille/amis) : proposer des films, discuter, voter — un "Reddit
+  de films" au sein d'un groupe fermé
 - Filtrer/trier par critère individuel, pas seulement par note globale
 - Profil partageable (page publique en lecture seule)
 - Happenings façon Letterboxd (défis/événements autour d'une sélection de films)

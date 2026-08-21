@@ -3,13 +3,16 @@
 // dédiée. Un seul hue (amber, celui de l'app) pour les barres : ce sont des
 // séries uniques (magnitude), pas des comparaisons catégorielles.
 
-function computeStats(){
-  const rated = films.filter(f => getDisplayNote(f) !== null);
+// list : par défaut le catalogue de l'utilisateur connecté, mais peut être
+// n'importe quelle liste de films au même format (ex. le catalogue d'un ami
+// en lecture seule, voir openFriendProfile() dans js/friends.js).
+function computeStats(list = films){
+  const rated = list.filter(f => getDisplayNote(f) !== null);
   const notes = rated.map(getDisplayNote);
   const avg = notes.length ? notes.reduce((a, b) => a + b, 0) / notes.length : null;
-  const favCount = films.filter(f => f.fav).length;
-  const manualCount = films.filter(f => f.manualNote != null).length;
-  const gridCount = films.length - manualCount;
+  const favCount = list.filter(f => f.fav).length;
+  const manualCount = list.filter(f => f.manualNote != null).length;
+  const gridCount = list.length - manualCount;
 
   const buckets = [];
   for(let v = 0; v <= 5; v += 0.5) buckets.push(Math.round(v * 10) / 10);
@@ -19,7 +22,7 @@ function computeStats(){
   }));
 
   const monthMap = {};
-  films.forEach(f => {
+  list.forEach(f => {
     const d = new Date(f.added);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     monthMap[key] = (monthMap[key] || 0) + 1;
@@ -34,7 +37,7 @@ function computeStats(){
     if(!worst || n < getDisplayNote(worst)) worst = f;
   });
 
-  return { total: films.length, avg, favCount, manualCount, gridCount, distribution, activity, best, worst };
+  return { total: list.length, avg, favCount, manualCount, gridCount, distribution, activity, best, worst };
 }
 
 function monthLabel(key){
@@ -61,9 +64,11 @@ function renderBarChart(items){
   `;
 }
 
-function renderStats(){
-  const s = computeStats();
-  const content = document.getElementById('statsContent');
+// Factorisée pour être réutilisée par le profil (lecture seule) d'un ami —
+// voir openFriendProfile() dans js/friends.js — avec un autre conteneur et
+// la liste de films de cet ami plutôt que la sienne.
+function renderStatsInto(content, list = films){
+  const s = computeStats(list);
 
   if(s.total === 0){
     content.innerHTML = `<div class="empty-state">Aucun film noté pour l'instant.</div>`;
@@ -108,6 +113,10 @@ function renderStats(){
       </div>` : ''}
     </div>
   `;
+}
+
+function renderStats(){
+  renderStatsInto(document.getElementById('statsContent'));
 }
 
 function openStats(){
