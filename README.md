@@ -105,10 +105,10 @@ critères) est rejeté sans toucher aux données existantes.
 Chaque critère a une définition fixe, une échelle de repères (0 / 0.5 / 1) et
 4 questions pour trancher rapidement — voir `js/data.js`.
 
-### Note manuelle (bypass exceptionnel de la grille)
+### Note manuelle (exception à la grille)
 
-Dans le formulaire, la case **Note manuelle — bypasse la grille** permet de
-saisir directement une note sur 5 au lieu de passer par les 7 critères.
+Dans le formulaire, la case **Note manuelle — sans passer par la grille**
+permet de saisir directement une note sur 5 au lieu de passer par les 7 critères.
 Prévu pour les films déjà notés avec un référentiel différent (ex. retravaillés
 avant la migration vers cette grille) — inutile, voire trompeur, de leur
 recalculer une note "7 critères" a posteriori.

@@ -222,6 +222,7 @@ select{cursor:pointer;}
 }
 .btn:hover{opacity:0.85;}
 .btn:active{transform:scale(0.96);}
+.btn:disabled{opacity:0.35; cursor:default; transform:none;}
 .btn.secondary{
   background:transparent;
   color:var(--text-muted);
@@ -248,6 +249,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-size:12px;
   color:var(--text-muted);
   margin-bottom:18px;
+}
+
+.pagination{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  margin-top:24px;
+}
+.pagination-label{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  color:var(--text-muted);
 }
 
 .film-row{

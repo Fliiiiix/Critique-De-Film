@@ -86,7 +86,7 @@ const HIDDEN_ACHIEVEMENTS = [
   },
   {
     key: 'le-rebelle', icon: '🃏', title: 'Le rebelle',
-    desc: 'Avoir bypassé la grille avec une note manuelle sur 5 films ou plus.',
+    desc: 'Avoir noté 5 films ou plus en note manuelle, sans passer par la grille.',
     check: films => films.filter(f => f.manualNote != null).length >= 5
   },
   {

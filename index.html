@@ -71,6 +71,7 @@
   </div>
   <div class="count-line" id="countLine"></div>
   <div id="filmList"></div>
+  <div class="pagination" id="pagination"></div>
 </div>
 
 <button class="fab" id="fabAddBtn" title="Ajouter un film" aria-label="Ajouter un film">+</button>
@@ -98,7 +99,7 @@
 
     <label class="manual-toggle-label">
       <input type="checkbox" id="manualToggle">
-      <span>Note manuelle — bypasse la grille</span>
+      <span>Note manuelle — sans passer par la grille</span>
     </label>
     <div class="manual-toggle-hint">Exceptionnel : pour un film déjà noté avec un référentiel différent, qu'on ne veut pas refaire passer dans la grille actuelle.</div>
 
@@ -219,6 +220,11 @@
     <div class="field">
       <label>Avatar (URL d'une image)</label>
       <input type="text" id="avatarUrlInput" placeholder="https://…">
+    </div>
+    <div class="field">
+      <label>Ou choisir l'affiche d'un film déjà noté</label>
+      <input type="text" id="avatarFilmSearch" placeholder="Chercher dans tes films…">
+      <div class="tmdb-results" id="avatarFilmResults"></div>
     </div>
     <div class="modal-footer">
       <div></div>

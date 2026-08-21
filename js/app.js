@@ -8,6 +8,13 @@
 let films = [];
 let editingId = null;
 
+// Pagination du catalogue — évite le scroll infini au-delà de quelques
+// centaines de films. Remise à 1 à chaque changement de recherche/tri
+// (voir les listeners en bas de fichier), sinon conservée entre les render()
+// (ex. après avoir coché un favori) pour ne pas perdre sa place.
+const FILMS_PER_PAGE = 50;
+let currentPage = 1;
+
 function computeNote(critObj){
   const vals = CRITERIA.map(c => critObj[c.key]).filter(v => typeof v === 'number');
   if(vals.length === 0) return null;
@@ -111,11 +118,16 @@ function render(){
 
   if(filtered.length === 0){
     list.innerHTML = `<div class="empty-state">Aucun film. Clique sur « + Ajouter un film » pour commencer une nouvelle pellicule.</div>`;
+    document.getElementById('pagination').innerHTML = '';
     return;
   }
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / FILMS_PER_PAGE));
+  currentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const pageItems = filtered.slice((currentPage - 1) * FILMS_PER_PAGE, currentPage * FILMS_PER_PAGE);
+
   list.innerHTML = '';
-  filtered.forEach(f => {
+  pageItems.forEach(f => {
     const note = getDisplayNote(f);
     const isManual = f.manualNote != null;
     const rewatches = typeof rewatchCount === 'function' ? rewatchCount(f.id) : 0;
@@ -151,6 +163,31 @@ function render(){
       render();
     });
     list.appendChild(row);
+  });
+
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages){
+  const el = document.getElementById('pagination');
+  if(totalPages <= 1){
+    el.innerHTML = '';
+    return;
+  }
+  el.innerHTML = `
+    <button class="btn secondary" id="pagePrev" ${currentPage === 1 ? 'disabled' : ''}>← Précédent</button>
+    <span class="pagination-label">Page ${currentPage} / ${totalPages}</span>
+    <button class="btn secondary" id="pageNext" ${currentPage === totalPages ? 'disabled' : ''}>Suivant →</button>
+  `;
+  document.getElementById('pagePrev').addEventListener('click', () => {
+    currentPage--;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  document.getElementById('pageNext').addEventListener('click', () => {
+    currentPage++;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 }
 
@@ -265,7 +302,10 @@ function openModal(id){
   // visionnage d'un nouveau film est créé automatiquement à la sauvegarde).
   document.getElementById('viewingsSection').style.display = film ? '' : 'none';
   if(film){
-    document.getElementById('viewingDateInput').value = new Date().toISOString().slice(0, 10);
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const viewingDateInput = document.getElementById('viewingDateInput');
+    viewingDateInput.value = todayStr;
+    viewingDateInput.max = todayStr; // pas de visionnage dans le futur
     document.getElementById('viewingNoteInput').value = '';
     renderViewingsSection(film.id);
   }
@@ -468,8 +508,8 @@ document.getElementById('deleteBtn').addEventListener('click', handleDelete);
 document.getElementById('overlay').addEventListener('click', (e) => {
   if(e.target.id === 'overlay') closeModal();
 });
-document.getElementById('search').addEventListener('input', render);
-document.getElementById('sortBy').addEventListener('change', render);
+document.getElementById('search').addEventListener('input', () => { currentPage = 1; render(); });
+document.getElementById('sortBy').addEventListener('change', () => { currentPage = 1; render(); });
 document.getElementById('exportBtn').addEventListener('click', exportFilms);
 document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
 document.getElementById('importFile').addEventListener('change', (e) => {

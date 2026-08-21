@@ -79,8 +79,48 @@ function renderUserBar(){
 function openProfileModal(){
   document.getElementById('displayNameInput').value = (currentProfile && currentProfile.display_name) || '';
   document.getElementById('avatarUrlInput').value = (currentProfile && currentProfile.avatar_url) || '';
+  document.getElementById('avatarFilmSearch').value = '';
+  document.getElementById('avatarFilmResults').innerHTML = '';
   document.getElementById('profileOverlay').classList.add('open');
 }
+
+// --- Choisir l'affiche d'un film déjà noté comme avatar ---
+// Réutilise les films déjà chargés (js/app.js) et le style .tmdb-result —
+// pas d'appel réseau, juste un filtre sur les films qui ont une affiche.
+
+function renderAvatarFilmResults(query){
+  const wrap = document.getElementById('avatarFilmResults');
+  const q = normalizeSearch(query.trim());
+  const candidates = films.filter(f => f.posterUrl && (!q || getSearchTerms(f).some(t => t.includes(q))));
+
+  if(candidates.length === 0){
+    wrap.innerHTML = `<div class="tmdb-empty">${q ? 'Aucun film avec affiche ne correspond.' : 'Aucun film avec affiche dans ton catalogue.'}</div>`;
+    return;
+  }
+
+  wrap.innerHTML = '';
+  candidates.slice(0, 20).forEach(f => {
+    const item = document.createElement('div');
+    item.className = 'tmdb-result';
+    item.innerHTML = `
+      <img src="${f.posterUrl}" alt="">
+      <div class="tmdb-result-info">
+        <div class="tmdb-result-title">${escapeHtml(f.title)}</div>
+        ${f.releaseYear ? `<div class="tmdb-result-year">${f.releaseYear}</div>` : ''}
+      </div>
+    `;
+    item.addEventListener('click', () => {
+      document.getElementById('avatarUrlInput').value = f.posterUrl;
+      wrap.innerHTML = '';
+      document.getElementById('avatarFilmSearch').value = '';
+    });
+    wrap.appendChild(item);
+  });
+}
+
+document.getElementById('avatarFilmSearch').addEventListener('input', (e) => {
+  renderAvatarFilmResults(e.target.value);
+});
 
 function closeProfileModal(){
   document.getElementById('profileOverlay').classList.remove('open');

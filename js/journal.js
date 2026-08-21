@@ -94,6 +94,13 @@ function formatViewingDate(ts){
 async function handleAddViewing(){
   if(!editingId) return;
   const dateVal = document.getElementById('viewingDateInput').value;
+  // Pas de visionnage dans le futur — le max sur le champ (voir openModal()
+  // dans app.js) empêche déjà ça au clavier/calendrier, ceci est juste le
+  // filet de sécurité côté logique.
+  if(dateVal && dateVal > new Date().toISOString().slice(0, 10)){
+    showToast('Impossible d\'enregistrer un visionnage dans le futur');
+    return;
+  }
   const watchedAt = dateVal ? new Date(dateVal + 'T12:00:00').getTime() : Date.now();
   const note = document.getElementById('viewingNoteInput').value.trim() || null;
   const v = await addViewing(editingId, watchedAt, note);
