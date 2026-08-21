@@ -124,11 +124,13 @@ l'un préremplit affiche, résumé et année. Ces infos s'affichent ensuite dans
 la liste (vignette + année) et sont conservées si tu resauvegardes le film
 sans relancer de recherche.
 
-Nécessite une clé API gratuite : compte sur themoviedb.org → menu profil →
-Paramètres → API → Créer une clé → coller dans `js/tmdbConfig.js`. Comme la
-clé anon Supabase, elle est faite pour tourner côté client (lecture seule).
-Sans clé configurée, la recherche échoue proprement (message d'erreur affiché,
-reste de l'app inchangé). Nécessite d'avoir exécuté
+Nécessite un token gratuit : compte sur themoviedb.org → menu profil →
+Paramètres → API → Créer une clé → coller le **Token d'accès en lecture
+(v4 auth, un long JWT)** dans `js/tmdbConfig.js` (utilisé en en-tête
+`Authorization: Bearer`, pas en paramètre d'URL — voir `js/tmdb.js`). Comme
+la clé anon Supabase, il est fait pour tourner côté client (lecture seule).
+Sans token configuré, la recherche échoue proprement (message d'erreur
+affiché, reste de l'app inchangé). Nécessite d'avoir exécuté
 `supabase/migrations/004_add_tmdb_fields.sql`.
 
 ## Commentaire libre

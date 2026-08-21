@@ -6,8 +6,13 @@
 let tmdbSelected = null; // { tmdb_id, poster_url, overview, release_year, title }
 
 async function searchTmdb(query){
-  const url = `https://api.themoviedb.org/3/search/movie?api_key=${encodeURIComponent(TMDB_API_KEY)}&language=fr-FR&query=${encodeURIComponent(query)}`;
-  const res = await fetch(url);
+  const url = `https://api.themoviedb.org/3/search/movie?language=fr-FR&query=${encodeURIComponent(query)}`;
+  const res = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${TMDB_API_KEY}`,
+      'Accept': 'application/json'
+    }
+  });
   if(!res.ok){
     throw new Error(res.status === 401 ? 'Clé TMDB invalide ou non configurée (voir js/tmdbConfig.js)' : `Erreur TMDB (${res.status})`);
   }
