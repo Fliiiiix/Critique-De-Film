@@ -51,6 +51,7 @@
     </select>
     <button class="btn secondary" id="statsBtn">📊 Statistiques</button>
     <button class="btn secondary" id="achievementsBtn">🏆 Succès</button>
+    <button class="btn secondary" id="watchlistBtn">🎞️ À voir</button>
     <button class="btn secondary" id="exportBtn">Exporter (JSON)</button>
     <button class="btn secondary" id="importBtn">Importer (JSON)</button>
     <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
@@ -143,6 +144,48 @@
   </div>
 </div>
 
+<!-- Modal watchlist -->
+<div class="overlay" id="watchlistOverlay">
+  <div class="modal watchlist-modal">
+    <div class="modal-head">
+      <h2>À voir</h2>
+      <button class="close-x" id="closeWatchlist">✕</button>
+    </div>
+
+    <div class="wl-add-form">
+      <div class="field">
+        <label>Titre du film</label>
+        <input type="text" id="wlTitleInput" placeholder="Ex. Paprika">
+      </div>
+
+      <div class="field tmdb-search-field">
+        <label>Rechercher sur TMDB (optionnel)</label>
+        <div class="tmdb-search-row">
+          <input type="text" id="wlTmdbQuery" placeholder="Titre à rechercher…">
+          <button class="btn secondary" id="wlTmdbSearchBtn" type="button">Rechercher</button>
+        </div>
+        <div id="wlTmdbResults" class="tmdb-results"></div>
+        <div id="wlTmdbSelected" class="tmdb-selected" style="display:none;">
+          <img id="wlTmdbSelectedPoster" alt="Affiche">
+          <div class="tmdb-selected-info">
+            <div id="wlTmdbSelectedTitle"></div>
+            <button class="crit-help-toggle" id="wlTmdbClearBtn" type="button">Retirer</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Note (pourquoi je veux le voir, qui me l'a conseillé…)</label>
+        <textarea id="wlNoteInput" placeholder="Optionnel…" rows="2"></textarea>
+      </div>
+
+      <button class="btn" id="wlAddBtn" type="button">+ Ajouter à la liste</button>
+    </div>
+
+    <div class="wl-list" id="wlList"></div>
+  </div>
+</div>
+
 <!-- Modal profil -->
 <div class="overlay" id="profileOverlay">
   <div class="modal">
@@ -178,6 +221,7 @@
 <script src="js/tmdb.js"></script>
 <script src="js/stats.js"></script>
 <script src="js/achievements.js"></script>
+<script src="js/watchlist.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/auth.js"></script>
 </body>

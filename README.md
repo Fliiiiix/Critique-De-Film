@@ -18,6 +18,7 @@ critique-films/
 ├── js/tmdb.js                       → recherche TMDB (affiche, résumé, année)
 ├── js/stats.js                       → page statistiques
 ├── js/achievements.js                → page succès (paliers + secrets)
+├── js/watchlist.js                    → liste "à voir", séparée du catalogue noté
 └── supabase/
     ├── schema.sql                  → schéma complet (nouveau projet)
     └── migrations/                 → changements incrémentaux (projet déjà provisionné)
@@ -173,10 +174,23 @@ Comme les statistiques, tout se recalcule à chaque ouverture à partir de
 l'état actuel du catalogue : pas d'historique à maintenir, un succès peut se
 "reverrouiller" si les films concernés sont supprimés ou modifiés.
 
+## Watchlist ("à voir")
+
+Le bouton **🎞️ À voir** ouvre une liste séparée du catalogue noté (table
+`watchlist`, pas `films`) : ajout rapide d'un titre, avec fiche TMDB
+optionnelle (affiche/année) et une note libre (pourquoi le voir, qui l'a
+conseillé…). Deux actions par item :
+
+- **✔ Noter** — ouvre le formulaire principal (grille ou note manuelle),
+  préempli avec le titre et la fiche TMDB déjà connus. L'item n'est retiré
+  de la watchlist qu'une fois le film effectivement enregistré.
+- **Retirer** — supprime l'item sans le noter.
+
+Nécessite `supabase/migrations/006_add_watchlist.sql`.
+
 ## Prochaines étapes possibles
 
 - Filtrer/trier par critère individuel, pas seulement par note globale
-- Watchlist séparée des films déjà notés
 - Journal chronologique / nombre de fois revu
 - Happenings façon Letterboxd (défis/événements autour d'une sélection de films)
 - Upload d'avatar réel (Supabase Storage) plutôt qu'une URL

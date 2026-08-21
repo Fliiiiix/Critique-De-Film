@@ -205,6 +205,9 @@ function updateLiveScore(){
 
 function openModal(id){
   editingId = id || null;
+  // Repart d'une conversion watchlist propre à chaque ouverture — seule
+  // startRatingFromWatchlist() (js/watchlist.js) la positionne ensuite.
+  convertingFromWatchlistId = null;
   const overlay = document.getElementById('overlay');
   const film = id ? films.find(f => f.id === id) : null;
   const manualNote = film && film.manualNote != null ? film.manualNote : null;
@@ -243,6 +246,7 @@ function openModal(id){
 function closeModal(){
   document.getElementById('overlay').classList.remove('open');
   editingId = null;
+  convertingFromWatchlistId = null;
 }
 
 async function handleSave(){
@@ -290,6 +294,17 @@ async function handleSave(){
       return;
     }
     films.push(rowToFilm(data));
+
+    // Film créé depuis "✔ Noter" dans la watchlist (js/watchlist.js) :
+    // on retire l'item d'origine maintenant que le film est bien enregistré.
+    // En tâche de fond, sans bloquer la fermeture du formulaire.
+    if(convertingFromWatchlistId){
+      const wlId = convertingFromWatchlistId;
+      supabaseClient.from('watchlist').delete().eq('id', wlId).then(({ error: wlError }) => {
+        if(wlError) console.error(wlError);
+        else watchlist = watchlist.filter(w => w.id !== wlId);
+      });
+    }
   }
   closeModal();
   render();

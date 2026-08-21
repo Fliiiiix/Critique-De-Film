@@ -63,3 +63,35 @@ create policy "Users can insert own profile"
 create policy "Users can update own profile"
   on public.profiles for update
   using (auth.uid() = user_id);
+
+-- Watchlist ("à voir"), séparée du catalogue noté, voir migrations/006.
+create table public.watchlist (
+  id bigint generated always as identity primary key,
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  title text not null,
+  note text,
+  tmdb_id integer,
+  poster_url text,
+  overview text,
+  release_year integer,
+  added bigint not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.watchlist enable row level security;
+
+create policy "Users can view own watchlist"
+  on public.watchlist for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own watchlist"
+  on public.watchlist for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own watchlist"
+  on public.watchlist for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own watchlist"
+  on public.watchlist for delete
+  using (auth.uid() = user_id);
