@@ -21,6 +21,7 @@ critique-films/
 ├── js/watchlist.js                    → liste "à voir", séparée du catalogue noté
 ├── js/journal.js                       → journal des visionnages, revisionnages
 ├── js/friends.js                        → amis (demande/acceptation) + profil en lecture seule
+├── js/router.js                          → routeur par hash (#/groupes/...), pages Groupes uniquement
 ├── js/groups.js                          → groupes (famille/amis) : création, membres
 ├── js/proposals.js                        → propositions de films dans un groupe : votes + discussion
 └── supabase/
@@ -282,13 +283,25 @@ consentement) et retirer un membre ; les autres membres peuvent quitter le
 groupe. Seul le créateur peut supprimer le groupe (retire tous les membres).
 
 Contrairement aux amis, un groupe **ne partage pas les catalogues notés** de
-ses membres — c'est une base pour la prochaine brique (proposer des films,
+ses membres — c'est une base pour la brique suivante (proposer des films,
 discuter, voter au sein du groupe), pas une fusion de bibliothèques.
 
+Groupes/détail groupe/détail proposition sont trois **vraies pages routées
+par URL** (`#/groupes`, `#/groupes/:id`, `#/groupes/:id/propositions/:id` —
+voir `js/router.js`), pas des modals empilées : un groupe contient membres +
+ajout d'amis + propositions + votes + discussion, trop pour tenir en popup
+sur plusieurs niveaux. Amis/Watchlist/Stats restent des modals classiques (2
+niveaux max, ça reste raisonnable).
+
 Techniquement : tables `groups` + `group_members`, RLS scopée à
-l'appartenance (un membre voit les autres membres de ses groupes), trigger
-qui ajoute automatiquement le créateur comme membre à la création. Nécessite
-`supabase/migrations/011_add_groups.sql`.
+l'appartenance via une fonction `is_group_member()` en `SECURITY DEFINER`
+(une policy qui s'auto-interroge directement provoque une récursion
+infinie côté Postgres, 42P17 — voir `migrations/013`), et le propriétaire
+voit toujours son propre groupe directement par `owner_id` sans dépendre du
+timing du trigger qui l'ajoute comme membre (`migrations/014`). Trigger qui
+ajoute automatiquement le créateur comme membre à la création. Nécessite
+`supabase/migrations/011_add_groups.sql` puis `013_fix_group_members_recursion.sql`
+et `014_fix_groups_owner_select_race.sql`.
 
 ## Propositions de films (dans un groupe)
 
