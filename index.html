@@ -293,9 +293,57 @@
       <div class="wl-list" id="groupAddFriendList"></div>
     </div>
 
+    <div class="stats-section">
+      <div class="stats-section-title">Propositions</div>
+      <div class="wl-add-form">
+        <div class="field tmdb-search-field">
+          <label>Proposer un film</label>
+          <input type="text" id="proposalTitleInput" placeholder="Ex. Paprika" autocomplete="off">
+          <div id="proposalTmdbResults" class="tmdb-results"></div>
+          <div id="proposalTmdbSelected" class="tmdb-selected" style="display:none;">
+            <img id="proposalTmdbSelectedPoster" alt="Affiche">
+            <div class="tmdb-selected-info">
+              <div id="proposalTmdbSelectedTitle"></div>
+              <button class="crit-help-toggle" id="proposalTmdbClearBtn" type="button">Retirer la fiche TMDB</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn" id="proposeFilmBtn" type="button">+ Proposer au groupe</button>
+      </div>
+      <div class="wl-list" id="groupProposalsList"></div>
+    </div>
+
     <div class="modal-footer">
       <div></div>
       <div class="right" id="groupDetailFooter"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal détail d'une proposition (votes + discussion) -->
+<div class="overlay" id="proposalDetailOverlay">
+  <div class="modal watchlist-modal">
+    <div class="modal-head">
+      <h2>Proposition</h2>
+      <button class="close-x" id="closeProposalDetail">✕</button>
+    </div>
+
+    <div class="proposal-detail-film" id="proposalDetailFilm"></div>
+
+    <div class="vote-controls" id="proposalDetailVotes"></div>
+
+    <div class="stats-section">
+      <div class="stats-section-title">Discussion</div>
+      <div class="comment-list" id="proposalCommentsList"></div>
+      <div class="comment-input-row">
+        <textarea id="proposalCommentInput" placeholder="Écrire un commentaire…" rows="2"></textarea>
+        <button class="btn" id="proposalCommentBtn" type="button">Envoyer</button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div></div>
+      <div class="right" id="proposalDetailFooter"></div>
     </div>
   </div>
 </div>
@@ -356,6 +404,7 @@
 <script src="js/profile.js"></script>
 <script src="js/friends.js"></script>
 <script src="js/groups.js"></script>
+<script src="js/proposals.js"></script>
 <script src="js/auth.js"></script>
 </body>
 </html>

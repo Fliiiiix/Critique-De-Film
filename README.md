@@ -21,6 +21,8 @@ critique-films/
 ├── js/watchlist.js                    → liste "à voir", séparée du catalogue noté
 ├── js/journal.js                       → journal des visionnages, revisionnages
 ├── js/friends.js                        → amis (demande/acceptation) + profil en lecture seule
+├── js/groups.js                          → groupes (famille/amis) : création, membres
+├── js/proposals.js                        → propositions de films dans un groupe : votes + discussion
 └── supabase/
     ├── schema.sql                  → schéma complet (nouveau projet)
     └── migrations/                 → changements incrémentaux (projet déjà provisionné)
@@ -288,10 +290,24 @@ l'appartenance (un membre voit les autres membres de ses groupes), trigger
 qui ajoute automatiquement le créateur comme membre à la création. Nécessite
 `supabase/migrations/011_add_groups.sql`.
 
+## Propositions de films (dans un groupe)
+
+Depuis le détail d'un groupe, n'importe quel membre peut **proposer un
+film** (recherche TMDB comme dans le formulaire principal — titre, affiche,
+année). Les autres membres votent ▲/▼ (un vote par personne, façon Reddit —
+recliquer sur son propre vote le retire) et peuvent ouvrir une proposition
+pour **discuter en commentaires**. L'auteur d'une proposition ou d'un
+commentaire peut le supprimer ; le créateur du groupe peut aussi supprimer
+n'importe quelle proposition ou commentaire (modération).
+
+Techniquement : tables `group_proposals`, `group_proposal_votes` (une ligne
+par personne et par proposition, contrainte unique) et
+`group_proposal_comments`, toutes scopées en RLS à l'appartenance au groupe
+via `group_proposals.group_id` → `group_members`. Nécessite
+`supabase/migrations/012_add_group_proposals.sql`.
+
 ## Prochaines étapes possibles
 
-- Dans un groupe : proposer des films, discuter, voter — un "Reddit de
-  films" au sein d'un groupe fermé (les groupes eux-mêmes existent déjà)
 - Filtrer/trier par critère individuel, pas seulement par note globale
 - Profil partageable (page publique en lecture seule)
 - Happenings façon Letterboxd (défis/événements autour d'une sélection de films)

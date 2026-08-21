@@ -8,6 +8,7 @@
 
 let groups = [];
 let groupMembersCache = {}; // groupId -> [{ userId, joinedAt }]
+let currentGroupId = null; // groupe actuellement ouvert dans groupDetailOverlay, lu par js/proposals.js
 
 function rowToGroup(row){
   return {
@@ -181,27 +182,37 @@ function renderGroupDetail(group, members){
 async function openGroupDetail(groupId){
   const group = groups.find(g => g.id === groupId);
   if(!group) return;
+  currentGroupId = groupId;
   document.getElementById('groupDetailTitle').textContent = group.name;
   document.getElementById('groupMembersList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
   document.getElementById('groupAddFriendSection').style.display = 'none';
   document.getElementById('groupDetailFooter').innerHTML = '';
+  document.getElementById('groupProposalsList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
+  document.getElementById('proposalTitleInput').value = '';
+  clearProposalTmdbSelection();
   document.getElementById('groupDetailOverlay').classList.add('open');
 
   const members = await loadGroupMembers(groupId);
   groupMembersCache[groupId] = members;
   renderGroupDetail(group, members);
+
+  await loadProposals(groupId);
+  renderGroupProposals();
 }
 
 function closeGroupDetailOnly(){
   document.getElementById('groupDetailOverlay').classList.remove('open');
+  currentGroupId = null;
 }
 
 // Fermeture explicite (✕/clic dehors) : referme aussi la liste "Groupes" en
-// dessous, même logique que pour le profil d'un ami (js/friends.js) — sinon
-// on reste coincé entre modals. Les actions internes (quitter/supprimer)
-// utilisent closeGroupDetailOnly() à la place, pour rester sur la liste
-// mise à jour plutôt que d'être renvoyé jusqu'à l'app.
+// dessous et le détail d'une proposition s'il est ouvert par-dessus, même
+// logique que pour le profil d'un ami (js/friends.js) — sinon on reste
+// coincé entre modals. Les actions internes (quitter/supprimer) utilisent
+// closeGroupDetailOnly() à la place, pour rester sur la liste mise à jour
+// plutôt que d'être renvoyé jusqu'à l'app.
 function closeGroupDetail(){
+  closeProposalDetail();
   closeGroupDetailOnly();
   closeGroups();
 }

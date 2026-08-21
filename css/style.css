@@ -962,6 +962,75 @@ input[type="range"]::-moz-range-thumb{
 .wl-actions{display:flex; gap:6px; flex:none;}
 .wl-actions .btn{padding:8px 12px; font-size:11px;}
 
+/* Propositions de groupe : votes + discussion */
+.proposal-row .wl-actions{margin-left:0;}
+.vote-controls-inline{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex:none;
+  font-family:'IBM Plex Mono', monospace;
+}
+.vote-controls{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-family:'IBM Plex Mono', monospace;
+  margin-bottom:20px;
+}
+.vote-btn{
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  color:var(--text-muted);
+  border-radius:4px;
+  width:30px;
+  height:30px;
+  font-size:14px;
+  cursor:pointer;
+  transition:border-color .15s, color .15s;
+}
+.vote-btn:hover{border-color:var(--amber-dim); color:var(--text);}
+.vote-btn.active{border-color:var(--amber); color:var(--amber);}
+.vote-count{min-width:22px; text-align:center; font-size:13px; color:var(--text);}
+
+.proposal-detail-film{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  margin-bottom:16px;
+}
+
+.comment-list{display:flex; flex-direction:column; gap:10px; margin-bottom:14px;}
+.comment-item{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:4px;
+  padding:10px 12px;
+}
+.comment-body-wrap{flex:1; min-width:0;}
+.comment-author{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  color:var(--amber-dim);
+  margin-bottom:3px;
+}
+.comment-body{font-size:13.5px; line-height:1.5; word-wrap:break-word;}
+.comment-delete{
+  background:none;
+  border:none;
+  color:var(--text-muted);
+  cursor:pointer;
+  font-size:13px;
+  flex:none;
+  padding:2px 4px;
+}
+.comment-delete:hover{color:var(--danger);}
+.comment-input-row{display:flex; gap:8px; align-items:flex-end;}
+.comment-input-row textarea{flex:1;}
+
 /* Visionnages (dans le formulaire d'un film) */
 .viewings-list{display:flex; flex-direction:column; gap:4px; margin-bottom:10px;}
 .viewing-row{
