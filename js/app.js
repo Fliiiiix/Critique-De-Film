@@ -1,13 +1,12 @@
 // --- Persistance ---
-// NB : ce projet tourne comme un vrai site (ouvert en fichier local ou hébergé),
-// donc on utilise localStorage. Sur claude.ai l'API était window.storage
-// (propre au bac à sable des artifacts) — hors de claude.ai on repasse
-// sur l'API standard du navigateur.
-const STORAGE_KEY = 'critique-films-data';
+// Les films sont stockés dans Supabase (table `films`, voir supabase/schema.sql),
+// scopés par utilisateur via RLS. Chaque film noté du site correspond à une ligne ;
+// id/added/created_at sont attribués côté serveur. Le catalogue d'origine (Excel,
+// js/data.js SEED) n'est plus auto-chargé ici — voir README pour la migration
+// via Importer (JSON) une fois connecté.
 
 let films = [];
 let editingId = null;
-let idCounter = 1;
 
 function computeNote(critObj){
   const vals = CRITERIA.map(c => critObj[c.key]).filter(v => typeof v === 'number');
@@ -16,47 +15,22 @@ function computeNote(critObj){
   return Math.round(avg*10) / 2;
 }
 
-// L'ancien référentiel (Excel) était [impression, scenario, realisation, jeu, image, son, musique].
-// On le remappe vers les nouvelles clés les plus proches sur le fond.
-const OLD_ORDER_TO_NEW_KEY = ['ressenti', 'scenario', 'mise_en_scene', 'jeu', 'esthetique', 'son', 'musique'];
-
-function seedToFilms(seed){
-  return seed.map(s => {
-    const critObj = {};
-    OLD_ORDER_TO_NEW_KEY.forEach((key,i) => critObj[key] = s.c[i]);
-    return {
-      id: idCounter++,
-      title: s.t.trim(),
-      crit: critObj,
-      fav: !!s.f,
-      added: Date.now() - (seed.length - idCounter) * 1000
-    };
-  });
+function rowToFilm(row){
+  return { id: row.id, title: row.title, crit: row.crit, fav: row.fav, added: row.added };
 }
 
-function loadFilms(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){
-      const parsed = JSON.parse(raw);
-      films = parsed.films || [];
-      idCounter = parsed.idCounter || (films.length + 1);
-      return;
-    }
-  }catch(e){
-    console.error(e);
+async function loadFilms(){
+  const { data, error } = await supabaseClient
+    .from('films')
+    .select('*')
+    .order('added', { ascending: false });
+  if(error){
+    showToast('Erreur de chargement — réessaie');
+    console.error(error);
+    films = [];
+    return;
   }
-  films = seedToFilms(SEED);
-  saveFilms();
-}
-
-function saveFilms(){
-  try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ films, idCounter }));
-  }catch(e){
-    showToast('Erreur de sauvegarde — réessaie');
-    console.error(e);
-  }
+  films = data.map(rowToFilm);
 }
 
 function showToast(msg){
@@ -118,10 +92,16 @@ function render(){
       if(e.target.classList.contains('star-btn')) return;
       openModal(f.id);
     });
-    row.querySelector('.star-btn').addEventListener('click', (e) => {
+    row.querySelector('.star-btn').addEventListener('click', async (e) => {
       e.stopPropagation();
-      f.fav = !f.fav;
-      saveFilms();
+      const newFav = !f.fav;
+      const { error } = await supabaseClient.from('films').update({ fav: newFav }).eq('id', f.id);
+      if(error){
+        showToast('Erreur de sauvegarde — réessaie');
+        console.error(error);
+        return;
+      }
+      f.fav = newFav;
       render();
     });
     list.appendChild(row);
@@ -203,7 +183,7 @@ function closeModal(){
   editingId = null;
 }
 
-function handleSave(){
+async function handleSave(){
   const title = document.getElementById('titleInput').value.trim();
   if(!title){
     showToast('Ajoute un titre avant d\'enregistrer');
@@ -212,22 +192,42 @@ function handleSave(){
   const crit = readCriteriaFromForm();
 
   if(editingId){
+    const { error } = await supabaseClient.from('films').update({ title, crit }).eq('id', editingId);
+    if(error){
+      showToast('Erreur de sauvegarde — réessaie');
+      console.error(error);
+      return;
+    }
     const film = films.find(f => f.id === editingId);
     film.title = title;
     film.crit = crit;
   }else{
-    films.push({ id: idCounter++, title, crit, fav:false, added: Date.now() });
+    const { data, error } = await supabaseClient
+      .from('films')
+      .insert({ title, crit, fav: false, added: Date.now() })
+      .select()
+      .single();
+    if(error){
+      showToast('Erreur de sauvegarde — réessaie');
+      console.error(error);
+      return;
+    }
+    films.push(rowToFilm(data));
   }
-  saveFilms();
   closeModal();
   render();
   showToast('Film enregistré');
 }
 
-function handleDelete(){
+async function handleDelete(){
   if(!editingId) return;
+  const { error } = await supabaseClient.from('films').delete().eq('id', editingId);
+  if(error){
+    showToast('Erreur de suppression — réessaie');
+    console.error(error);
+    return;
+  }
   films = films.filter(f => f.id !== editingId);
-  saveFilms();
   closeModal();
   render();
   showToast('Film supprimé');
@@ -238,9 +238,8 @@ function handleDelete(){
 function exportFilms(){
   const data = {
     app: 'critique-films',
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
-    idCounter,
     films
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -262,7 +261,7 @@ function isValidImportedFilm(f){
 
 function importFilms(file){
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     let data;
     try{
       data = JSON.parse(reader.result);
@@ -283,19 +282,33 @@ function importFilms(file){
       `Annuler → ajoute ces films aux films existants`
     );
 
-    if(replace) films = [];
+    showToast('Import en cours…');
 
-    importedFilms.forEach(f => {
-      films.push({
-        id: idCounter++,
-        title: f.title.trim(),
-        crit: f.crit,
-        fav: !!f.fav,
-        added: typeof f.added === 'number' ? f.added : Date.now()
-      });
-    });
+    if(replace){
+      const { error: delError } = await supabaseClient.from('films').delete().gte('id', 0);
+      if(delError){
+        showToast('Erreur pendant le remplacement — réessaie');
+        console.error(delError);
+        return;
+      }
+      films = [];
+    }
 
-    saveFilms();
+    const rows = importedFilms.map(f => ({
+      title: f.title.trim(),
+      crit: f.crit,
+      fav: !!f.fav,
+      added: typeof f.added === 'number' ? f.added : Date.now()
+    }));
+
+    const { data: inserted, error: insError } = await supabaseClient.from('films').insert(rows).select();
+    if(insError){
+      showToast('Erreur pendant l\'import — réessaie');
+      console.error(insError);
+      return;
+    }
+
+    inserted.forEach(row => films.push(rowToFilm(row)));
     render();
     showToast(replace ? 'Catalogue remplacé' : 'Films ajoutés');
   };
@@ -321,8 +334,5 @@ document.getElementById('importFile').addEventListener('change', (e) => {
   e.target.value = ''; // permet de réimporter le même fichier
 });
 
-(function init(){
-  buildSprockets();
-  loadFilms();
-  render();
-})();
+// L'initialisation (chargement des films + premier rendu) est déclenchée par
+// js/auth.js une fois la session utilisateur confirmée — voir showApp().

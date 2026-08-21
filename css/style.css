@@ -44,6 +44,17 @@ header{
   align-items:flex-end;
   gap:10px;
 }
+.user-bar{
+  position:absolute;
+  top:10px;
+  right:32px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  color:var(--text-muted);
+}
 .version-tag{
   font-family:'IBM Plex Mono', monospace;
   font-size:11px;
@@ -191,6 +202,37 @@ select{cursor:pointer;}
 }
 .star-btn.active{color:var(--amber);}
 
+.auth-card{
+  max-width:380px;
+  margin:60px auto;
+  background:var(--surface);
+  border:1px solid var(--hairline);
+  border-radius:6px;
+  padding:28px;
+}
+.auth-card h2{
+  font-family:'Fraunces', serif;
+  font-style:italic;
+  font-weight:500;
+  font-size:22px;
+  margin-bottom:10px;
+}
+.auth-intro{
+  font-size:13px;
+  color:var(--text-muted);
+  line-height:1.6;
+  margin-bottom:18px;
+}
+.auth-card .field{margin-bottom:14px;}
+.auth-card .btn{width:100%;}
+.auth-status{
+  margin-top:14px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  color:var(--teal);
+  line-height:1.6;
+}
+
 .empty-state{
   text-align:center;
   padding:60px 20px;
@@ -289,6 +331,7 @@ select{cursor:pointer;}
 input[type="range"]{
   flex:1;
   -webkit-appearance:none;
+  appearance:none;
   height:3px;
   background:var(--hairline);
   border-radius:2px;
