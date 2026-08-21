@@ -3,8 +3,21 @@
 // Appelé depuis js/auth.js → showApp() une fois la session confirmée.
 
 let currentProfile = null;
+let profileLoadPromise = null;
 
-async function loadOrCreateProfile(){
+// Supabase peut déclencher plusieurs événements de session en cascade au
+// chargement (getSession() + onAuthStateChange), ce qui appelait cette
+// fonction deux fois en concurrence et faisait échouer le second insert
+// (conflit de clé primaire). On mémorise la promesse en cours pour n'avoir
+// qu'un seul aller-retour réseau.
+function loadOrCreateProfile(){
+  if(!profileLoadPromise){
+    profileLoadPromise = fetchOrCreateProfile().finally(() => { profileLoadPromise = null; });
+  }
+  return profileLoadPromise;
+}
+
+async function fetchOrCreateProfile(){
   const { data, error } = await supabaseClient
     .from('profiles')
     .select('*')
@@ -29,8 +42,19 @@ async function loadOrCreateProfile(){
       .select()
       .single();
     if(insErr){
-      console.error(insErr);
-      currentProfile = { user_id: currentUser.id, display_name: defaultName, avatar_url: null };
+      // Conflit probable (profil déjà créé entre-temps, ex. autre onglet) :
+      // on relit plutôt que d'écraser silencieusement.
+      const { data: existing } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+      if(existing){
+        currentProfile = existing;
+      }else{
+        console.error(insErr);
+        currentProfile = { user_id: currentUser.id, display_name: defaultName, avatar_url: null };
+      }
     }else{
       currentProfile = created;
     }
