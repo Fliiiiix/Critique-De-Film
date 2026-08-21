@@ -68,6 +68,7 @@
         <button class="btn secondary" id="watchlistBtn" title="À voir"><span class="btn-icon">🎞️</span><span class="btn-label">À voir</span></button>
         <button class="btn secondary" id="journalBtn" title="Journal"><span class="btn-icon">📅</span><span class="btn-label">Journal</span></button>
         <button class="btn secondary" id="friendsBtn" title="Amis"><span class="btn-icon">👥</span><span class="btn-label">Amis</span></button>
+        <button class="btn secondary" id="groupsBtn" title="Groupes"><span class="btn-icon">🎭</span><span class="btn-label">Groupes</span></button>
       </div>
       <div class="menu-wrap" id="moreMenuWrap">
         <button class="btn secondary icon-only" id="moreMenuBtn" title="Plus d'options" aria-haspopup="true" aria-expanded="false">⋯</button>
@@ -248,6 +249,57 @@
   </div>
 </div>
 
+<!-- Modal groupes -->
+<div class="overlay" id="groupsOverlay">
+  <div class="modal watchlist-modal">
+    <div class="modal-head">
+      <h2>Groupes</h2>
+      <button class="close-x" id="closeGroups">✕</button>
+    </div>
+
+    <div class="field">
+      <label>Nom du groupe</label>
+      <input type="text" id="groupNameInput" placeholder="Ex. Soirées ciné du dimanche" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Description (optionnel)</label>
+      <textarea id="groupDescInput" placeholder="À quoi sert ce groupe…" rows="2"></textarea>
+    </div>
+    <button class="btn" id="createGroupBtn" type="button">+ Créer un groupe</button>
+
+    <div class="stats-section">
+      <div class="stats-section-title">Mes groupes</div>
+      <div class="wl-list" id="groupsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal détail d'un groupe -->
+<div class="overlay" id="groupDetailOverlay">
+  <div class="modal watchlist-modal">
+    <div class="modal-head">
+      <h2 id="groupDetailTitle">Groupe</h2>
+      <button class="close-x" id="closeGroupDetail">✕</button>
+    </div>
+    <p class="auth-intro" id="groupDetailDesc" style="display:none;"></p>
+
+    <div class="stats-section">
+      <div class="stats-section-title">Membres</div>
+      <div class="wl-list" id="groupMembersList"></div>
+    </div>
+
+    <div class="stats-section" id="groupAddFriendSection" style="display:none;">
+      <div class="stats-section-title">Ajouter un ami</div>
+      <div class="wl-list" id="groupAddFriendList"></div>
+    </div>
+
+    <div class="modal-footer">
+      <div></div>
+      <div class="right" id="groupDetailFooter"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal profil d'un ami (lecture seule : catalogue + stats) -->
 <div class="overlay" id="friendProfileOverlay">
   <div class="modal stats-modal">
@@ -303,6 +355,7 @@
 <script src="js/journal.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/friends.js"></script>
+<script src="js/groups.js"></script>
 <script src="js/auth.js"></script>
 </body>
 </html>

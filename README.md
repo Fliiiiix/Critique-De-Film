@@ -270,10 +270,28 @@ exact sans exposer toute la table `auth.users` côté client. Nécessite
 Première brique d'un axe plus large (groupes famille/amis, proposition et
 discussion de films, votes) — voir « Prochaines étapes possibles ».
 
+## Groupes
+
+Le bouton **🎭 Groupes** permet de créer un groupe (nom + description
+optionnelle) — le créateur en devient automatiquement membre. Depuis le
+détail d'un groupe, le créateur peut ajouter n'importe lequel de ses amis
+acceptés (pas de flux invitation séparé : l'amitié fait déjà office de
+consentement) et retirer un membre ; les autres membres peuvent quitter le
+groupe. Seul le créateur peut supprimer le groupe (retire tous les membres).
+
+Contrairement aux amis, un groupe **ne partage pas les catalogues notés** de
+ses membres — c'est une base pour la prochaine brique (proposer des films,
+discuter, voter au sein du groupe), pas une fusion de bibliothèques.
+
+Techniquement : tables `groups` + `group_members`, RLS scopée à
+l'appartenance (un membre voit les autres membres de ses groupes), trigger
+qui ajoute automatiquement le créateur comme membre à la création. Nécessite
+`supabase/migrations/011_add_groups.sql`.
+
 ## Prochaines étapes possibles
 
-- Groupes (famille/amis) : proposer des films, discuter, voter — un "Reddit
-  de films" au sein d'un groupe fermé
+- Dans un groupe : proposer des films, discuter, voter — un "Reddit de
+  films" au sein d'un groupe fermé (les groupes eux-mêmes existent déjà)
 - Filtrer/trier par critère individuel, pas seulement par note globale
 - Profil partageable (page publique en lecture seule)
 - Happenings façon Letterboxd (défis/événements autour d'une sélection de films)
