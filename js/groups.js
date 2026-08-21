@@ -5,10 +5,15 @@
 // ce premier jet, la relation d'amitié fait déjà office de consentement.
 // Réutilise les briques d'affichage de js/friends.js (cacheProfile,
 // friendRowHtml, otherUserId...) plutôt que de les dupliquer.
+//
+// Groupes/détail groupe/détail proposition sont de vraies pages routées par
+// URL (js/router.js), pas des modals — la visibilité des conteneurs est
+// gérée par showOnlyPage(), ce fichier ne fait que charger/rendre les
+// données une fois la page choisie.
 
 let groups = [];
 let groupMembersCache = {}; // groupId -> [{ userId, joinedAt }]
-let currentGroupId = null; // groupe actuellement ouvert dans groupDetailOverlay, lu par js/proposals.js
+let currentGroupId = null; // groupe actuellement affiché sur groupDetailPage, lu par js/proposals.js
 
 function rowToGroup(row){
   return {
@@ -34,7 +39,7 @@ async function loadGroups(){
   groups = data.map(rowToGroup);
 }
 
-function renderGroupsModal(){
+function renderGroupsList(){
   const list = document.getElementById('groupsList');
   if(groups.length === 0){
     list.innerHTML = `<div class="tmdb-empty">Pas encore de groupe — crée le premier ci-dessus.</div>`;
@@ -53,7 +58,7 @@ function renderGroupsModal(){
     </div>
   `).join('');
   list.querySelectorAll('button[data-id]').forEach(btn => {
-    btn.addEventListener('click', () => openGroupDetail(parseInt(btn.dataset.id, 10)));
+    btn.addEventListener('click', () => goToGroup(parseInt(btn.dataset.id, 10)));
   });
 }
 
@@ -77,31 +82,26 @@ async function handleCreateGroup(){
   groups.unshift(rowToGroup(data));
   document.getElementById('groupNameInput').value = '';
   document.getElementById('groupDescInput').value = '';
-  renderGroupsModal();
+  renderGroupsList();
   showToast('Groupe créé');
 }
 
+// Page liste des groupes — appelée par le routeur (#/groupes).
 async function openGroups(){
-  document.getElementById('groupsOverlay').classList.add('open');
   document.getElementById('groupsList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
   document.getElementById('groupNameInput').value = '';
   document.getElementById('groupDescInput').value = '';
   await loadGroups();
-  renderGroupsModal();
+  renderGroupsList();
 }
 
-function closeGroups(){
-  document.getElementById('groupsOverlay').classList.remove('open');
-}
-
-document.getElementById('groupsBtn').addEventListener('click', openGroups);
-document.getElementById('closeGroups').addEventListener('click', closeGroups);
-document.getElementById('groupsOverlay').addEventListener('click', (e) => {
-  if(e.target.id === 'groupsOverlay') closeGroups();
-});
+document.getElementById('groupsBtn').addEventListener('click', goToGroups);
+document.getElementById('groupsPageBack').addEventListener('click', goHome);
 document.getElementById('createGroupBtn').addEventListener('click', handleCreateGroup);
 
 // --- Détail d'un groupe : membres + ajout d'amis + quitter/supprimer ---
+// (les propositions de ce groupe sont gérées par js/proposals.js, mais
+// rendues dans la même page)
 
 async function loadGroupMembers(groupId){
   const { data, error } = await supabaseClient
@@ -179,9 +179,17 @@ function renderGroupDetail(group, members){
   else document.getElementById('leaveGroupBtn').addEventListener('click', () => leaveGroup(group.id));
 }
 
+// Page détail d'un groupe — appelée par le routeur (#/groupes/:id). Robuste
+// à un lien direct (F5, retour navigateur) : recharge la liste des groupes
+// si besoin plutôt que de supposer qu'openGroups() est déjà passé par là.
 async function openGroupDetail(groupId){
+  if(groups.length === 0 || !groups.find(g => g.id === groupId)) await loadGroups();
   const group = groups.find(g => g.id === groupId);
-  if(!group) return;
+  if(!group){
+    showToast('Groupe introuvable');
+    goToGroups();
+    return;
+  }
   currentGroupId = groupId;
   document.getElementById('groupDetailTitle').textContent = group.name;
   document.getElementById('groupMembersList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
@@ -190,7 +198,6 @@ async function openGroupDetail(groupId){
   document.getElementById('groupProposalsList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
   document.getElementById('proposalTitleInput').value = '';
   clearProposalTmdbSelection();
-  document.getElementById('groupDetailOverlay').classList.add('open');
 
   const members = await loadGroupMembers(groupId);
   groupMembersCache[groupId] = members;
@@ -200,27 +207,7 @@ async function openGroupDetail(groupId){
   renderGroupProposals();
 }
 
-function closeGroupDetailOnly(){
-  document.getElementById('groupDetailOverlay').classList.remove('open');
-  currentGroupId = null;
-}
-
-// Fermeture explicite (✕/clic dehors) : referme aussi la liste "Groupes" en
-// dessous et le détail d'une proposition s'il est ouvert par-dessus, même
-// logique que pour le profil d'un ami (js/friends.js) — sinon on reste
-// coincé entre modals. Les actions internes (quitter/supprimer) utilisent
-// closeGroupDetailOnly() à la place, pour rester sur la liste mise à jour
-// plutôt que d'être renvoyé jusqu'à l'app.
-function closeGroupDetail(){
-  closeProposalDetail();
-  closeGroupDetailOnly();
-  closeGroups();
-}
-
-document.getElementById('closeGroupDetail').addEventListener('click', closeGroupDetail);
-document.getElementById('groupDetailOverlay').addEventListener('click', (e) => {
-  if(e.target.id === 'groupDetailOverlay') closeGroupDetail();
-});
+document.getElementById('groupDetailBack').addEventListener('click', goToGroups);
 
 async function addMemberToGroup(groupId, userId){
   const { error } = await supabaseClient.from('group_members').insert({ group_id: groupId, user_id: userId });
@@ -257,9 +244,8 @@ async function leaveGroup(groupId){
     return;
   }
   groups = groups.filter(g => g.id !== groupId);
-  closeGroupDetailOnly();
-  renderGroupsModal();
   showToast('Tu as quitté le groupe');
+  goToGroups();
 }
 
 async function deleteGroup(groupId){
@@ -271,7 +257,6 @@ async function deleteGroup(groupId){
     return;
   }
   groups = groups.filter(g => g.id !== groupId);
-  closeGroupDetailOnly();
-  renderGroupsModal();
   showToast('Groupe supprimé');
+  goToGroups();
 }

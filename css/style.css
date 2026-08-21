@@ -90,6 +90,32 @@ h1{
   margin:0 auto;
   padding:0 32px;
 }
+/* Pages Groupes (pas des modals) : liste / détail groupe / détail
+   proposition sont de vrais écrans routés par URL (#/groupes/...) plutôt
+   qu'empilés en popups — un groupe contient membres + propositions + votes
+   + discussion, trop pour rester en modal. Voir js/router.js. */
+.page{
+  padding-top:8px;
+  padding-bottom:60px;
+  animation:pageIn .18s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes pageIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+@media (prefers-reduced-motion:reduce){.page{animation:none;}}
+.page-header{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-bottom:24px;
+}
+.page-header h2{
+  font-family:'Fraunces', serif;
+  font-style:italic;
+  font-weight:500;
+  font-size:24px;
+  flex:1;
+  min-width:0;
+}
+
 .toolbar{
   display:flex;
   justify-content:space-between;

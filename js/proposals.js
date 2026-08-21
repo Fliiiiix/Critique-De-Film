@@ -12,7 +12,7 @@ let proposalVotes = {}; // proposalId -> [{ userId, value }]
 let proposalCommentCounts = {}; // proposalId -> nombre de commentaires
 let proposalTmdbSelected = null; // { tmdb_id, poster_url, overview, release_year, title, original_title }
 let proposalTmdbSearchTimer = null;
-let currentProposal = null; // proposition actuellement ouverte dans proposalDetailOverlay
+let currentProposal = null; // proposition actuellement affichée sur proposalDetailPage
 let proposalComments = []; // commentaires de currentProposal
 
 function rowToProposal(row){
@@ -108,7 +108,7 @@ function renderGroupProposals(){
     btn.addEventListener('click', () => castVote(parseInt(btn.dataset.id, 10), parseInt(btn.dataset.vote, 10)));
   });
   list.querySelectorAll('button[data-open]').forEach(btn => {
-    btn.addEventListener('click', () => openProposalDetail(parseInt(btn.dataset.open, 10)));
+    btn.addEventListener('click', () => goToProposal(currentGroupId, parseInt(btn.dataset.open, 10)));
   });
 }
 
@@ -254,7 +254,7 @@ document.getElementById('proposeFilmBtn').addEventListener('click', () => {
   if(currentGroupId) handleProposeFilm(currentGroupId);
 });
 
-// --- Détail d'une proposition : votes + discussion ---
+// --- Détail d'une proposition : page à part entière (#/groupes/:id/propositions/:id) ---
 
 function renderProposalDetailVotes(){
   if(!currentProposal) return;
@@ -326,7 +326,6 @@ async function openProposalDetail(proposalId){
   currentProposal = p;
   document.getElementById('proposalCommentsList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
   document.getElementById('proposalCommentInput').value = '';
-  document.getElementById('proposalDetailOverlay').classList.add('open');
   renderProposalDetailFilm();
   renderProposalDetailVotes();
 
@@ -343,16 +342,23 @@ async function openProposalDetail(proposalId){
   renderProposalComments();
 }
 
-function closeProposalDetail(){
-  document.getElementById('proposalDetailOverlay').classList.remove('open');
-  currentProposal = null;
-  proposalComments = [];
+// Appelée par le routeur (#/groupes/:groupId/propositions/:proposalId) —
+// doit fonctionner même en arrivant directement sur cette URL (lien direct,
+// F5, retour navigateur), donc recharge groupe + propositions si besoin
+// plutôt que de supposer qu'on est passé par la page du groupe avant.
+async function openProposalDetailRoute(groupId, proposalId){
+  currentGroupId = groupId;
+  if(proposals.length === 0 || proposals[0].groupId !== groupId) await loadProposals(groupId);
+  const p = proposals.find(pr => pr.id === proposalId);
+  if(!p){
+    showToast('Proposition introuvable');
+    goToGroup(groupId);
+    return;
+  }
+  await openProposalDetail(proposalId);
 }
 
-document.getElementById('closeProposalDetail').addEventListener('click', closeProposalDetail);
-document.getElementById('proposalDetailOverlay').addEventListener('click', (e) => {
-  if(e.target.id === 'proposalDetailOverlay') closeProposalDetail();
-});
+document.getElementById('proposalDetailBack').addEventListener('click', () => goToGroup(currentGroupId));
 
 async function addProposalComment(){
   const body = document.getElementById('proposalCommentInput').value.trim();
@@ -399,7 +405,6 @@ async function deleteProposal(proposalId){
     return;
   }
   proposals = proposals.filter(p => p.id !== proposalId);
-  closeProposalDetail();
-  renderGroupProposals();
   showToast('Proposition supprimée');
+  goToGroup(currentGroupId);
 }

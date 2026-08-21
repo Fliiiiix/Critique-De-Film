@@ -6,7 +6,7 @@ let currentUser = null;
 
 function showMaintenanceScreen(message){
   document.getElementById('authContainer').style.display = 'none';
-  document.getElementById('appContainer').style.display = 'none';
+  showOnlyPage(null); // masque appContainer + les pages Groupes (js/router.js)
   document.getElementById('userBar').style.display = 'none';
   if(message) document.getElementById('maintenanceMessage').textContent = message;
   document.getElementById('maintenanceContainer').style.display = '';
@@ -29,18 +29,19 @@ async function checkMaintenance(){
 
 function showAuthScreen(){
   document.getElementById('authContainer').style.display = '';
-  document.getElementById('appContainer').style.display = 'none';
+  showOnlyPage(null); // masque appContainer + les pages Groupes (js/router.js)
   document.getElementById('userBar').style.display = 'none';
+  if(location.hash) location.hash = ''; // pas de page Groupes fantôme à la prochaine connexion
 }
 
 async function showApp(){
   document.getElementById('authContainer').style.display = 'none';
-  document.getElementById('appContainer').style.display = '';
   document.getElementById('userBar').style.display = '';
   await loadOrCreateProfile();
   await loadFilms();
   await loadViewings();
   render();
+  await renderRoute(); // gère un lien direct vers une page Groupes (F5, etc.)
 }
 
 function handleSession(session){

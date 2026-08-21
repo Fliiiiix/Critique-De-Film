@@ -86,6 +86,100 @@
   <div class="pagination" id="pagination"></div>
 </div>
 
+<!-- Page Groupes : liste — écran à part entière (pas une modal), voir
+     js/router.js. Un groupe contient membres + propositions + votes +
+     discussion : trop pour rester empilé en popups. -->
+<div class="container page" id="groupsListPage" style="display:none;">
+  <div class="page-header">
+    <button class="btn secondary" id="groupsPageBack">← Retour</button>
+    <h2>Groupes</h2>
+  </div>
+
+  <div class="field">
+    <label>Nom du groupe</label>
+    <input type="text" id="groupNameInput" placeholder="Ex. Soirées ciné du dimanche" autocomplete="off">
+  </div>
+  <div class="field">
+    <label>Description (optionnel)</label>
+    <textarea id="groupDescInput" placeholder="À quoi sert ce groupe…" rows="2"></textarea>
+  </div>
+  <button class="btn" id="createGroupBtn" type="button">+ Créer un groupe</button>
+
+  <div class="stats-section">
+    <div class="stats-section-title">Mes groupes</div>
+    <div class="wl-list" id="groupsList"></div>
+  </div>
+</div>
+
+<!-- Page Groupes : détail d'un groupe -->
+<div class="container page" id="groupDetailPage" style="display:none;">
+  <div class="page-header">
+    <button class="btn secondary" id="groupDetailBack">← Retour</button>
+    <h2 id="groupDetailTitle">Groupe</h2>
+  </div>
+  <p class="auth-intro" id="groupDetailDesc" style="display:none;"></p>
+
+  <div class="stats-section">
+    <div class="stats-section-title">Membres</div>
+    <div class="wl-list" id="groupMembersList"></div>
+  </div>
+
+  <div class="stats-section" id="groupAddFriendSection" style="display:none;">
+    <div class="stats-section-title">Ajouter un ami</div>
+    <div class="wl-list" id="groupAddFriendList"></div>
+  </div>
+
+  <div class="stats-section">
+    <div class="stats-section-title">Propositions</div>
+    <div class="wl-add-form">
+      <div class="field tmdb-search-field">
+        <label>Proposer un film</label>
+        <input type="text" id="proposalTitleInput" placeholder="Ex. Paprika" autocomplete="off">
+        <div id="proposalTmdbResults" class="tmdb-results"></div>
+        <div id="proposalTmdbSelected" class="tmdb-selected" style="display:none;">
+          <img id="proposalTmdbSelectedPoster" alt="Affiche">
+          <div class="tmdb-selected-info">
+            <div id="proposalTmdbSelectedTitle"></div>
+            <button class="crit-help-toggle" id="proposalTmdbClearBtn" type="button">Retirer la fiche TMDB</button>
+          </div>
+        </div>
+      </div>
+      <button class="btn" id="proposeFilmBtn" type="button">+ Proposer au groupe</button>
+    </div>
+    <div class="wl-list" id="groupProposalsList"></div>
+  </div>
+
+  <div class="modal-footer">
+    <div></div>
+    <div class="right" id="groupDetailFooter"></div>
+  </div>
+</div>
+
+<!-- Page Groupes : détail d'une proposition (votes + discussion) -->
+<div class="container page" id="proposalDetailPage" style="display:none;">
+  <div class="page-header">
+    <button class="btn secondary" id="proposalDetailBack">← Retour</button>
+    <h2>Proposition</h2>
+  </div>
+
+  <div class="proposal-detail-film" id="proposalDetailFilm"></div>
+  <div class="vote-controls" id="proposalDetailVotes"></div>
+
+  <div class="stats-section">
+    <div class="stats-section-title">Discussion</div>
+    <div class="comment-list" id="proposalCommentsList"></div>
+    <div class="comment-input-row">
+      <textarea id="proposalCommentInput" placeholder="Écrire un commentaire…" rows="2"></textarea>
+      <button class="btn" id="proposalCommentBtn" type="button">Envoyer</button>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <div></div>
+    <div class="right" id="proposalDetailFooter"></div>
+  </div>
+</div>
+
 <button class="fab" id="fabAddBtn" title="Ajouter un film" aria-label="Ajouter un film">+</button>
 
 <!-- Modal -->
@@ -249,105 +343,6 @@
   </div>
 </div>
 
-<!-- Modal groupes -->
-<div class="overlay" id="groupsOverlay">
-  <div class="modal watchlist-modal">
-    <div class="modal-head">
-      <h2>Groupes</h2>
-      <button class="close-x" id="closeGroups">✕</button>
-    </div>
-
-    <div class="field">
-      <label>Nom du groupe</label>
-      <input type="text" id="groupNameInput" placeholder="Ex. Soirées ciné du dimanche" autocomplete="off">
-    </div>
-    <div class="field">
-      <label>Description (optionnel)</label>
-      <textarea id="groupDescInput" placeholder="À quoi sert ce groupe…" rows="2"></textarea>
-    </div>
-    <button class="btn" id="createGroupBtn" type="button">+ Créer un groupe</button>
-
-    <div class="stats-section">
-      <div class="stats-section-title">Mes groupes</div>
-      <div class="wl-list" id="groupsList"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal détail d'un groupe -->
-<div class="overlay" id="groupDetailOverlay">
-  <div class="modal watchlist-modal">
-    <div class="modal-head">
-      <h2 id="groupDetailTitle">Groupe</h2>
-      <button class="close-x" id="closeGroupDetail">✕</button>
-    </div>
-    <p class="auth-intro" id="groupDetailDesc" style="display:none;"></p>
-
-    <div class="stats-section">
-      <div class="stats-section-title">Membres</div>
-      <div class="wl-list" id="groupMembersList"></div>
-    </div>
-
-    <div class="stats-section" id="groupAddFriendSection" style="display:none;">
-      <div class="stats-section-title">Ajouter un ami</div>
-      <div class="wl-list" id="groupAddFriendList"></div>
-    </div>
-
-    <div class="stats-section">
-      <div class="stats-section-title">Propositions</div>
-      <div class="wl-add-form">
-        <div class="field tmdb-search-field">
-          <label>Proposer un film</label>
-          <input type="text" id="proposalTitleInput" placeholder="Ex. Paprika" autocomplete="off">
-          <div id="proposalTmdbResults" class="tmdb-results"></div>
-          <div id="proposalTmdbSelected" class="tmdb-selected" style="display:none;">
-            <img id="proposalTmdbSelectedPoster" alt="Affiche">
-            <div class="tmdb-selected-info">
-              <div id="proposalTmdbSelectedTitle"></div>
-              <button class="crit-help-toggle" id="proposalTmdbClearBtn" type="button">Retirer la fiche TMDB</button>
-            </div>
-          </div>
-        </div>
-        <button class="btn" id="proposeFilmBtn" type="button">+ Proposer au groupe</button>
-      </div>
-      <div class="wl-list" id="groupProposalsList"></div>
-    </div>
-
-    <div class="modal-footer">
-      <div></div>
-      <div class="right" id="groupDetailFooter"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal détail d'une proposition (votes + discussion) -->
-<div class="overlay" id="proposalDetailOverlay">
-  <div class="modal watchlist-modal">
-    <div class="modal-head">
-      <h2>Proposition</h2>
-      <button class="close-x" id="closeProposalDetail">✕</button>
-    </div>
-
-    <div class="proposal-detail-film" id="proposalDetailFilm"></div>
-
-    <div class="vote-controls" id="proposalDetailVotes"></div>
-
-    <div class="stats-section">
-      <div class="stats-section-title">Discussion</div>
-      <div class="comment-list" id="proposalCommentsList"></div>
-      <div class="comment-input-row">
-        <textarea id="proposalCommentInput" placeholder="Écrire un commentaire…" rows="2"></textarea>
-        <button class="btn" id="proposalCommentBtn" type="button">Envoyer</button>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <div></div>
-      <div class="right" id="proposalDetailFooter"></div>
-    </div>
-  </div>
-</div>
-
 <!-- Modal profil d'un ami (lecture seule : catalogue + stats) -->
 <div class="overlay" id="friendProfileOverlay">
   <div class="modal stats-modal">
@@ -403,6 +398,7 @@
 <script src="js/journal.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/friends.js"></script>
+<script src="js/router.js"></script>
 <script src="js/groups.js"></script>
 <script src="js/proposals.js"></script>
 <script src="js/auth.js"></script>
