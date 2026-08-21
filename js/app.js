@@ -65,9 +65,15 @@ function getDisplayNote(film){
 }
 
 async function loadFilms(){
+  // Filtre explicite sur user_id : depuis la policy RLS "Friends can view
+  // shared films" (migrations/009), un select non filtré remonterait aussi
+  // le catalogue des amis acceptés. Cette liste est LE catalogue perso
+  // (modifiable) — la vue en lecture seule d'un ami passe par sa propre
+  // requête filtrée, voir openFriendProfile() dans js/friends.js.
   const { data, error } = await supabaseClient
     .from('films')
     .select('*')
+    .eq('user_id', currentUser.id)
     .order('added', { ascending: false });
   if(error){
     showToast('Erreur de chargement — réessaie');
@@ -153,7 +159,7 @@ function render(){
     row.querySelector('.star-btn').addEventListener('click', async (e) => {
       e.stopPropagation();
       const newFav = !f.fav;
-      const { error } = await supabaseClient.from('films').update({ fav: newFav }).eq('id', f.id);
+      const { error } = await supabaseClient.from('films').update({ fav: newFav }).eq('id', f.id).eq('user_id', currentUser.id);
       if(error){
         showToast('Erreur de sauvegarde — réessaie');
         console.error(error);
@@ -338,7 +344,8 @@ async function handleSave(){
   if(editingId){
     const { error } = await supabaseClient.from('films')
       .update({ title, crit, manual_note: manualNote, review, ...tmdbFields })
-      .eq('id', editingId);
+      .eq('id', editingId)
+      .eq('user_id', currentUser.id);
     if(error){
       showToast('Erreur de sauvegarde — réessaie');
       console.error(error);
@@ -388,7 +395,7 @@ async function handleSave(){
 
 async function handleDelete(){
   if(!editingId) return;
-  const { error } = await supabaseClient.from('films').delete().eq('id', editingId);
+  const { error } = await supabaseClient.from('films').delete().eq('id', editingId).eq('user_id', currentUser.id);
   if(error){
     showToast('Erreur de suppression — réessaie');
     console.error(error);
@@ -453,7 +460,7 @@ function importFilms(file){
     showToast('Import en cours…');
 
     if(replace){
-      const { error: delError } = await supabaseClient.from('films').delete().gte('id', 0);
+      const { error: delError } = await supabaseClient.from('films').delete().eq('user_id', currentUser.id);
       if(delError){
         showToast('Erreur pendant le remplacement — réessaie');
         console.error(delError);
