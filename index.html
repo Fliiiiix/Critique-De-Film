@@ -25,6 +25,16 @@
   </div>
 </header>
 
+<!-- Écran de maintenance — masque tout le reste tant qu'actif, voir js/auth.js.
+     Activé/désactivé depuis Supabase (Table Editor → site_status), pas de
+     redéploiement nécessaire. -->
+<div class="container" id="maintenanceContainer" style="display:none;">
+  <div class="auth-card">
+    <h2>🔧 En maintenance</h2>
+    <p class="auth-intro" id="maintenanceMessage">Le site est en pause le temps de quelques réglages — de retour très vite.</p>
+  </div>
+</div>
+
 <!-- Écran de connexion (lien magique par email) -->
 <div class="container" id="authContainer" style="display:none;">
   <div class="auth-card">

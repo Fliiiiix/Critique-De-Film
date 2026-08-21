@@ -43,6 +43,16 @@ python3 -m http.server 8000
 En ligne : https://fliiiiix.github.io/Critique-De-Film/ (GitHub Pages, déployé
 depuis la branche `main`).
 
+### Mode maintenance
+
+Pour bloquer temporairement le site (ex. pendant une modif risquée en prod,
+comme un changement de policy RLS) : Supabase → **Table Editor** →
+`site_status` → passer `maintenance` à `true` (et éditer `message` si besoin,
+sinon un texte par défaut s'affiche). Effet immédiat pour quiconque
+charge/recharge la page, connecté ou non — pas de redéploiement nécessaire.
+Repasser `maintenance` à `false` pour rouvrir. Nécessite
+`supabase/migrations/010_add_site_status.sql`.
+
 ## Stockage des données & authentification
 
 Les films sont stockés dans une base **Supabase** (Postgres), pas en local :

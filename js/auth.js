@@ -4,6 +4,29 @@
 
 let currentUser = null;
 
+function showMaintenanceScreen(message){
+  document.getElementById('authContainer').style.display = 'none';
+  document.getElementById('appContainer').style.display = 'none';
+  document.getElementById('userBar').style.display = 'none';
+  if(message) document.getElementById('maintenanceMessage').textContent = message;
+  document.getElementById('maintenanceContainer').style.display = '';
+}
+
+// Lit le flag maintenance avant toute chose (voir supabase/migrations/010).
+// Lecture publique (RLS "using (true)"), pas besoin d'être connecté.
+// Échec de lecture (table absente, réseau...) = on n'affiche rien et l'app
+// continue normalement plutôt que de bloquer tout le monde par accident.
+async function checkMaintenance(){
+  const { data, error } = await supabaseClient
+    .from('site_status')
+    .select('maintenance, message')
+    .eq('id', 1)
+    .maybeSingle();
+  if(error || !data) return false;
+  if(data.maintenance) showMaintenanceScreen(data.message);
+  return !!data.maintenance;
+}
+
 function showAuthScreen(){
   document.getElementById('authContainer').style.display = '';
   document.getElementById('appContainer').style.display = 'none';
@@ -58,6 +81,7 @@ document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
 (async function initAuth(){
   buildSprockets();
+  if(await checkMaintenance()) return; // stoppe tout : pas de session, pas de films chargés
   const { data: { session } } = await supabaseClient.auth.getSession();
   handleSession(session);
   supabaseClient.auth.onAuthStateChange((_event, session) => handleSession(session));

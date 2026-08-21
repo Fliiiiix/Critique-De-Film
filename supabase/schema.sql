@@ -197,3 +197,21 @@ $$;
 
 revoke all on function public.find_user_by_email(text) from public;
 grant execute on function public.find_user_by_email(text) to authenticated;
+
+-- Mode maintenance, voir migrations/010 et js/auth.js. Ligne unique,
+-- modifiable seulement depuis le dashboard Supabase (Table Editor).
+create table public.site_status (
+  id integer primary key default 1,
+  maintenance boolean not null default false,
+  message text,
+  updated_at timestamptz not null default now(),
+  constraint site_status_single_row check (id = 1)
+);
+
+alter table public.site_status enable row level security;
+
+create policy "Anyone can read site status"
+  on public.site_status for select
+  using (true);
+
+insert into public.site_status (id, maintenance) values (1, false);
