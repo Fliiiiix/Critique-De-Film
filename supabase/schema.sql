@@ -1,5 +1,7 @@
 -- Table des films notés, un jeu de données par utilisateur (RLS).
--- À exécuter dans Supabase → SQL Editor.
+-- À exécuter dans Supabase → SQL Editor (nouveau projet). Pour un projet
+-- déjà provisionné avec une version antérieure de ce schéma, voir plutôt
+-- supabase/migrations/ pour les changements incrémentaux.
 
 create table public.films (
   id bigint generated always as identity primary key,
@@ -8,6 +10,9 @@ create table public.films (
   crit jsonb not null,
   fav boolean not null default false,
   added bigint not null,
+  -- Note sur 5 saisie directement, en bypass de la grille de 7 critères —
+  -- pour les films notés avec un référentiel différent (voir migrations/002).
+  manual_note numeric,
   created_at timestamptz not null default now()
 );
 

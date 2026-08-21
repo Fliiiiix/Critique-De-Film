@@ -13,7 +13,9 @@ critique-films/
 ├── js/supabaseConfig.js        → clés du projet Supabase (URL + clé publique anon)
 ├── js/auth.js                   → connexion par lien magique, bascule écran connexion/app
 ├── js/app.js                     → logique (rendu, CRUD via Supabase, formulaire de notation)
-└── supabase/schema.sql            → schéma de la table `films` + règles RLS à exécuter sur Supabase
+└── supabase/
+    ├── schema.sql                  → schéma complet (nouveau projet)
+    └── migrations/                 → changements incrémentaux (projet déjà provisionné)
 ```
 
 ## Lancer le projet
@@ -95,6 +97,19 @@ critères) est rejeté sans toucher aux données existantes.
 
 Chaque critère a une définition fixe, une échelle de repères (0 / 0.5 / 1) et
 4 questions pour trancher rapidement — voir `js/data.js`.
+
+### Note manuelle (bypass exceptionnel de la grille)
+
+Dans le formulaire, la case **Note manuelle — bypasse la grille** permet de
+saisir directement une note sur 5 au lieu de passer par les 7 critères.
+Prévu pour les films déjà notés avec un référentiel différent (ex. retravaillés
+avant la migration vers cette grille) — inutile, voire trompeur, de leur
+recalculer une note "7 critères" a posteriori.
+
+Un film noté ainsi est visuellement distingué dans la liste : badge `manuel`
+à côté du titre, sous-titre différent, encadré de la note en teal au lieu
+d'amber. Nécessite d'avoir exécuté `supabase/migrations/002_add_manual_note.sql`
+sur le projet (ajoute la colonne `manual_note`).
 
 ## Prochaines étapes possibles
 

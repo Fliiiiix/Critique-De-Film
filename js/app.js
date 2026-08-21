@@ -16,7 +16,20 @@ function computeNote(critObj){
 }
 
 function rowToFilm(row){
-  return { id: row.id, title: row.title, crit: row.crit, fav: row.fav, added: row.added };
+  return {
+    id: row.id,
+    title: row.title,
+    crit: row.crit,
+    fav: row.fav,
+    added: row.added,
+    manualNote: row.manual_note != null ? parseFloat(row.manual_note) : null
+  };
+}
+
+// Note affichée : la note manuelle prime sur la note calculée depuis la grille,
+// pour les films exceptionnellement notés avec un référentiel différent.
+function getDisplayNote(film){
+  return film.manualNote != null ? film.manualNote : computeNote(film.crit);
 }
 
 async function loadFilms(){
@@ -59,10 +72,10 @@ function render(){
   let filtered = films.filter(f => f.title.toLowerCase().includes(search));
 
   filtered.sort((a,b) => {
-    if(sortBy === 'note-desc') return (computeNote(b.crit)||0) - (computeNote(a.crit)||0);
-    if(sortBy === 'note-asc') return (computeNote(a.crit)||0) - (computeNote(b.crit)||0);
+    if(sortBy === 'note-desc') return (getDisplayNote(b)||0) - (getDisplayNote(a)||0);
+    if(sortBy === 'note-asc') return (getDisplayNote(a)||0) - (getDisplayNote(b)||0);
     if(sortBy === 'title-asc') return a.title.localeCompare(b.title, 'fr');
-    if(sortBy === 'fav-first') return (b.fav - a.fav) || ((computeNote(b.crit)||0) - (computeNote(a.crit)||0));
+    if(sortBy === 'fav-first') return (b.fav - a.fav) || ((getDisplayNote(b)||0) - (getDisplayNote(a)||0));
     if(sortBy === 'recent') return b.added - a.added;
     return 0;
   });
@@ -76,17 +89,18 @@ function render(){
 
   list.innerHTML = '';
   filtered.forEach(f => {
-    const note = computeNote(f.crit);
+    const note = getDisplayNote(f);
+    const isManual = f.manualNote != null;
     const row = document.createElement('div');
     row.className = 'film-row';
     row.innerHTML = `
       <div class="holes"><span></span><span></span><span></span></div>
       <div class="film-main">
-        <div class="film-title">${escapeHtml(f.title)}</div>
-        <div class="film-sub">7 critères notés</div>
+        <div class="film-title">${escapeHtml(f.title)}${isManual ? '<span class="manual-badge" title="Note manuelle — référentiel différent">manuel</span>' : ''}</div>
+        <div class="film-sub">${isManual ? 'Note manuelle · ancien référentiel' : '7 critères notés'}</div>
       </div>
       <button class="star-btn ${f.fav ? 'active' : ''}" data-id="${f.id}" title="Favori">${f.fav ? '★' : '☆'}</button>
-      <div class="counter">${note !== null ? note.toFixed(1) : '—'}</div>
+      <div class="counter ${isManual ? 'manual' : ''}">${note !== null ? note.toFixed(1) : '—'}</div>
     `;
     row.addEventListener('click', (e) => {
       if(e.target.classList.contains('star-btn')) return;
@@ -158,21 +172,45 @@ function readCriteriaFromForm(){
   return obj;
 }
 
+function isManualMode(){
+  return document.getElementById('manualToggle').checked;
+}
+
+function updateManualVisibility(){
+  const manual = isManualMode();
+  document.getElementById('criteriaWrap').style.display = manual ? 'none' : '';
+  document.getElementById('manualScoreRow').style.display = manual ? '' : 'none';
+  updateLiveScore();
+}
+
 function updateLiveScore(){
-  const critObj = readCriteriaFromForm();
-  const note = computeNote(critObj);
-  document.getElementById('liveScore').textContent = note !== null ? note.toFixed(1) : '—';
+  let note;
+  if(isManualMode()){
+    note = parseFloat(document.getElementById('manualScoreSlider').value);
+  }else{
+    note = computeNote(readCriteriaFromForm());
+  }
+  document.getElementById('liveScoreLabel').textContent = isManualMode() ? 'Note manuelle' : 'Note calculée';
+  document.getElementById('liveScore').textContent = (note !== null && !isNaN(note)) ? note.toFixed(1) : '—';
 }
 
 function openModal(id){
   editingId = id || null;
   const overlay = document.getElementById('overlay');
   const film = id ? films.find(f => f.id === id) : null;
+  const manualNote = film && film.manualNote != null ? film.manualNote : null;
 
   document.getElementById('modalTitle').textContent = film ? 'Modifier le film' : 'Nouveau film';
   document.getElementById('titleInput').value = film ? film.title : '';
   document.getElementById('deleteBtn').style.display = film ? 'inline-block' : 'none';
+
+  document.getElementById('manualToggle').checked = manualNote !== null;
+  const sliderVal = manualNote !== null ? manualNote : 2.5;
+  document.getElementById('manualScoreSlider').value = sliderVal;
+  document.getElementById('manualScoreVal').textContent = sliderVal.toFixed(2);
+
   buildCriteriaInputs(film ? film.crit : null);
+  updateManualVisibility();
 
   overlay.classList.add('open');
   document.getElementById('titleInput').focus();
@@ -189,10 +227,13 @@ async function handleSave(){
     showToast('Ajoute un titre avant d\'enregistrer');
     return;
   }
-  const crit = readCriteriaFromForm();
+  const manual = isManualMode();
+  // En mode manuel, la grille n'est pas utilisée : crit vide, note = manual_note.
+  const crit = manual ? {} : readCriteriaFromForm();
+  const manualNote = manual ? parseFloat(document.getElementById('manualScoreSlider').value) : null;
 
   if(editingId){
-    const { error } = await supabaseClient.from('films').update({ title, crit }).eq('id', editingId);
+    const { error } = await supabaseClient.from('films').update({ title, crit, manual_note: manualNote }).eq('id', editingId);
     if(error){
       showToast('Erreur de sauvegarde — réessaie');
       console.error(error);
@@ -201,10 +242,11 @@ async function handleSave(){
     const film = films.find(f => f.id === editingId);
     film.title = title;
     film.crit = crit;
+    film.manualNote = manualNote;
   }else{
     const { data, error } = await supabaseClient
       .from('films')
-      .insert({ title, crit, fav: false, added: Date.now() })
+      .insert({ title, crit, fav: false, added: Date.now(), manual_note: manualNote })
       .select()
       .single();
     if(error){
@@ -298,7 +340,8 @@ function importFilms(file){
       title: f.title.trim(),
       crit: f.crit,
       fav: !!f.fav,
-      added: typeof f.added === 'number' ? f.added : Date.now()
+      added: typeof f.added === 'number' ? f.added : Date.now(),
+      manual_note: typeof f.manualNote === 'number' ? f.manualNote : null
     }));
 
     const { data: inserted, error: insError } = await supabaseClient.from('films').insert(rows).select();
@@ -316,6 +359,11 @@ function importFilms(file){
   reader.readAsText(file);
 }
 
+document.getElementById('manualToggle').addEventListener('change', updateManualVisibility);
+document.getElementById('manualScoreSlider').addEventListener('input', (e) => {
+  document.getElementById('manualScoreVal').textContent = parseFloat(e.target.value).toFixed(2);
+  updateLiveScore();
+});
 document.getElementById('openAddBtn').addEventListener('click', () => openModal(null));
 document.getElementById('closeModal').addEventListener('click', closeModal);
 document.getElementById('cancelBtn').addEventListener('click', closeModal);

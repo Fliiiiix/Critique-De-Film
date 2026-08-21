@@ -69,10 +69,24 @@
       <input type="text" id="titleInput" placeholder="Ex. Paprika">
     </div>
 
+    <label class="manual-toggle-label">
+      <input type="checkbox" id="manualToggle">
+      <span>Note manuelle — bypasse la grille</span>
+    </label>
+    <div class="manual-toggle-hint">Exceptionnel : pour un film déjà noté avec un référentiel différent, qu'on ne veut pas refaire passer dans la grille actuelle.</div>
+
+    <div class="field" id="manualScoreRow" style="display:none;">
+      <label>Note manuelle</label>
+      <div class="crit-slider-row">
+        <input type="range" min="0" max="5" step="0.5" value="2.5" id="manualScoreSlider">
+        <div class="crit-val" id="manualScoreVal">2.50</div>
+      </div>
+    </div>
+
     <div id="criteriaWrap"></div>
 
     <div class="modal-footer">
-      <div class="live-score">Note calculée · <b id="liveScore">—</b> / 5</div>
+      <div class="live-score"><span id="liveScoreLabel">Note calculée</span> · <b id="liveScore">—</b> / 5</div>
       <div class="right">
         <button class="btn danger" id="deleteBtn" style="display:none;">Supprimer</button>
         <button class="btn secondary" id="cancelBtn">Annuler</button>
