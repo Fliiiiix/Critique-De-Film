@@ -204,6 +204,9 @@ function renderAchievements(){
 }
 
 function openAchievements(){
+  // Accessible depuis la modale profil ("Mon activité") — la refermer
+  // d'abord évite deux modales de tailles différentes superposées.
+  closeProfileModal();
   renderAchievements();
   document.getElementById('achievementsOverlay').classList.add('open');
 }

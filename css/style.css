@@ -61,6 +61,26 @@ header{
   font-size:11px;
   color:var(--text-muted);
 }
+/* Nav de l'entête : les deux pages assez fréquentes pour mériter un accès
+   direct depuis n'importe où (À voir, Amis — qui contient Groupes, voir
+   index.html). Icônes seules, sans cadre, pour rester discrètes à côté du
+   titre plutôt que de reformer une rangée de boutons. */
+.header-nav{
+  display:flex;
+  gap:2px;
+}
+.header-nav-btn{
+  background:none;
+  border:none;
+  color:var(--text-muted);
+  font-size:18px;
+  line-height:1;
+  padding:8px;
+  border-radius:50%;
+  cursor:pointer;
+  transition:background .15s, color .15s;
+}
+.header-nav-btn:hover{background:var(--surface-2); color:var(--text);}
 /* Photo de profil : bien visible (elle sert aussi de bouton d'accès au
    profil, voir js/profile.js) — plus de bouton "Profil" ni "Déconnexion"
    séparés dans le header (déconnexion déplacée dans la modale profil, voir
@@ -161,23 +181,6 @@ h1{
   gap:10px;
   flex-wrap:wrap;
 }
-/* Statistiques / Succès / À voir : regroupés visuellement, ce sont trois
-   vues du même catalogue — pas des actions au même titre qu'Ajouter. */
-.btn-group{
-  display:flex;
-  gap:2px;
-  background:var(--surface);
-  border:1px solid var(--hairline);
-  border-radius:5px;
-  padding:2px;
-}
-.btn-group .btn.secondary{
-  border:none;
-  border-radius:3px;
-  padding:9px 12px;
-}
-.btn-group .btn.secondary:hover{background:var(--surface-2); color:var(--text);}
-.btn-icon{margin-right:6px;}
 
 /* Menu "⋯" : Export/Import, actions de gestion des données, moins
    fréquentes que le reste — sorties du flux principal de la barre. */
@@ -756,6 +759,20 @@ input[type="range"]::-moz-range-thumb{
   padding-top:18px;
   border-top:1px solid var(--hairline);
 }
+/* Vues sur mon activité passée (Statistiques/Succès/Journal) : pas des
+   actions du quotidien, donc regroupées ici plutôt que mêlées à la toolbar
+   du catalogue — voir aussi js/router.js. */
+.profile-activity-section{
+  margin-top:20px;
+  padding-top:16px;
+  border-top:1px solid var(--hairline);
+}
+.profile-activity-links{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
 /* Déconnexion : action de compte, volontairement à part des boutons
    Annuler/Enregistrer (qui portent sur le profil lui-même) — voir la
    modale profil dans index.html. */
@@ -994,9 +1011,6 @@ input[type="range"]::-moz-range-thumb{
   line-height:1.4;
 }
 .ach-hidden-card.unlocked{border-color:var(--amber-dim);}
-
-/* Watchlist */
-.watchlist-modal{max-width:640px;}
 .wl-add-form{
   border-bottom:1px solid var(--hairline);
   padding-bottom:20px;
@@ -1215,13 +1229,10 @@ input[type="range"]::-moz-range-thumb{
   .stats-extremes{grid-template-columns:1fr;}
   .user-bar{position:static; margin-top:10px; flex-wrap:wrap;}
 
-  /* Recherche/tri en pleine largeur, groupe de vues en icônes seules,
-     "+ Ajouter" quitte la barre pour le bouton flottant (.fab). */
+  /* Recherche/tri en pleine largeur, "+ Ajouter" quitte la barre pour le
+     bouton flottant (.fab). */
   .toolbar-search{flex-direction:column; align-items:stretch;}
   .toolbar-search select{width:100%;}
-  .btn-label{display:none;}
-  .btn-group .btn.secondary{padding:10px 12px; font-size:15px;}
-  .btn-icon{margin-right:0;}
   #openAddBtn{display:none;}
   .fab{display:flex;}
 

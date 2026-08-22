@@ -20,8 +20,8 @@ critique-films/
 ├── js/achievements.js                → page succès (paliers + secrets)
 ├── js/watchlist.js                    → liste "à voir", séparée du catalogue noté (page routée, voir router.js)
 ├── js/journal.js                       → journal des visionnages, revisionnages
-├── js/friends.js                        → amis (demande/acceptation) + profil en lecture seule
-├── js/router.js                          → routeur par hash (#/groupes/..., #/watchlist), pages Groupes + Watchlist
+├── js/friends.js                        → amis (demande/acceptation) + profil en lecture seule (page routée, voir router.js)
+├── js/router.js                          → routeur par hash (#/groupes/..., #/watchlist, #/amis), toutes les pages
 ├── js/groups.js                          → groupes (famille/amis) : création, membres
 ├── js/proposals.js                        → propositions de films dans un groupe : votes + discussion
 └── supabase/
@@ -185,27 +185,30 @@ elle-même (agrandie, en haut à droite) fait office de bouton — cliquer
 dessus ouvre la modale profil. Sans avatar renseigné, une icône 👤 la
 remplace pour rester visible et cliquable. La modale permet de définir un
 pseudo et une image d'avatar (URL d'une image, pas d'upload pour l'instant)
-affichés à la place de l'email brut, et regroupe aussi la **déconnexion**
-(bouton séparé par un filet, sous les champs du profil — plus dans l'entête).
-Chaque utilisateur a son propre profil, isolé par RLS comme le reste — l'app
-supporte plusieurs comptes indépendants (chacun avec son catalogue privé) dès
-lors qu'ils se connectent avec leur propre email. Nécessite
-`supabase/migrations/005_add_profiles.sql`.
+affichés à la place de l'email brut, regroupe les vues sur **mon activité**
+(section "Mon activité" : 📊 Statistiques, 🏆 Succès, 📅 Journal — voir plus
+bas) et la **déconnexion** (bouton séparé par un filet, sous les champs du
+profil — plus dans l'entête). Chaque utilisateur a son propre profil, isolé
+par RLS comme le reste — l'app supporte plusieurs comptes indépendants
+(chacun avec son catalogue privé) dès lors qu'ils se connectent avec leur
+propre email. Nécessite `supabase/migrations/005_add_profiles.sql`.
 
 Le **titre "Critique de films"** (entête) est lui aussi cliquable — retour à
 l'accueil en un clic depuis n'importe quelle page.
 
 ## Statistiques
 
-Le bouton **📊 Statistiques** ouvre un aperçu calculé à la volée depuis les
-films chargés (pas de requête dédiée) : nombre de films, note moyenne,
-favoris, répartition grille/note manuelle, distribution des notes, activité
-par mois, film le mieux et le moins bien noté.
+Dans la modale profil, **📊 Statistiques** (section "Mon activité") ouvre un
+aperçu calculé à la volée depuis les films chargés (pas de requête dédiée) :
+nombre de films, note moyenne, favoris, répartition grille/note manuelle,
+distribution des notes, activité par mois, film le mieux et le moins bien
+noté.
 
 ## Succès
 
-Le bouton **🏆 Succès** ouvre une page calculée elle aussi à la volée depuis
-les films chargés (pas de table dédiée, pas de migration nécessaire) :
+Dans la modale profil, **🏆 Succès** (section "Mon activité") ouvre une page
+calculée elle aussi à la volée depuis les films chargés (pas de table
+dédiée, pas de migration nécessaire) :
 
 - **Paliers** : 4 séries cumulatives (Cinéphile, Grand favori, Critique en
   chef, Archiviste) avec un badge bronze/argent/or selon les seuils atteints
@@ -220,12 +223,12 @@ l'état actuel du catalogue : pas d'historique à maintenir, un succès peut se
 
 ## Watchlist ("à voir")
 
-Le bouton **🎞️ À voir** mène à `#/watchlist`, une page à part entière (comme
-Groupes — voir `js/router.js`) plutôt qu'une modal, avec son propre bouton
-**← Retour**. Liste séparée du catalogue noté (table `watchlist`, pas
-`films`) : ajout rapide d'un titre, avec fiche TMDB optionnelle
-(affiche/année) et une note libre (pourquoi le voir, qui l'a conseillé…).
-Deux actions par item :
+L'icône **🎞️** dans l'entête mène à `#/watchlist`, une page à part entière
+(comme Groupes/Amis — voir `js/router.js`) plutôt qu'une modal, avec son
+propre bouton **← Retour**. Liste séparée du catalogue noté (table
+`watchlist`, pas `films`) : ajout rapide d'un titre, avec fiche TMDB
+optionnelle (affiche/année) et une note libre (pourquoi le voir, qui l'a
+conseillé…). Deux actions par item :
 
 - **✔ Noter** — ouvre le formulaire principal (grille ou note manuelle),
   préempli avec le titre et la fiche TMDB déjà connus. L'item n'est retiré
@@ -236,18 +239,24 @@ Nécessite `supabase/migrations/006_add_watchlist.sql`.
 
 ## Interface responsive
 
-La barre d'outils regroupe désormais les actions par nature plutôt que de
-les aligner en vrac : recherche/tri, puis un groupe compact Statistiques /
-Succès / À voir (trois vues du catalogue), un menu **⋯** pour Export/Import
-(gestion des données, moins fréquent), et **+ Ajouter un film** en avant
-comme action principale.
+Chaque chose a sa place plutôt que d'aligner tous les boutons en vrac au même
+niveau (v1.5) :
 
-En dessous de 600px de large, la barre passe en colonne, les libellés des
-boutons de vue se réduisent à leurs icônes, et **+ Ajouter un film** est
-remplacé par un bouton flottant (FAB) en bas à droite — l'entête (photo de
-profil, pseudo) et les grilles (statistiques, succès) se réorganisent elles
-aussi automatiquement. Le footer de la modale d'ajout/édition (note calculée
-+ boutons) passe lui aussi sur deux lignes en dessous de 600px plutôt que de
+- **Entête** : le titre (retour accueil en un clic) à gauche ; à droite, les
+  deux pages assez fréquentes pour mériter un accès direct — 🎞️ À voir et
+  👥 Amis (qui contient Groupes) — puis la photo de profil + pseudo (ouvre la
+  modale profil).
+- **Modale profil** : identité (pseudo/avatar), section "Mon activité" (vues
+  sur le catalogue passé — Statistiques/Succès/Journal, pas des actions du
+  quotidien), déconnexion.
+- **Toolbar du catalogue** : ne garde que ce qui agit sur la liste affichée —
+  recherche/tri, un menu **⋯** pour Export/Import, **+ Ajouter un film**.
+
+En dessous de 600px de large, la toolbar passe en colonne et **+ Ajouter un
+film** est remplacé par un bouton flottant (FAB) en bas à droite — l'entête
+et les grilles (statistiques, succès) se réorganisent elles aussi
+automatiquement. Le footer de la modale d'ajout/édition (note calculée +
+boutons) passe lui aussi sur deux lignes en dessous de 600px plutôt que de
 laisser le texte de la note se faire écraser. Un peu d'animation (ouverture
 des fenêtres, survol des lignes de la liste, retour tactile sur les boutons)
 pour que ça reste agréable à l'usage.
@@ -261,9 +270,10 @@ section **Visionnages** permet d'ajouter une nouvelle date (+ note libre) —
 utile pour noter qu'on a revu un film, sans toucher à sa note. Un film revu
 affiche un badge `↻ ×N` dans la liste.
 
-Le bouton **📅 Journal** ouvre un historique chronologique de tous les
-visionnages (tous films confondus), groupés par mois, avec un badge pour
-distinguer un revisionnage du premier visionnage.
+Dans la modale profil, **📅 Journal** (section "Mon activité") ouvre un
+historique chronologique de tous les visionnages (tous films confondus),
+groupés par mois, avec un badge pour distinguer un revisionnage du premier
+visionnage.
 
 Nécessite `supabase/migrations/007_add_viewings.sql`, qui rétro-remplit
 aussi un premier visionnage pour chaque film déjà présent (daté de son
@@ -271,12 +281,16 @@ ajout) — rien à ressaisir à la main après la migration.
 
 ## Amis
 
-Le bouton **👥 Amis** permet d'ajouter un ami par pseudo (recherche partielle)
+L'icône **👥** dans l'entête mène à `#/amis`, une page à part entière (comme
+Watchlist/Groupes — voir `js/router.js`), avec son propre bouton
+**← Retour**. Elle permet d'ajouter un ami par pseudo (recherche partielle)
 ou par email (correspondance exacte uniquement), d'accepter/refuser les
 demandes reçues, et de voir le **catalogue et les statistiques** d'un ami une
 fois la demande acceptée — en lecture seule, aucune interaction n'est possible
-sur ses films. Une demande croisée (vous demandez à quelqu'un qui vous avait
-déjà demandé) est acceptée automatiquement plutôt que de créer un doublon.
+sur ses films (modale ouverte par-dessus la page, qui se retrouve dessous
+telle quelle une fois cette modale refermée). Une demande croisée (vous
+demandez à quelqu'un qui vous avait déjà demandé) est acceptée
+automatiquement plutôt que de créer un doublon.
 
 Techniquement : table `friendships` (une ligne par relation, statut
 pending/accepted/declined) + une policy RLS qui ouvre la lecture de `films`
@@ -285,17 +299,19 @@ fonction `find_user_by_email` en `SECURITY DEFINER` pour chercher un email
 exact sans exposer toute la table `auth.users` côté client. Nécessite
 `supabase/migrations/009_add_friendships.sql`.
 
-Première brique d'un axe plus large (groupes famille/amis, proposition et
-discussion de films, votes) — voir « Prochaines étapes possibles ».
+En bas de la page, une section **Groupes** mène vers `#/groupes` (voir plus
+bas) — un groupe se fait avec des amis, donc c'est ici que ça vit plutôt que
+d'avoir sa propre icône dans l'entête.
 
 ## Groupes
 
-Le bouton **🎭 Groupes** permet de créer un groupe (nom + description
-optionnelle) — le créateur en devient automatiquement membre. Depuis le
-détail d'un groupe, le créateur peut ajouter n'importe lequel de ses amis
-acceptés (pas de flux invitation séparé : l'amitié fait déjà office de
-consentement) et retirer un membre ; les autres membres peuvent quitter le
-groupe. Seul le créateur peut supprimer le groupe (retire tous les membres).
+Accessible depuis le bas de la page Amis (section "Groupes"), permet de créer
+un groupe (nom + description optionnelle) — le créateur en devient
+automatiquement membre. Depuis le détail d'un groupe, le créateur peut
+ajouter n'importe lequel de ses amis acceptés (pas de flux invitation
+séparé : l'amitié fait déjà office de consentement) et retirer un membre ;
+les autres membres peuvent quitter le groupe. Seul le créateur peut supprimer
+le groupe (retire tous les membres).
 
 Contrairement aux amis, un groupe **ne partage pas les catalogues notés** de
 ses membres — c'est une base pour la brique suivante (proposer des films,
@@ -305,9 +321,9 @@ Groupes/détail groupe/détail proposition sont trois **vraies pages routées
 par URL** (`#/groupes`, `#/groupes/:id`, `#/groupes/:id/propositions/:id` —
 voir `js/router.js`), pas des modals empilées : un groupe contient membres +
 ajout d'amis + propositions + votes + discussion, trop pour tenir en popup
-sur plusieurs niveaux. Watchlist a suivi le même traitement (`#/watchlist`,
-voir plus bas) ; Amis/Stats/Succès/Journal restent des modals classiques (2
-niveaux max, ça reste raisonnable).
+sur plusieurs niveaux. Watchlist et Amis ont suivi le même traitement
+(`#/watchlist`, `#/amis`) ; Statistiques/Succès/Journal restent des modals
+classiques ouvertes depuis le profil (2 niveaux max, ça reste raisonnable).
 
 Techniquement : tables `groups` + `group_members`, RLS scopée à
 l'appartenance via une fonction `is_group_member()` en `SECURITY DEFINER`

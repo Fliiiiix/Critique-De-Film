@@ -5,6 +5,11 @@
 // declined, symétrique (peu importe qui a demandé une fois accepted).
 // La visibilité croisée du catalogue (`films`) est gérée entièrement par
 // RLS côté base — ce module ne fait que lire/écrire `friendships`+`profiles`.
+//
+// Écran à part entière (#/amis), pas une modal — voir js/router.js, même
+// principe que Groupes/Watchlist. Un groupe se fait avec des amis, donc
+// l'accès à Groupes vit en bas de cette page plutôt que d'avoir sa propre
+// icône dans l'entête (#amisGroupsLink, tout en bas de ce fichier).
 
 let friendships = [];
 let friendProfiles = {}; // user_id -> { displayName, avatarUrl }
@@ -85,7 +90,7 @@ function friendRowHtml(userId, actionsHtml, subLabel){
   `;
 }
 
-function renderFriendsModal(){
+function renderFriendsPage(){
   const incoming = friendships.filter(f => f.status === 'pending' && f.addresseeId === currentUser.id);
   const outgoing = friendships.filter(f => f.status === 'pending' && f.requesterId === currentUser.id);
   const accepted = friendships.filter(f => f.status === 'accepted');
@@ -143,7 +148,7 @@ async function respondToRequest(id, accept){
   if(accept){
     const f = friendships.find(x => x.id === id);
     if(f) f.status = 'accepted';
-    renderFriendsModal();
+    renderFriendsPage();
     showToast('Ami ajouté');
   }else{
     // Un refus retire directement la ligne plutôt que de la garder en
@@ -162,7 +167,7 @@ async function removeFriendship(id, notify = true){
     return;
   }
   friendships = friendships.filter(f => f.id !== id);
-  renderFriendsModal();
+  renderFriendsPage();
   if(notify) showToast('Fait');
 }
 
@@ -241,7 +246,7 @@ async function sendFriendRequest(targetUserId){
     return;
   }
   friendships.push(rowToFriendship(data));
-  renderFriendsModal();
+  renderFriendsPage();
   renderFriendSearchResults();
   showToast('Demande envoyée');
 }
@@ -257,28 +262,21 @@ document.getElementById('friendSearchInput').addEventListener('input', () => {
   friendSearchTimer = setTimeout(() => handleFriendSearch(query), 350);
 });
 
-// --- Modal amis (liste + demandes) ---
+// --- Page amis (liste + demandes) — appelée par le routeur (#/amis). ---
 
 async function openFriends(){
-  document.getElementById('friendsOverlay').classList.add('open');
   document.getElementById('friendRequestsIn').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
   document.getElementById('friendRequestsOut').innerHTML = '';
   document.getElementById('friendsList').innerHTML = '';
   document.getElementById('friendSearchInput').value = '';
   document.getElementById('friendSearchResults').innerHTML = '';
   await loadFriendships();
-  renderFriendsModal();
+  renderFriendsPage();
 }
 
-function closeFriends(){
-  document.getElementById('friendsOverlay').classList.remove('open');
-}
-
-document.getElementById('friendsBtn').addEventListener('click', openFriends);
-document.getElementById('closeFriends').addEventListener('click', closeFriends);
-document.getElementById('friendsOverlay').addEventListener('click', (e) => {
-  if(e.target.id === 'friendsOverlay') closeFriends();
-});
+document.getElementById('friendsBtn').addEventListener('click', goToAmis);
+document.getElementById('amisPageBack').addEventListener('click', goHome);
+document.getElementById('amisGroupsLink').addEventListener('click', goToGroups);
 
 // --- Profil d'un ami (lecture seule : catalogue + stats) ---
 // Les films sont lus directement depuis Supabase (pas depuis `films`, qui
@@ -336,12 +334,11 @@ async function openFriendProfile(userId){
   content.appendChild(listWrap);
 }
 
-// Referme aussi la liste "Amis" en dessous : sans ça, fermer le profil d'un
-// ami ramène sur un autre modal plutôt que sur son propre catalogue — on se
-// retrouve coincé à naviguer entre modals au lieu de revenir à l'app.
+// Amis est une page (pas une modal, voir plus haut) : la refermer suffit,
+// elle revient naturellement sur la page Amis en dessous — plus besoin de
+// fermer quoi que ce soit d'autre.
 function closeFriendProfile(){
   document.getElementById('friendProfileOverlay').classList.remove('open');
-  closeFriends();
 }
 
 document.getElementById('closeFriendProfile').addEventListener('click', closeFriendProfile);

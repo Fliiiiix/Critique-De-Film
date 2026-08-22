@@ -1,24 +1,27 @@
-// --- Routeur minimaliste (hash-based), pour l'instant réservé à Groupes ---
+// --- Routeur minimaliste (hash-based) ---
 // Groupes contenait membres + ajout d'amis + propositions + votes +
 // discussion, empilé sur 3 niveaux de modal (Groupes > détail groupe >
-// détail proposition) — trop pour ce format. Ces trois écrans sont donc de
-// vraies pages, sélectionnées par l'URL plutôt que par des .overlay
-// imbriquées :
+// détail proposition) — trop pour ce format. Watchlist et Amis ont suivi le
+// même traitement (contenu trop riche, ou destination assez fréquente pour
+// mériter une URL propre plutôt qu'être noyée dans une popup) :
 //   (pas de hash)                           -> catalogue (#appContainer)
+//   #/watchlist                             -> liste "à voir"
+//   #/amis                                  -> amis (demandes, liste) + accès Groupes
 //   #/groupes                               -> liste des groupes
 //   #/groupes/:groupId                      -> détail d'un groupe
 //   #/groupes/:groupId/propositions/:propId -> détail d'une proposition
-//   #/watchlist                             -> liste "à voir"
-// Amis/Stats/Journal restent des modals classiques (2 niveaux max, ça reste
-// raisonnable) — voir js/friends.js, js/stats.js, js/journal.js.
+// Stats/Succès/Journal (vues sur mon activité passée, pas des actions) et le
+// profil (identité + déconnexion) restent des modals classiques, ouvertes
+// depuis l'entête ou la page Amis — voir js/profile.js, js/stats.js,
+// js/achievements.js, js/journal.js.
 //
 // Pas de framework : hashchange + un switch sur les segments suffisent pour
 // ces écrans. Les fonctions de chargement/rendu (loadGroups, openGroupDetail,
-// openProposalDetail, openWatchlist...) restent dans js/groups.js,
-// js/proposals.js et js/watchlist.js — ce fichier ne fait que décider
-// laquelle appeler.
+// openProposalDetail, openWatchlist, openFriends...) restent dans
+// js/groups.js, js/proposals.js, js/watchlist.js et js/friends.js — ce
+// fichier ne fait que décider laquelle appeler.
 
-const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage'];
+const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage', 'amisPage'];
 
 // null cache tout (utile pour l'écran de connexion / maintenance, qui gère
 // sa propre visibilité par ailleurs).
@@ -33,11 +36,13 @@ function goToGroups(){ location.hash = '#/groupes'; }
 function goToGroup(groupId){ location.hash = `#/groupes/${groupId}`; }
 function goToProposal(groupId, proposalId){ location.hash = `#/groupes/${groupId}/propositions/${proposalId}`; }
 function goToWatchlist(){ location.hash = '#/watchlist'; }
+function goToAmis(){ location.hash = '#/amis'; }
 
 function parseRoute(){
   const hash = location.hash.replace(/^#\/?/, '');
   const parts = hash.split('/').filter(Boolean);
   if(parts[0] === 'watchlist' && parts.length === 1) return { name: 'watchlist' };
+  if(parts[0] === 'amis' && parts.length === 1) return { name: 'amis' };
   if(parts[0] !== 'groupes') return { name: 'home' };
   if(parts.length === 1) return { name: 'groupsList' };
   const groupId = parseInt(parts[1], 10);
@@ -60,6 +65,9 @@ async function renderRoute(){
   }else if(route.name === 'watchlist'){
     showOnlyPage('watchlistPage');
     await openWatchlist();
+  }else if(route.name === 'amis'){
+    showOnlyPage('amisPage');
+    await openFriends();
   }else if(route.name === 'groupsList'){
     showOnlyPage('groupsListPage');
     await openGroups();

@@ -95,7 +95,8 @@ async function openGroups(){
   renderGroupsList();
 }
 
-document.getElementById('groupsBtn').addEventListener('click', goToGroups);
+// Pas d'icône Groupes dans l'entête : on y arrive depuis la page Amis
+// (#amisGroupsLink, voir js/friends.js) — un groupe se fait avec des amis.
 document.getElementById('groupsPageBack').addEventListener('click', goHome);
 document.getElementById('createGroupBtn').addEventListener('click', handleCreateGroup);
 

@@ -171,6 +171,9 @@ function renderJournal(){
 }
 
 function openJournal(){
+  // Accessible depuis la modale profil ("Mon activité") — la refermer
+  // d'abord évite deux modales de tailles différentes superposées.
+  closeProfileModal();
   renderJournal();
   document.getElementById('journalOverlay').classList.add('open');
 }

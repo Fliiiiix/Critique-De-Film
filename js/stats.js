@@ -120,6 +120,9 @@ function renderStats(){
 }
 
 function openStats(){
+  // Accessible depuis la modale profil ("Mon activité") — la refermer
+  // d'abord évite deux modales de tailles différentes superposées.
+  closeProfileModal();
   renderStats();
   document.getElementById('statsOverlay').classList.add('open');
 }

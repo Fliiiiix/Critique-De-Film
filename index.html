@@ -19,6 +19,12 @@
       <div class="version-tag">v<b>1.5</b></div>
     </div>
     <div class="user-bar" id="userBar" style="display:none;">
+      <!-- Amis contient Groupes (un groupe se fait avec des amis) — pas
+           d'icône Groupes séparée ici, voir la page Amis. -->
+      <nav class="header-nav">
+        <button class="header-nav-btn" id="watchlistBtn" type="button" title="À voir" aria-label="À voir">🎞️</button>
+        <button class="header-nav-btn" id="friendsBtn" type="button" title="Amis" aria-label="Amis">👥</button>
+      </nav>
       <button class="user-avatar-btn" id="userAvatarBtn" type="button" title="Ton profil" aria-label="Ton profil">
         <img id="userAvatar" class="user-avatar" alt="">
         <span id="userAvatarFallback" class="user-avatar-fallback">👤</span>
@@ -65,14 +71,10 @@
       </select>
     </div>
     <div class="toolbar-actions">
-      <div class="btn-group">
-        <button class="btn secondary" id="statsBtn" title="Statistiques"><span class="btn-icon">📊</span><span class="btn-label">Statistiques</span></button>
-        <button class="btn secondary" id="achievementsBtn" title="Succès"><span class="btn-icon">🏆</span><span class="btn-label">Succès</span></button>
-        <button class="btn secondary" id="watchlistBtn" title="À voir"><span class="btn-icon">🎞️</span><span class="btn-label">À voir</span></button>
-        <button class="btn secondary" id="journalBtn" title="Journal"><span class="btn-icon">📅</span><span class="btn-label">Journal</span></button>
-        <button class="btn secondary" id="friendsBtn" title="Amis"><span class="btn-icon">👥</span><span class="btn-label">Amis</span></button>
-        <button class="btn secondary" id="groupsBtn" title="Groupes"><span class="btn-icon">🎭</span><span class="btn-label">Groupes</span></button>
-      </div>
+      <!-- À voir / Amis / Groupes / Statistiques / Succès / Journal vivent
+           maintenant dans l'entête et la modale profil (voir js/router.js
+           et js/profile.js) — la toolbar ne garde que ce qui agit sur le
+           catalogue affiché ici. -->
       <div class="menu-wrap" id="moreMenuWrap">
         <button class="btn secondary icon-only" id="moreMenuBtn" title="Plus d'options" aria-haspopup="true" aria-expanded="false">⋯</button>
         <div class="dropdown-menu" id="moreMenu">
@@ -120,6 +122,52 @@
   </div>
 
   <div class="wl-list" id="wlList"></div>
+</div>
+
+<!-- Page Amis — écran à part entière comme Watchlist/Groupes, voir
+     js/router.js. Un groupe se fait avec des amis, donc l'accès à Groupes
+     vit ici plutôt que d'avoir sa propre icône dans l'entête (voir la
+     section "Groupes" tout en bas). -->
+<div class="container page" id="amisPage" style="display:none;">
+  <div class="page-header">
+    <button class="btn secondary" id="amisPageBack">← Retour</button>
+    <h2>Amis</h2>
+  </div>
+
+  <div class="field">
+    <label>Ajouter un ami (email exact ou pseudo)</label>
+    <input type="text" id="friendSearchInput" placeholder="toi@example.com ou pseudo" autocomplete="off">
+    <div id="friendSearchResults" class="tmdb-results"></div>
+  </div>
+
+  <div class="stats-section">
+    <div class="stats-section-title">Demandes reçues</div>
+    <div class="wl-list" id="friendRequestsIn"></div>
+  </div>
+
+  <div class="stats-section">
+    <div class="stats-section-title">Demandes envoyées</div>
+    <div class="wl-list" id="friendRequestsOut"></div>
+  </div>
+
+  <div class="stats-section">
+    <div class="stats-section-title">Mes amis</div>
+    <div class="wl-list" id="friendsList"></div>
+  </div>
+
+  <div class="stats-section">
+    <div class="stats-section-title">Groupes</div>
+    <div class="wl-row">
+      <div class="friend-avatar friend-avatar-placeholder">🎭</div>
+      <div class="wl-main">
+        <div class="wl-title">Groupes</div>
+        <div class="wl-note">Créer un groupe avec tes amis, proposer des films, voter</div>
+      </div>
+      <div class="wl-actions">
+        <button class="btn secondary" id="amisGroupsLink" type="button">Ouvrir</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Page Groupes : liste — écran à part entière (pas une modal), voir
@@ -288,6 +336,54 @@
   </div>
 </div>
 
+<!-- Modal profil : identité (pseudo/avatar), vues sur mon activité passée
+     (Statistiques/Succès/Journal — regroupées ici plutôt que mêlées aux
+     actions du quotidien dans la toolbar) et déconnexion. Ouvrir l'une de
+     ces trois modales referme d'abord celle-ci (openStats/openAchievements/
+     openJournal appellent closeProfileModal()) plutôt que de les empiler :
+     deux modales de tailles différentes superposées, ça se voit. -->
+<div class="overlay" id="profileOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Ton profil</h2>
+      <button class="close-x" id="closeProfile">✕</button>
+    </div>
+    <div class="field">
+      <label>Pseudo</label>
+      <input type="text" id="displayNameInput" placeholder="Ton pseudo">
+    </div>
+    <div class="field">
+      <label>Avatar (URL d'une image)</label>
+      <input type="text" id="avatarUrlInput" placeholder="https://…">
+    </div>
+    <div class="field">
+      <label>Ou choisir l'affiche d'un film déjà noté</label>
+      <input type="text" id="avatarFilmSearch" placeholder="Chercher dans tes films…">
+      <div class="tmdb-results" id="avatarFilmResults"></div>
+    </div>
+
+    <div class="profile-activity-section">
+      <div class="stats-section-title">Mon activité</div>
+      <div class="profile-activity-links">
+        <button class="btn secondary" id="statsBtn" type="button">📊 Statistiques</button>
+        <button class="btn secondary" id="achievementsBtn" type="button">🏆 Succès</button>
+        <button class="btn secondary" id="journalBtn" type="button">📅 Journal</button>
+      </div>
+    </div>
+
+    <div class="profile-logout-row">
+      <button class="btn secondary" id="logoutBtn" type="button">Déconnexion</button>
+    </div>
+    <div class="modal-footer">
+      <div></div>
+      <div class="right">
+        <button class="btn secondary" id="cancelProfileBtn">Annuler</button>
+        <button class="btn" id="saveProfileBtn">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal statistiques -->
 <div class="overlay" id="statsOverlay">
   <div class="modal stats-modal">
@@ -321,37 +417,6 @@
   </div>
 </div>
 
-<!-- Modal amis -->
-<div class="overlay" id="friendsOverlay">
-  <div class="modal watchlist-modal">
-    <div class="modal-head">
-      <h2>Amis</h2>
-      <button class="close-x" id="closeFriends">✕</button>
-    </div>
-
-    <div class="field">
-      <label>Ajouter un ami (email exact ou pseudo)</label>
-      <input type="text" id="friendSearchInput" placeholder="toi@example.com ou pseudo" autocomplete="off">
-      <div id="friendSearchResults" class="tmdb-results"></div>
-    </div>
-
-    <div class="stats-section">
-      <div class="stats-section-title">Demandes reçues</div>
-      <div class="wl-list" id="friendRequestsIn"></div>
-    </div>
-
-    <div class="stats-section">
-      <div class="stats-section-title">Demandes envoyées</div>
-      <div class="wl-list" id="friendRequestsOut"></div>
-    </div>
-
-    <div class="stats-section">
-      <div class="stats-section-title">Mes amis</div>
-      <div class="wl-list" id="friendsList"></div>
-    </div>
-  </div>
-</div>
-
 <!-- Modal profil d'un ami (lecture seule : catalogue + stats) -->
 <div class="overlay" id="friendProfileOverlay">
   <div class="modal stats-modal">
@@ -360,39 +425,6 @@
       <button class="close-x" id="closeFriendProfile">✕</button>
     </div>
     <div id="friendProfileContent"></div>
-  </div>
-</div>
-
-<!-- Modal profil -->
-<div class="overlay" id="profileOverlay">
-  <div class="modal">
-    <div class="modal-head">
-      <h2>Ton profil</h2>
-      <button class="close-x" id="closeProfile">✕</button>
-    </div>
-    <div class="field">
-      <label>Pseudo</label>
-      <input type="text" id="displayNameInput" placeholder="Ton pseudo">
-    </div>
-    <div class="field">
-      <label>Avatar (URL d'une image)</label>
-      <input type="text" id="avatarUrlInput" placeholder="https://…">
-    </div>
-    <div class="field">
-      <label>Ou choisir l'affiche d'un film déjà noté</label>
-      <input type="text" id="avatarFilmSearch" placeholder="Chercher dans tes films…">
-      <div class="tmdb-results" id="avatarFilmResults"></div>
-    </div>
-    <div class="profile-logout-row">
-      <button class="btn secondary" id="logoutBtn" type="button">Déconnexion</button>
-    </div>
-    <div class="modal-footer">
-      <div></div>
-      <div class="right">
-        <button class="btn secondary" id="cancelProfileBtn">Annuler</button>
-        <button class="btn" id="saveProfileBtn">Enregistrer</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -408,8 +440,8 @@
 <script src="js/achievements.js"></script>
 <script src="js/journal.js"></script>
 <script src="js/profile.js"></script>
-<script src="js/friends.js"></script>
 <script src="js/router.js"></script>
+<script src="js/friends.js"></script>
 <script src="js/watchlist.js"></script>
 <script src="js/groups.js"></script>
 <script src="js/proposals.js"></script>
