@@ -21,8 +21,9 @@ critique-films/
 ├── js/watchlist.js                    → liste "à voir", séparée du catalogue noté (page routée, voir router.js)
 ├── js/journal.js                       → journal des visionnages, revisionnages
 ├── js/friends.js                        → amis (demande/acceptation) + profil en lecture seule (page routée, voir router.js)
-├── js/router.js                          → routeur par hash (#/groupes/..., #/watchlist, #/amis, #/top), toutes les pages
+├── js/router.js                          → routeur par hash (#/groupes/..., #/watchlist, #/amis, #/top, #/u/:id), toutes les pages
 ├── js/top.js                              → top films (tout le monde / mes amis), page routée
+├── js/publicProfile.js                     → profil public (#/u/:userId), seule page accessible sans connexion
 ├── js/groups.js                          → groupes (famille/amis) : création, membres
 ├── js/proposals.js                        → propositions de films dans un groupe : votes + discussion
 └── supabase/
@@ -203,11 +204,12 @@ remplace pour rester visible et cliquable. La modale permet de définir un
 pseudo et une image d'avatar (URL d'une image, pas d'upload pour l'instant)
 affichés à la place de l'email brut, regroupe les vues sur **mon activité**
 (section "Mon activité" : 📊 Statistiques, 🏆 Succès, 📅 Journal — voir plus
-bas) et la **déconnexion** (bouton séparé par un filet, sous les champs du
-profil — plus dans l'entête). Chaque utilisateur a son propre profil, isolé
-par RLS comme le reste — l'app supporte plusieurs comptes indépendants
-(chacun avec son catalogue privé) dès lors qu'ils se connectent avec leur
-propre email. Nécessite `supabase/migrations/005_add_profiles.sql`.
+bas), le lien du **profil public** (voir plus bas) et la **déconnexion**
+(sur la ligne d'Annuler/Enregistrer, à gauche — plus dans l'entête). Chaque
+utilisateur a son propre profil, isolé par RLS comme le reste — l'app
+supporte plusieurs comptes indépendants (chacun avec son catalogue privé)
+dès lors qu'ils se connectent avec leur propre email. Nécessite
+`supabase/migrations/005_add_profiles.sql`.
 
 Le **titre "Critique de films"** (entête) est lui aussi cliquable — retour à
 l'accueil en un clic depuis n'importe quelle page.
@@ -408,9 +410,30 @@ lisible, plutôt qu'une formule pondérée façon IMDB, overkill vu l'échelle
 (usage personnel entre amis). Nécessite
 `supabase/migrations/015_add_top_films.sql`.
 
+## Profil public
+
+Dans la modale profil, la case **"Profil public (lien à partager, lecture
+seule)"** génère un lien (`#/u/:userId`) menant à une page **accessible
+sans connexion** — seule page de toute l'app dans ce cas. La coche
+n'enregistre qu'au clic sur "Enregistrer", comme le pseudo/l'avatar. La
+page publique montre pseudo, avatar, quelques tuiles (films notés / note
+moyenne / favoris) et le catalogue trié par note — jamais l'email ni les
+commentaires (`review`), désactivé par défaut (opt-in).
+
+Techniquement : colonne `profiles.public_profile` (`false` par défaut) +
+une fonction `SECURITY DEFINER` `get_public_profile(p_user_id)`, seule
+fonction de tout le projet accordée au rôle `anon` (toutes les autres
+exigent `authenticated`). Elle lit `films`/`profiles` de l'utilisateur visé
+en interne, mais ne renvoie que pseudo/avatar/catalogue agrégé — jamais de
+ligne brute — et 0 ligne (sans distinguer "profil inexistant" de "resté
+privé") tant que `public_profile` n'est pas passé à `true`. Testé en
+conditions réelles contre la prod : bascule public → appel direct avec un
+client Supabase 100% anonyme (aucune session) → contenu correct reçu →
+bascule retour à privé → le même client anonyme ne reçoit plus rien.
+Nécessite `supabase/migrations/016_add_public_profile.sql`.
+
 ## Prochaines étapes possibles
 
-- Profil partageable (page publique en lecture seule)
 - Happenings façon Letterboxd (défis/événements autour d'une sélection de films)
 - Upload d'avatar réel (Supabase Storage) plutôt qu'une URL
 - Cache local (offline-first) pour continuer à consulter/noter sans réseau

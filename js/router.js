@@ -21,8 +21,14 @@
 // openProposalDetail, openWatchlist, openFriends...) restent dans
 // js/groups.js, js/proposals.js, js/watchlist.js et js/friends.js — ce
 // fichier ne fait que décider laquelle appeler.
+//
+// #/u/:userId (js/publicProfile.js) est à part : seule page accessible SANS
+// connexion (lien à partager) — voir le if(route.name === 'publicProfile')
+// tout en haut de renderRoute(), avant le if(!currentUser) qui bloque tout
+// le reste, et js/auth.js → initAuth() qui la laisse passer avant même de
+// vérifier la session Supabase.
 
-const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage', 'amisPage', 'topPage'];
+const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage', 'amisPage', 'topPage', 'publicProfilePage'];
 
 // null cache tout (utile pour l'écran de connexion / maintenance, qui gère
 // sa propre visibilité par ailleurs).
@@ -39,6 +45,7 @@ function goToProposal(groupId, proposalId){ location.hash = `#/groupes/${groupId
 function goToWatchlist(){ location.hash = '#/watchlist'; }
 function goToAmis(){ location.hash = '#/amis'; }
 function goToTop(){ location.hash = '#/top'; }
+function goToPublicProfile(userId){ location.hash = `#/u/${userId}`; }
 
 function parseRoute(){
   const hash = location.hash.replace(/^#\/?/, '');
@@ -46,6 +53,7 @@ function parseRoute(){
   if(parts[0] === 'watchlist' && parts.length === 1) return { name: 'watchlist' };
   if(parts[0] === 'amis' && parts.length === 1) return { name: 'amis' };
   if(parts[0] === 'top' && parts.length === 1) return { name: 'top' };
+  if(parts[0] === 'u' && parts.length === 2) return { name: 'publicProfile', userId: parts[1] };
   if(parts[0] !== 'groupes') return { name: 'home' };
   if(parts.length === 1) return { name: 'groupsList' };
   const groupId = parseInt(parts[1], 10);
@@ -61,8 +69,16 @@ function parseRoute(){
 // Appelé au hashchange et une fois après connexion (pour gérer un lien
 // direct vers une page groupe/proposition, y compris après un F5).
 async function renderRoute(){
-  if(!currentUser) return;
   const route = parseRoute();
+  // Seule page qui doit marcher sans session (voir le commentaire en haut
+  // de ce fichier) — vérifiée avant le if(!currentUser) qui bloque tout le
+  // reste, pour rester accessible qu'on soit connecté ou non.
+  if(route.name === 'publicProfile'){
+    showOnlyPage('publicProfilePage');
+    await renderPublicProfilePage(route.userId);
+    return;
+  }
+  if(!currentUser) return;
   if(route.name === 'home'){
     showOnlyPage('appContainer');
   }else if(route.name === 'watchlist'){

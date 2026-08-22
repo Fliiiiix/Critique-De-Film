@@ -716,6 +716,21 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin-top:4px;
   margin-left:24px;
 }
+/* Lien du profil public (#publicProfileLinkHint) : même bloc que
+   .manual-toggle-hint, plus une ligne lien + bouton Copier. */
+.public-profile-link-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:8px;
+  font-style:normal;
+}
+.public-profile-link-row span{
+  font-family:'IBM Plex Mono', monospace;
+  color:var(--teal);
+  overflow-wrap:anywhere;
+  flex:1;
+}
 
 .criterion{
   border-top:1px solid var(--hairline);
@@ -851,6 +866,32 @@ input[type="range"]::-moz-range-thumb{
 
 /* Statistiques */
 .stats-modal{max-width:720px;}
+/* Entête du profil public (#/u/:userId, voir js/publicProfile.js) : avatar
+   agrandi + pseudo, puis les mêmes .stat-tiles que Statistiques. */
+.public-profile-header{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-bottom:24px;
+}
+.public-profile-header img, .public-profile-header .avatar-fallback{
+  width:64px; height:64px;
+  border-radius:50%;
+  object-fit:cover;
+  border:1px solid var(--hairline);
+  flex:none;
+}
+.public-profile-header .avatar-fallback{
+  display:flex; align-items:center; justify-content:center;
+  background:var(--surface-2);
+  font-size:26px;
+}
+.public-profile-header h3{
+  font-family:'Fraunces', serif;
+  font-style:italic;
+  font-weight:500;
+  font-size:22px;
+}
 .stat-tiles{
   display:grid;
   grid-template-columns:repeat(auto-fit, minmax(110px, 1fr));

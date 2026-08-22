@@ -13,7 +13,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=2">
+<link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body>
 
@@ -124,6 +124,18 @@
   <div class="count-line" id="countLine"></div>
   <div id="filmList"></div>
   <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- Page profil public (#/u/:userId) — seule page accessible SANS
+     connexion (lien à partager), voir js/publicProfile.js et
+     js/router.js. En dehors du flux normal connexion/app : elle doit
+     rester affichable même si personne n'est authentifié. -->
+<div class="container" id="publicProfilePage" style="display:none;">
+  <div class="page-header">
+    <button class="btn secondary" id="publicProfileBack">← Retour</button>
+    <h2>Profil</h2>
+  </div>
+  <div id="publicProfileContent"></div>
 </div>
 
 <!-- Page Watchlist ("à voir") — écran à part entière comme Groupes, voir
@@ -414,6 +426,21 @@
       <div class="tmdb-results" id="avatarFilmResults"></div>
     </div>
 
+    <!-- Opt-in, false par défaut côté base (supabase/migrations/016) —
+         seule donnée de l'app lisible sans connexion une fois activée, voir
+         js/publicProfile.js. -->
+    <label class="manual-toggle-label">
+      <input type="checkbox" id="publicProfileToggle">
+      <span>Profil public (lien à partager, lecture seule)</span>
+    </label>
+    <div class="manual-toggle-hint" id="publicProfileLinkHint" style="display:none;">
+      Pseudo, avatar et tes films notés (titre, affiche, note) seront visibles par quiconque a le lien — jamais ton email ni tes commentaires.
+      <div class="public-profile-link-row">
+        <span id="publicProfileLinkText"></span>
+        <button class="crit-help-toggle" id="copyPublicProfileLink" type="button">Copier</button>
+      </div>
+    </div>
+
     <div class="profile-activity-section">
       <div class="stats-section-title">Mon activité</div>
       <div class="profile-activity-links">
@@ -482,21 +509,22 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=2"></script>
-<script src="js/tmdbConfig.js?v=2"></script>
-<script src="js/data.js?v=2"></script>
-<script src="js/app.js?v=2"></script>
-<script src="js/tmdb.js?v=2"></script>
-<script src="js/stats.js?v=2"></script>
-<script src="js/achievements.js?v=2"></script>
-<script src="js/journal.js?v=2"></script>
-<script src="js/profile.js?v=2"></script>
-<script src="js/router.js?v=2"></script>
-<script src="js/top.js?v=2"></script>
-<script src="js/friends.js?v=2"></script>
-<script src="js/watchlist.js?v=2"></script>
-<script src="js/groups.js?v=2"></script>
-<script src="js/proposals.js?v=2"></script>
-<script src="js/auth.js?v=2"></script>
+<script src="js/supabaseConfig.js?v=3"></script>
+<script src="js/tmdbConfig.js?v=3"></script>
+<script src="js/data.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
+<script src="js/tmdb.js?v=3"></script>
+<script src="js/stats.js?v=3"></script>
+<script src="js/achievements.js?v=3"></script>
+<script src="js/journal.js?v=3"></script>
+<script src="js/profile.js?v=3"></script>
+<script src="js/router.js?v=3"></script>
+<script src="js/publicProfile.js?v=3"></script>
+<script src="js/top.js?v=3"></script>
+<script src="js/friends.js?v=3"></script>
+<script src="js/watchlist.js?v=3"></script>
+<script src="js/groups.js?v=3"></script>
+<script src="js/proposals.js?v=3"></script>
+<script src="js/auth.js?v=3"></script>
 </body>
 </html>

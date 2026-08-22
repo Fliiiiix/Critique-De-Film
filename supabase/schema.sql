@@ -51,6 +51,10 @@ create table public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   display_name text,
   avatar_url text,
+  -- Opt-in pour la page publique #/u/:userId, voir get_public_profile()
+  -- plus bas et migrations/016. false par défaut : personne n'est exposé
+  -- sans l'avoir explicitement choisi.
+  public_profile boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -529,3 +533,54 @@ $$;
 
 revoke all on function public.get_friends_top_films(int) from public;
 grant execute on function public.get_friends_top_films(int) to authenticated;
+
+-- Profil partageable : page publique en lecture seule (#/u/:userId, voir
+-- js/publicProfile.js, migrations/016), SANS connexion requise — seule
+-- fonction de tout ce fichier accordée à `anon`. Lue par n'importe qui,
+-- mais renvoie uniquement pseudo/avatar + un résumé du catalogue
+-- (titre/affiche/année/note/favori), jamais l'email ni review, et rien du
+-- tout si public_profile est resté à false (0 ligne, sans distinguer
+-- "profil inexistant" de "profil privé").
+create or replace function public.get_public_profile(p_user_id uuid)
+returns table(
+  display_name text,
+  avatar_url text,
+  films jsonb
+)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  with prof as (
+    select display_name, avatar_url
+    from public.profiles
+    where user_id = p_user_id and public_profile = true
+  ),
+  scored as (
+    select
+      f.title, f.poster_url, f.release_year, f.fav,
+      coalesce(f.manual_note, (
+        select round(avg(v.value::numeric) * 10) / 2
+        from jsonb_each_text(f.crit) as v
+      )) as note
+    from public.films f
+    where f.user_id = p_user_id and exists (select 1 from prof)
+  )
+  select
+    prof.display_name,
+    prof.avatar_url,
+    coalesce(jsonb_agg(jsonb_build_object(
+      'title', scored.title,
+      'poster_url', scored.poster_url,
+      'release_year', scored.release_year,
+      'note', scored.note,
+      'fav', scored.fav
+    ) order by scored.note desc nulls last) filter (where scored.title is not null), '[]'::jsonb) as films
+  from prof
+  left join scored on true
+  group by prof.display_name, prof.avatar_url;
+$$;
+
+revoke all on function public.get_public_profile(uuid) from public;
+grant execute on function public.get_public_profile(uuid) to anon, authenticated;

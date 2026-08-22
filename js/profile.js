@@ -86,8 +86,35 @@ function openProfileModal(){
   document.getElementById('avatarUrlInput').value = (currentProfile && currentProfile.avatar_url) || '';
   document.getElementById('avatarFilmSearch').value = '';
   document.getElementById('avatarFilmResults').innerHTML = '';
+  document.getElementById('publicProfileToggle').checked = !!(currentProfile && currentProfile.public_profile);
+  updatePublicProfileLinkVisibility();
   document.getElementById('profileOverlay').classList.add('open');
 }
+
+// --- Profil public (#/u/:userId, voir js/publicProfile.js) ---
+// Juste le lien à afficher/copier ici — la case n'est enregistrée en base
+// qu'au clic sur "Enregistrer" (handleSaveProfile), comme le pseudo/avatar.
+
+function publicProfileUrl(){
+  return `${location.origin}${location.pathname}#/u/${currentUser.id}`;
+}
+
+function updatePublicProfileLinkVisibility(){
+  const on = document.getElementById('publicProfileToggle').checked;
+  document.getElementById('publicProfileLinkHint').style.display = on ? '' : 'none';
+  if(on) document.getElementById('publicProfileLinkText').textContent = publicProfileUrl();
+}
+document.getElementById('publicProfileToggle').addEventListener('change', updatePublicProfileLinkVisibility);
+
+document.getElementById('copyPublicProfileLink').addEventListener('click', async () => {
+  try{
+    await navigator.clipboard.writeText(publicProfileUrl());
+    showToast('Lien copié');
+  }catch(e){
+    showToast('Impossible de copier — sélectionne le lien à la main');
+    console.error(e);
+  }
+});
 
 // --- Choisir l'affiche d'un film déjà noté comme avatar ---
 // Réutilise les films déjà chargés (js/app.js) et le style .tmdb-result —
@@ -134,10 +161,11 @@ function closeProfileModal(){
 async function handleSaveProfile(){
   const display_name = document.getElementById('displayNameInput').value.trim() || null;
   const avatar_url = document.getElementById('avatarUrlInput').value.trim() || null;
+  const public_profile = document.getElementById('publicProfileToggle').checked;
 
   const { data, error } = await supabaseClient
     .from('profiles')
-    .update({ display_name, avatar_url })
+    .update({ display_name, avatar_url, public_profile })
     .eq('user_id', currentUser.id)
     .select()
     .single();

@@ -87,6 +87,12 @@ document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 (async function initAuth(){
   buildSprockets();
   buildSortOptions();
+  // Lien de profil public (#/u/:userId) : doit s'afficher même sans compte,
+  // donc avant tout le reste — ni maintenance, ni session Supabase à
+  // vérifier pour une simple page en lecture seule. Un F5 ou un lien direct
+  // sur cette URL ne passe pas par hashchange (voir js/router.js), d'où ce
+  // rendu explicite ici.
+  if(parseRoute().name === 'publicProfile'){ await renderRoute(); return; }
   if(await checkMaintenance()) return; // stoppe tout : pas de session, pas de films chargés
   const { data: { session } } = await supabaseClient.auth.getSession();
   handleSession(session);
