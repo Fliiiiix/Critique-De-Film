@@ -120,6 +120,20 @@ critères) est rejeté sans toucher aux données existantes.
 Chaque critère a une définition fixe, une échelle de repères (0 / 0.5 / 1) et
 4 questions pour trancher rapidement — voir `js/data.js`.
 
+### Trier/filtrer par critère individuel
+
+Le tri du catalogue (`#sortBy`) ne se limite pas à la note globale : un
+groupe d'options "Par critère" (généré depuis `CRITERIA`, voir
+`buildSortOptions()` dans `js/app.js`) permet de trier par n'importe lequel
+des 7 critères pris isolément (ex. classer par Jeu d'acteur, indépendamment
+du reste). En triant par un critère, un curseur de seuil apparaît sous la
+barre d'outils (`#critFilterRow`) pour ne garder que les films notés
+au-dessus d'une valeur donnée sur ce critère précis — filtre et tri
+partagent le même critère plutôt que deux contrôles séparés à synchroniser.
+Un film en note manuelle (pas de grille remplie) n'a pas de valeur pour un
+critère donné : il sort du classement dès qu'un seuil > 0 est actif, plutôt
+que d'être simplement mal classé.
+
 ### Note manuelle (exception à la grille)
 
 Dans le formulaire, la case **Note manuelle — sans passer par la grille**
@@ -395,7 +409,6 @@ lisible, plutôt qu'une formule pondérée façon IMDB, overkill vu l'échelle
 
 ## Prochaines étapes possibles
 
-- Filtrer/trier par critère individuel, pas seulement par note globale
 - Profil partageable (page publique en lecture seule)
 - Happenings façon Letterboxd (défis/événements autour d'une sélection de films)
 - Upload d'avatar réel (Supabase Storage) plutôt qu'une URL

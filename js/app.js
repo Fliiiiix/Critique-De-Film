@@ -100,6 +100,23 @@ function fillSprockets(id, count){
   }
 }
 
+// Un ↓/↑ par critère dans #sortBy, généré depuis CRITERIA (js/data.js)
+// plutôt que dupliqué à la main dans index.html — évite le décalage si un
+// critère est renommé/ajouté un jour.
+function buildSortOptions(){
+  document.getElementById('critSortGroup').innerHTML = CRITERIA.map(c => `
+    <option value="crit-${c.key}-desc">${escapeHtml(c.label)} ↓</option>
+    <option value="crit-${c.key}-asc">${escapeHtml(c.label)} ↑</option>
+  `).join('');
+}
+
+// "crit-scenario-desc" -> { key:'scenario', dir:'desc' } ; null si #sortBy
+// pointe sur une des options fixes (note globale, titre, favoris, récent).
+function parseSortValue(sortBy){
+  const m = /^crit-(.+)-(asc|desc)$/.exec(sortBy);
+  return m ? { key: m[1], dir: m[2] } : null;
+}
+
 function buildSprockets(){
   fillSprockets('sprocketsTop', 40);
   // Colonnes verticales le long des côtés (voir css .sprockets-side) : bien
@@ -114,12 +131,26 @@ function render(){
   const countLine = document.getElementById('countLine');
   const search = normalizeSearch(document.getElementById('search').value.trim());
   const sortBy = document.getElementById('sortBy').value;
+  const critSort = parseSortValue(sortBy);
+  const critFilterMin = critSort ? parseFloat(document.getElementById('critFilterMin').value) : 0;
 
   // Matche le titre FR ou le titre VO (ex. "créatures féroces" trouve aussi
   // "Fierce Creatures"), accents/casse ignorés — voir getSearchTerms().
   let filtered = films.filter(f => !search || getSearchTerms(f).some(t => t.includes(search)));
 
+  // Seuil sur le critère en cours de tri (voir #critFilterRow) — un film
+  // noté en note manuelle n'a pas cette valeur (crit vide) et sort donc du
+  // lot dès que le seuil dépasse 0, pas juste mal classé.
+  if(critSort && critFilterMin > 0){
+    filtered = filtered.filter(f => typeof f.crit[critSort.key] === 'number' && f.crit[critSort.key] >= critFilterMin);
+  }
+
   filtered.sort((a,b) => {
+    if(critSort){
+      const av = typeof a.crit[critSort.key] === 'number' ? a.crit[critSort.key] : -1;
+      const bv = typeof b.crit[critSort.key] === 'number' ? b.crit[critSort.key] : -1;
+      return critSort.dir === 'desc' ? bv - av : av - bv;
+    }
     if(sortBy === 'note-desc') return (getDisplayNote(b)||0) - (getDisplayNote(a)||0);
     if(sortBy === 'note-asc') return (getDisplayNote(a)||0) - (getDisplayNote(b)||0);
     if(sortBy === 'title-asc') return a.title.localeCompare(b.title, 'fr');
@@ -128,7 +159,8 @@ function render(){
     return 0;
   });
 
-  countLine.textContent = `${filtered.length} film${filtered.length>1?'s':''} ${search ? '(filtré)' : 'au catalogue'}`;
+  const isFiltered = !!search || (critSort && critFilterMin > 0);
+  countLine.textContent = `${filtered.length} film${filtered.length>1?'s':''} ${isFiltered ? '(filtré)' : 'au catalogue'}`;
 
   if(filtered.length === 0){
     list.innerHTML = `<div class="empty-state">Aucun film. Clique sur « + Ajouter un film » pour commencer une nouvelle pellicule.</div>`;
@@ -524,7 +556,28 @@ document.getElementById('overlay').addEventListener('click', (e) => {
   if(e.target.id === 'overlay') closeModal();
 });
 document.getElementById('search').addEventListener('input', () => { currentPage = 1; render(); });
-document.getElementById('sortBy').addEventListener('change', () => { currentPage = 1; render(); });
+
+// Le seuil (#critFilterRow) n'a de sens qu'en triant par un critère
+// individuel — masqué et remis à 0 sinon, pour ne pas laisser un filtre
+// invisible actif après être revenu à "Note globale".
+function updateCritFilterVisibility(){
+  const active = !!parseSortValue(document.getElementById('sortBy').value);
+  document.getElementById('critFilterRow').style.display = active ? '' : 'none';
+  if(!active){
+    document.getElementById('critFilterMin').value = 0;
+    document.getElementById('critFilterMinVal').textContent = '0.00';
+  }
+}
+document.getElementById('sortBy').addEventListener('change', () => {
+  currentPage = 1;
+  updateCritFilterVisibility();
+  render();
+});
+document.getElementById('critFilterMin').addEventListener('input', (e) => {
+  document.getElementById('critFilterMinVal').textContent = parseFloat(e.target.value).toFixed(2);
+  currentPage = 1;
+  render();
+});
 document.getElementById('exportBtn').addEventListener('click', exportFilms);
 document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
 document.getElementById('importFile').addEventListener('change', (e) => {

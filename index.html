@@ -69,8 +69,11 @@
     <div class="toolbar-search">
       <input type="text" id="search" placeholder="Rechercher un film…">
       <select id="sortBy">
-        <option value="note-desc">Note ↓</option>
-        <option value="note-asc">Note ↑</option>
+        <option value="note-desc">Note globale ↓</option>
+        <option value="note-asc">Note globale ↑</option>
+        <!-- Un ↓/↑ par critère (voir js/data.js CRITERIA), généré par
+             buildSortOptions() dans js/app.js — pas de doublon à la main. -->
+        <optgroup label="Par critère" id="critSortGroup"></optgroup>
         <option value="title-asc">Titre A–Z</option>
         <option value="fav-first">Favoris d'abord</option>
         <option value="recent">Ajout récent</option>
@@ -91,6 +94,15 @@
       <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
       <button class="btn" id="openAddBtn">+ Ajouter un film</button>
     </div>
+  </div>
+  <!-- Visible seulement en triant par un critère individuel (voir
+       updateCritFilterVisibility() dans js/app.js) : sert autant à filtrer
+       (ne garder que les films au-dessus d'un seuil) qu'à situer le tri en
+       cours. Hors de .toolbar pour prendre toute la largeur sur sa propre
+       ligne plutôt que de rejoindre le flex de la toolbar. -->
+  <div class="crit-filter-row" id="critFilterRow" style="display:none;">
+    <label for="critFilterMin">Seuil minimum sur ce critère : <b id="critFilterMinVal">0.00</b></label>
+    <input type="range" id="critFilterMin" min="0" max="1" step="0.05" value="0">
   </div>
   <div class="count-line" id="countLine"></div>
   <div id="filmList"></div>

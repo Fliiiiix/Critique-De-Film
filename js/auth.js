@@ -86,6 +86,7 @@ document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
 (async function initAuth(){
   buildSprockets();
+  buildSortOptions();
   if(await checkMaintenance()) return; // stoppe tout : pas de session, pas de films chargés
   const { data: { session } } = await supabaseClient.auth.getSession();
   handleSession(session);
