@@ -84,12 +84,61 @@ function renderUserBar(){
 function openProfileModal(){
   document.getElementById('displayNameInput').value = (currentProfile && currentProfile.display_name) || '';
   document.getElementById('avatarUrlInput').value = (currentProfile && currentProfile.avatar_url) || '';
+  document.getElementById('avatarFileInput').value = '';
+  document.getElementById('avatarUploadStatus').textContent = '';
+  document.getElementById('avatarUploadStatus').classList.remove('error');
   document.getElementById('avatarFilmSearch').value = '';
   document.getElementById('avatarFilmResults').innerHTML = '';
   document.getElementById('publicProfileToggle').checked = !!(currentProfile && currentProfile.public_profile);
   updatePublicProfileLinkVisibility();
   document.getElementById('profileOverlay').classList.add('open');
 }
+
+// --- Upload d'avatar réel (Supabase Storage, voir migrations/017) ---
+// Envoi dès le choix du fichier (pas de bouton "Uploader" séparé) : remplit
+// avatarUrlInput avec l'URL publique obtenue, même principe que le choix
+// d'une affiche de film ci-dessous — un seul champ fait foi à
+// l'enregistrement (handleSaveProfile).
+
+const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
+
+async function handleAvatarFileUpload(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const status = document.getElementById('avatarUploadStatus');
+  status.classList.remove('error');
+
+  if(file.size > AVATAR_MAX_BYTES){
+    status.textContent = 'Image trop lourde (5 Mo max).';
+    status.classList.add('error');
+    e.target.value = '';
+    return;
+  }
+
+  status.textContent = 'Envoi…';
+  // Chemin fixe par utilisateur : un nouvel upload remplace l'ancien avatar
+  // au lieu d'accumuler des fichiers orphelins dans le bucket.
+  const path = `${currentUser.id}/avatar`;
+  const { error: upErr } = await supabaseClient.storage
+    .from('avatars')
+    .upload(path, file, { upsert: true, contentType: file.type });
+
+  if(upErr){
+    status.textContent = 'Erreur d\'envoi — réessaie.';
+    status.classList.add('error');
+    console.error(upErr);
+    return;
+  }
+
+  const { data } = supabaseClient.storage.from('avatars').getPublicUrl(path);
+  // ?t=... : l'URL publique est la même à chaque upload (chemin fixe) —
+  // sans ça, le cache du navigateur (ou d'un autre visiteur) pourrait
+  // garder l'ancienne image malgré le remplacement côté Storage.
+  document.getElementById('avatarUrlInput').value = `${data.publicUrl}?t=${Date.now()}`;
+  status.textContent = 'Image envoyée ✓';
+  e.target.value = '';
+}
+document.getElementById('avatarFileInput').addEventListener('change', handleAvatarFileUpload);
 
 // --- Profil public (#/u/:userId, voir js/publicProfile.js) ---
 // Juste le lien à afficher/copier ici — la case n'est enregistrée en base
@@ -143,6 +192,7 @@ function renderAvatarFilmResults(query){
     `;
     item.addEventListener('click', () => {
       document.getElementById('avatarUrlInput').value = f.posterUrl;
+      document.getElementById('avatarUploadStatus').textContent = '';
       wrap.innerHTML = '';
       document.getElementById('avatarFilmSearch').value = '';
     });

@@ -201,15 +201,40 @@ Pas de bouton "Profil" séparé dans l'entête : la **photo de profil**
 elle-même (agrandie, en haut à droite) fait office de bouton — cliquer
 dessus ouvre la modale profil. Sans avatar renseigné, une icône 👤 la
 remplace pour rester visible et cliquable. La modale permet de définir un
-pseudo et une image d'avatar (URL d'une image, pas d'upload pour l'instant)
-affichés à la place de l'email brut, regroupe les vues sur **mon activité**
-(section "Mon activité" : 📊 Statistiques, 🏆 Succès, 📅 Journal — voir plus
-bas), le lien du **profil public** (voir plus bas) et la **déconnexion**
-(sur la ligne d'Annuler/Enregistrer, à gauche — plus dans l'entête). Chaque
-utilisateur a son propre profil, isolé par RLS comme le reste — l'app
-supporte plusieurs comptes indépendants (chacun avec son catalogue privé)
-dès lors qu'ils se connectent avec leur propre email. Nécessite
+pseudo et un avatar — trois façons au choix, qui remplissent toutes le même
+champ URL au final : coller une URL d'image, **uploader un fichier depuis
+l'appareil** (5 Mo max, voir plus bas), ou choisir l'affiche d'un film déjà
+noté. Regroupe aussi les vues sur **mon activité** (section "Mon activité" :
+📊 Statistiques, 🏆 Succès, 📅 Journal — voir plus bas), le lien du **profil
+public** (voir plus bas) et la **déconnexion** (sur la ligne
+d'Annuler/Enregistrer, à gauche — plus dans l'entête). Chaque utilisateur a
+son propre profil, isolé par RLS comme le reste — l'app supporte plusieurs
+comptes indépendants (chacun avec son catalogue privé) dès lors qu'ils se
+connectent avec leur propre email. Nécessite
 `supabase/migrations/005_add_profiles.sql`.
+
+### Upload d'avatar (Supabase Storage)
+
+La case "Ou uploader une image depuis cet appareil" envoie le fichier dès
+qu'il est choisi (pas de bouton "Uploader" séparé) et remplit le champ URL
+avec l'adresse publique obtenue — même principe que le choix d'une affiche
+de film. Chemin fixe par utilisateur (`avatars/<user_id>/avatar`, sans
+extension : le type MIME suffit au navigateur) : un nouvel upload remplace
+l'ancien avatar plutôt que d'accumuler des fichiers orphelins dans le
+bucket, et l'URL générée porte un `?t=` (horodatage) pour éviter qu'un
+navigateur (ou un autre visiteur) garde l'ancienne image en cache après un
+remplacement.
+
+Techniquement : bucket Storage `avatars`, public en lecture (l'avatar doit
+s'afficher pour les amis et sur le profil public, qui n'exige pas de
+connexion) mais chacun ne peut écrire que dans son propre dossier — policies
+sur `storage.objects` scopées via `(storage.foldername(name))[1] =
+auth.uid()::text`. Limites appliquées côté bucket (5 Mo, PNG/JPEG/WebP/GIF
+uniquement), pas seulement côté client. Testé en conditions réelles contre
+la prod : upload dans son propre dossier accepté, lecture publique OK
+(200, bon `content-type`), tentative d'upload dans le dossier d'un autre
+utilisateur rejetée par la policy RLS. Nécessite
+`supabase/migrations/017_add_avatar_storage.sql`.
 
 Le **titre "Critique de films"** (entête) est lui aussi cliquable — retour à
 l'accueil en un clic depuis n'importe quelle page.
@@ -435,5 +460,4 @@ Nécessite `supabase/migrations/016_add_public_profile.sql`.
 ## Prochaines étapes possibles
 
 - Happenings façon Letterboxd (défis/événements autour d'une sélection de films)
-- Upload d'avatar réel (Supabase Storage) plutôt qu'une URL
 - Cache local (offline-first) pour continuer à consulter/noter sans réseau

@@ -584,3 +584,32 @@ $$;
 
 revoke all on function public.get_public_profile(uuid) from public;
 grant execute on function public.get_public_profile(uuid) to anon, authenticated;
+
+-- Upload d'avatar réel (Supabase Storage), voir migrations/017 et la case
+-- "Ou uploader une image" dans js/profile.js. Bucket public en lecture
+-- (l'avatar doit s'afficher pour les amis et sur le profil public, qui
+-- n'exige pas de connexion) mais chacun ne peut écrire que dans son propre
+-- dossier (avatars/<user_id>/...). Chemin fixe par utilisateur : re-uploader
+-- remplace l'ancien avatar plutôt que d'accumuler des fichiers orphelins.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('avatars', 'avatars', true, 5242880, array['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+create policy "Public read access on avatars"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
+create policy "Users can upload their own avatar"
+  on storage.objects for insert
+  with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "Users can update their own avatar"
+  on storage.objects for update
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "Users can delete their own avatar"
+  on storage.objects for delete
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
