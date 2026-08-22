@@ -68,15 +68,16 @@
   <div class="toolbar">
     <div class="toolbar-search">
       <input type="text" id="search" placeholder="Rechercher un film…">
+      <!-- Sélecteur général : les tris courants, plus une porte d'entrée
+           vers le tri par critère individuel (voir #sortAdvancedRow) plutôt
+           que d'entasser les 14 options (7 critères × ↓/↑) ici même. -->
       <select id="sortBy">
         <option value="note-desc">Note globale ↓</option>
         <option value="note-asc">Note globale ↑</option>
-        <!-- Un ↓/↑ par critère (voir js/data.js CRITERIA), généré par
-             buildSortOptions() dans js/app.js — pas de doublon à la main. -->
-        <optgroup label="Par critère" id="critSortGroup"></optgroup>
         <option value="title-asc">Titre A–Z</option>
         <option value="fav-first">Favoris d'abord</option>
         <option value="recent">Ajout récent</option>
+        <option value="advanced">Par critère…</option>
       </select>
     </div>
     <div class="toolbar-actions">
@@ -95,13 +96,20 @@
       <button class="btn" id="openAddBtn">+ Ajouter un film</button>
     </div>
   </div>
-  <!-- Visible seulement en triant par un critère individuel (voir
-       updateCritFilterVisibility() dans js/app.js) : sert autant à filtrer
-       (ne garder que les films au-dessus d'un seuil) qu'à situer le tri en
-       cours. Hors de .toolbar pour prendre toute la largeur sur sa propre
-       ligne plutôt que de rejoindre le flex de la toolbar. -->
-  <div class="crit-filter-row" id="critFilterRow" style="display:none;">
-    <label for="critFilterMin">Seuil minimum sur ce critère : <b id="critFilterMinVal">0.00</b></label>
+  <!-- Sélecteur avancé : visible seulement quand #sortBy vaut "advanced"
+       (voir updateSortMode() dans js/app.js). Critère + sens + seuil, tous
+       les trois liés au même critère plutôt que des contrôles séparés à
+       synchroniser. Hors de .toolbar pour prendre toute la largeur sur sa
+       propre ligne plutôt que de rejoindre le flex de la toolbar. -->
+  <div class="sort-advanced-row" id="sortAdvancedRow" style="display:none;">
+    <!-- Un <option> par critère (voir js/data.js CRITERIA), généré par
+         buildSortOptions() dans js/app.js — pas de doublon à la main. -->
+    <select id="sortCriterion"></select>
+    <div class="sort-dir-toggle">
+      <button class="btn secondary active" id="sortDirDesc" type="button" title="Décroissant">↓</button>
+      <button class="btn secondary" id="sortDirAsc" type="button" title="Croissant">↑</button>
+    </div>
+    <label for="critFilterMin">Seuil minimum : <b id="critFilterMinVal">0.00</b></label>
     <input type="range" id="critFilterMin" min="0" max="1" step="0.05" value="0">
   </div>
   <div class="count-line" id="countLine"></div>

@@ -122,17 +122,18 @@ Chaque critère a une définition fixe, une échelle de repères (0 / 0.5 / 1) e
 
 ### Trier/filtrer par critère individuel
 
-Le tri du catalogue (`#sortBy`) ne se limite pas à la note globale : un
-groupe d'options "Par critère" (généré depuis `CRITERIA`, voir
-`buildSortOptions()` dans `js/app.js`) permet de trier par n'importe lequel
-des 7 critères pris isolément (ex. classer par Jeu d'acteur, indépendamment
-du reste). En triant par un critère, un curseur de seuil apparaît sous la
-barre d'outils (`#critFilterRow`) pour ne garder que les films notés
-au-dessus d'une valeur donnée sur ce critère précis — filtre et tri
-partagent le même critère plutôt que deux contrôles séparés à synchroniser.
-Un film en note manuelle (pas de grille remplie) n'a pas de valeur pour un
-critère donné : il sort du classement dès qu'un seuil > 0 est actif, plutôt
-que d'être simplement mal classé.
+Deux niveaux plutôt qu'un seul sélecteur surchargé : le tri général
+(`#sortBy` — Note globale, Titre, Favoris, Récent) propose une dernière
+option **"Par critère…"** qui révèle un second sélecteur avancé
+(`#sortAdvancedRow`) — lequel des 7 critères (généré depuis `CRITERIA`, voir
+`buildSortOptions()` dans `js/app.js`), un bouton-bascule ↓/↑ pour le sens,
+et un curseur de seuil pour ne garder que les films notés au-dessus d'une
+valeur donnée sur ce critère précis. Les trois (critère, sens, seuil)
+portent sur le même critère plutôt que des contrôles déconnectés à
+synchroniser à la main. Un film en note manuelle (pas de grille remplie)
+n'a pas de valeur pour un critère donné : il sort du classement dès qu'un
+seuil > 0 est actif, plutôt que d'être simplement mal classé. Revenir à un
+tri général masque et réinitialise le sélecteur avancé.
 
 ### Note manuelle (exception à la grille)
 

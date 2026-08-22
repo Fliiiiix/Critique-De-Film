@@ -206,10 +206,12 @@ h1{
   min-width:240px;
 }
 .toolbar-search select{flex:none;}
-/* Seuil sur le critère en cours de tri (#sortBy) — voir index.html et
-   updateCritFilterVisibility() dans js/app.js. Tirée vers le haut pour
-   rester rattachée visuellement à la toolbar plutôt que de flotter seule. */
-.crit-filter-row{
+/* Tri par critère individuel (#sortBy = "advanced") — voir index.html et
+   updateSortMode() dans js/app.js. Critère + sens + seuil ensemble plutôt
+   que d'entasser 14 options (7 critères × ↓/↑) dans le sélecteur général.
+   Tirée vers le haut pour rester rattachée visuellement à la toolbar
+   plutôt que de flotter seule. */
+.sort-advanced-row{
   display:flex;
   align-items:center;
   flex-wrap:wrap;
@@ -219,8 +221,11 @@ h1{
   font-size:12px;
   color:var(--text-muted);
 }
-.crit-filter-row b{color:var(--amber); font-weight:600;}
-.crit-filter-row input[type="range"]{flex:1; min-width:120px; max-width:280px;}
+.sort-advanced-row b{color:var(--amber); font-weight:600;}
+.sort-advanced-row input[type="range"]{flex:1; min-width:120px; max-width:240px;}
+.sort-dir-toggle{display:flex; gap:4px;}
+.sort-dir-toggle .btn{padding:8px 12px;}
+.sort-dir-toggle .btn.active{border-color:var(--amber); color:var(--amber);}
 .toolbar-actions{
   display:flex;
   align-items:center;
