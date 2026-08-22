@@ -551,6 +551,24 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-weight:600;
 }
 
+/* Happenings : easter eggs par film (js/happenings.js), même emplacement
+   que les badges manuel/💬/↻ ci-dessus. Icône thématique au film plutôt
+   qu'un pictogramme générique "secret ici" — l'indice fait partie du jeu. */
+.happening-badge{
+  display:inline-block;
+  background:none;
+  border:none;
+  font-size:13px;
+  margin-left:6px;
+  padding:0;
+  cursor:pointer;
+  vertical-align:middle;
+  line-height:1;
+  filter:grayscale(0.4);
+  transition:filter .15s, transform .15s;
+}
+.happening-badge:hover{filter:none; transform:scale(1.15);}
+
 .auth-card{
   max-width:380px;
   margin:60px auto;
@@ -1329,6 +1347,78 @@ input[type="range"]::-moz-range-thumb{
   z-index:100;
 }
 .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+/* --- Happenings (js/happenings.js) --- */
+
+/* Fight Club : un seul flash, jamais répété (voir la note sur l'épilepsie
+   photosensible dans js/happenings.js). Blanc sur fond très sombre pour
+   trancher franchement, contrairement au reste de l'app. */
+.happening-flash{
+  position:fixed; inset:0;
+  z-index:300;
+  display:flex; align-items:center; justify-content:center;
+  background:#f4f1ea;
+  opacity:0;
+  pointer-events:none;
+  padding:0 24px;
+  text-align:center;
+}
+.happening-flash.show{opacity:1; transition:opacity .06s ease-out;}
+.happening-flash span{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:28px;
+  font-weight:600;
+  letter-spacing:0.1em;
+  color:#17140f;
+}
+
+/* Old Boy : le couloir en un seul plan. */
+.happening-modal{max-width:520px; text-align:center;}
+.happening-modal .modal-head{text-align:left;}
+.oldboy-corridor{
+  overflow:hidden;
+  border:1px solid var(--hairline);
+  border-radius:4px;
+  background:var(--surface-2);
+  padding:24px 0;
+  margin-top:8px;
+}
+.oldboy-corridor-track{
+  display:flex;
+  gap:56px;
+  font-size:32px;
+  width:max-content;
+  animation:oldboyWalk 3.2s linear;
+}
+.oldboy-corridor-track.static{animation:none; transform:translateX(-140px);}
+@keyframes oldboyWalk{
+  from{transform:translateX(60px);}
+  to{transform:translateX(-320px);}
+}
+.happening-caption{
+  margin-top:16px;
+  font-size:13px;
+  font-style:italic;
+  color:var(--text-muted);
+}
+
+/* The Whale : reste un peu trop longtemps... */
+.happening-fly{
+  position:fixed;
+  top:38%;
+  left:-70px;
+  font-size:46px;
+  z-index:300;
+  pointer-events:none;
+}
+.happening-fly.fly{animation:happeningFly 1.1s cubic-bezier(.4,0,.6,1) forwards;}
+@keyframes happeningFly{
+  0%{left:-70px; transform:rotate(0deg);}
+  100%{left:110%; transform:rotate(680deg);}
+}
+@media (prefers-reduced-motion:reduce){
+  .oldboy-corridor-track{animation:none; transform:translateX(-140px);}
+}
 
 /* Tablette : la barre d'outils passe en deux rangées pleine largeur avant
    que les libellés des boutons ne disparaissent (voir 600px ci-dessous). */

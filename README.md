@@ -10,6 +10,7 @@ critique-films/
 ├── index.html               → structure de la page (écran de connexion + app)
 ├── css/style.css             → tout le style (thème pellicule/salle de projection)
 ├── js/data.js                  → les 7 critères (définitions, repères, questions) + SEED (films de l'Excel, migration uniquement)
+├── js/happenings.js            → easter eggs par film (tmdb_id), façon Letterboxd
 ├── js/supabaseConfig.js        → clés du projet Supabase (URL + clé publique anon)
 ├── js/tmdbConfig.js             → clé API TMDB
 ├── js/auth.js                    → connexion par lien magique, bascule écran connexion/app
@@ -456,6 +457,40 @@ conditions réelles contre la prod : bascule public → appel direct avec un
 client Supabase 100% anonyme (aucune session) → contenu correct reçu →
 bascule retour à privé → le même client anonyme ne reçoit plus rien.
 Nécessite `supabase/migrations/016_add_public_profile.sql`.
+
+## Happenings (easter eggs par film)
+
+Inspiré des pages Letterboxd qui cachent une petite surprise propre à un
+film précis (ex. la page *Tenet* qui se lit à l'envers en bas de page, en
+référence au temps inversé du film) — sauf que les nôtres portent sur *tes*
+films, pas sur un catalogue générique. Un badge thématique apparaît à côté
+du titre, dans le catalogue, pour les films qui en ont un (même
+emplacement que les badges `manuel`/💬/↻ déjà là) ; cliquer dessus déclenche
+l'expérience. Un happening peut aussi se déclencher tout seul en restant un
+moment sur la fiche d'un film (le formulaire d'édition, seule "page" par
+film qu'a l'app) — sans badge dans ce cas, l'effet de surprise fait partie
+du jeu.
+
+Trois pour l'instant, identifiés par `tmdb_id` (fiable même si le titre est
+retapé différemment) :
+
+- **Fight Club** (🥊) — un flash d'une fraction de seconde, référence
+  directe au procédé du film (des photogrammes de Tyler Durden insérés
+  avant sa "révélation"). Un seul flash, jamais répété : un vrai
+  clignotement rythmé est un déclencheur classique de crise chez les
+  personnes photosensibles, à éviter même pour un easter egg.
+- **Old Boy** (🔨) — un couloir qui défile à l'horizontale, référence au
+  plan-séquence du combat au marteau filmé en travelling continu.
+- **The Whale** (pas de badge, déclenché en restant 20s sur sa fiche) — un
+  ordinateur qui s'envole à travers l'écran, référence à la scène où
+  Charlie jette son ordinateur portable.
+
+Techniquement : purement client (`js/happenings.js`), aucune table dédiée —
+même philosophie que Succès (`js/achievements.js`) : rien à débloquer/
+suivre en base, juste du code qui réagit au `tmdb_id` du film ouvert.
+`prefers-reduced-motion` respecté (bascule sur un simple message plutôt que
+l'animation). Ajouter un happening = une entrée dans le tableau
+`HAPPENINGS` (tmdb_id, type de déclenchement, fonction associée).
 
 ## Prochaines étapes possibles
 

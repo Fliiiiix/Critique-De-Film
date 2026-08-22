@@ -174,6 +174,7 @@ function render(){
     const note = getDisplayNote(f);
     const isManual = f.manualNote != null;
     const rewatches = typeof rewatchCount === 'function' ? rewatchCount(f.id) : 0;
+    const happening = getClickHappeningForFilm(f);
     const row = document.createElement('div');
     row.className = 'film-row';
     const sub = (isManual ? 'Note manuelle · ancien référentiel' : '7 critères notés') + (f.releaseYear ? ` · ${f.releaseYear}` : '');
@@ -183,7 +184,7 @@ function render(){
         ? `<img class="film-poster" src="${f.posterUrl}" alt="" loading="lazy">`
         : `<div class="film-poster film-poster-placeholder">🎬</div>`}
       <div class="film-main">
-        <div class="film-title">${escapeHtml(f.title)}${isManual ? '<span class="manual-badge" title="Note manuelle — référentiel différent">manuel</span>' : ''}${f.review ? '<span class="review-badge" title="Commentaire enregistré">💬</span>' : ''}${rewatches > 1 ? `<span class="rewatch-badge" title="Revu ${rewatches} fois">↻ ×${rewatches}</span>` : ''}</div>
+        <div class="film-title">${escapeHtml(f.title)}${isManual ? '<span class="manual-badge" title="Note manuelle — référentiel différent">manuel</span>' : ''}${f.review ? '<span class="review-badge" title="Commentaire enregistré">💬</span>' : ''}${rewatches > 1 ? `<span class="rewatch-badge" title="Revu ${rewatches} fois">↻ ×${rewatches}</span>` : ''}${happening ? `<button class="happening-badge" type="button" title="Un petit quelque chose à découvrir...">${happening.icon}</button>` : ''}</div>
         <div class="film-sub">${sub}</div>
       </div>
       <button class="star-btn ${f.fav ? 'active' : ''}" data-id="${f.id}" title="Favori">${f.fav ? '★' : '☆'}</button>
@@ -193,6 +194,12 @@ function render(){
       if(e.target.classList.contains('star-btn')) return;
       openModal(f.id);
     });
+    if(happening){
+      row.querySelector('.happening-badge').addEventListener('click', (e) => {
+        e.stopPropagation();
+        happening.run();
+      });
+    }
     row.querySelector('.star-btn').addEventListener('click', async (e) => {
       e.stopPropagation();
       const newFav = !f.fav;
@@ -355,12 +362,16 @@ function openModal(id){
 
   overlay.classList.add('open');
   document.getElementById('titleInput').focus();
+  // Happenings "dwell" (ex. The Whale) : se déclenchent en restant un
+  // moment sur la fiche d'un film précis — voir js/happenings.js.
+  startDwellWatch(film);
 }
 
 function closeModal(){
   document.getElementById('overlay').classList.remove('open');
   editingId = null;
   convertingFromWatchlistId = null;
+  clearDwellWatch();
 }
 
 async function handleSave(){
