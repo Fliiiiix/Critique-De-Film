@@ -18,10 +18,10 @@ critique-films/
 ├── js/tmdb.js                       → recherche TMDB (affiche, résumé, année)
 ├── js/stats.js                       → page statistiques
 ├── js/achievements.js                → page succès (paliers + secrets)
-├── js/watchlist.js                    → liste "à voir", séparée du catalogue noté
+├── js/watchlist.js                    → liste "à voir", séparée du catalogue noté (page routée, voir router.js)
 ├── js/journal.js                       → journal des visionnages, revisionnages
 ├── js/friends.js                        → amis (demande/acceptation) + profil en lecture seule
-├── js/router.js                          → routeur par hash (#/groupes/...), pages Groupes uniquement
+├── js/router.js                          → routeur par hash (#/groupes/..., #/watchlist), pages Groupes + Watchlist
 ├── js/groups.js                          → groupes (famille/amis) : création, membres
 ├── js/proposals.js                        → propositions de films dans un groupe : votes + discussion
 └── supabase/
@@ -125,7 +125,10 @@ Dans le formulaire, la case **Note manuelle — sans passer par la grille**
 permet de saisir directement une note sur 5 au lieu de passer par les 7 critères.
 Prévu pour les films déjà notés avec un référentiel différent (ex. retravaillés
 avant la migration vers cette grille) — inutile, voire trompeur, de leur
-recalculer une note "7 critères" a posteriori.
+recalculer une note "7 critères" a posteriori. Positionnée sous la grille
+(pas au-dessus) : la notation par critères est le cœur de l'app, la note
+manuelle une échappatoire exceptionnelle qui ne doit pas lui faire concurrence
+en haut du formulaire.
 
 Un film noté ainsi est visuellement distingué dans la liste : badge `manuel`
 à côté du titre, sous-titre différent, encadré de la note en teal au lieu
@@ -177,12 +180,20 @@ côté de son titre dans la liste. Nécessite
 
 ## Profil (pseudo + avatar)
 
-Le bouton **Profil** (en haut à droite, une fois connecté) permet de définir
-un pseudo et une image d'avatar (URL d'une image, pas d'upload pour l'instant)
-affichés à la place de l'email brut. Chaque utilisateur a son propre profil,
-isolé par RLS comme le reste — l'app supporte plusieurs comptes indépendants
-(chacun avec son catalogue privé) dès lors qu'ils se connectent avec leur
-propre email. Nécessite `supabase/migrations/005_add_profiles.sql`.
+Pas de bouton "Profil" séparé dans l'entête : la **photo de profil**
+elle-même (agrandie, en haut à droite) fait office de bouton — cliquer
+dessus ouvre la modale profil. Sans avatar renseigné, une icône 👤 la
+remplace pour rester visible et cliquable. La modale permet de définir un
+pseudo et une image d'avatar (URL d'une image, pas d'upload pour l'instant)
+affichés à la place de l'email brut, et regroupe aussi la **déconnexion**
+(bouton séparé par un filet, sous les champs du profil — plus dans l'entête).
+Chaque utilisateur a son propre profil, isolé par RLS comme le reste — l'app
+supporte plusieurs comptes indépendants (chacun avec son catalogue privé) dès
+lors qu'ils se connectent avec leur propre email. Nécessite
+`supabase/migrations/005_add_profiles.sql`.
+
+Le **titre "Critique de films"** (entête) est lui aussi cliquable — retour à
+l'accueil en un clic depuis n'importe quelle page.
 
 ## Statistiques
 
@@ -209,10 +220,12 @@ l'état actuel du catalogue : pas d'historique à maintenir, un succès peut se
 
 ## Watchlist ("à voir")
 
-Le bouton **🎞️ À voir** ouvre une liste séparée du catalogue noté (table
-`watchlist`, pas `films`) : ajout rapide d'un titre, avec fiche TMDB
-optionnelle (affiche/année) et une note libre (pourquoi le voir, qui l'a
-conseillé…). Deux actions par item :
+Le bouton **🎞️ À voir** mène à `#/watchlist`, une page à part entière (comme
+Groupes — voir `js/router.js`) plutôt qu'une modal, avec son propre bouton
+**← Retour**. Liste séparée du catalogue noté (table `watchlist`, pas
+`films`) : ajout rapide d'un titre, avec fiche TMDB optionnelle
+(affiche/année) et une note libre (pourquoi le voir, qui l'a conseillé…).
+Deux actions par item :
 
 - **✔ Noter** — ouvre le formulaire principal (grille ou note manuelle),
   préempli avec le titre et la fiche TMDB déjà connus. L'item n'est retiré
@@ -231,11 +244,13 @@ comme action principale.
 
 En dessous de 600px de large, la barre passe en colonne, les libellés des
 boutons de vue se réduisent à leurs icônes, et **+ Ajouter un film** est
-remplacé par un bouton flottant (FAB) en bas à droite — l'entête (pseudo,
-profil, déconnexion) et les grilles (statistiques, succès) se réorganisent
-elles aussi automatiquement. Un peu d'animation (ouverture des fenêtres,
-survol des lignes de la liste, retour tactile sur les boutons) pour que ça
-reste agréable à l'usage.
+remplacé par un bouton flottant (FAB) en bas à droite — l'entête (photo de
+profil, pseudo) et les grilles (statistiques, succès) se réorganisent elles
+aussi automatiquement. Le footer de la modale d'ajout/édition (note calculée
++ boutons) passe lui aussi sur deux lignes en dessous de 600px plutôt que de
+laisser le texte de la note se faire écraser. Un peu d'animation (ouverture
+des fenêtres, survol des lignes de la liste, retour tactile sur les boutons)
+pour que ça reste agréable à l'usage.
 
 ## Journal & revisionnages
 
@@ -290,7 +305,8 @@ Groupes/détail groupe/détail proposition sont trois **vraies pages routées
 par URL** (`#/groupes`, `#/groupes/:id`, `#/groupes/:id/propositions/:id` —
 voir `js/router.js`), pas des modals empilées : un groupe contient membres +
 ajout d'amis + propositions + votes + discussion, trop pour tenir en popup
-sur plusieurs niveaux. Amis/Watchlist/Stats restent des modals classiques (2
+sur plusieurs niveaux. Watchlist a suivi le même traitement (`#/watchlist`,
+voir plus bas) ; Amis/Stats/Succès/Journal restent des modals classiques (2
 niveaux max, ça reste raisonnable).
 
 Techniquement : tables `groups` + `group_members`, RLS scopée à

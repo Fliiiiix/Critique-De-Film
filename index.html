@@ -24,7 +24,6 @@
         <span id="userAvatarFallback" class="user-avatar-fallback">👤</span>
       </button>
       <span id="userDisplayName"></span>
-      <button class="btn secondary" id="logoutBtn">Déconnexion</button>
     </div>
   </div>
 </header>
@@ -88,6 +87,39 @@
   <div class="count-line" id="countLine"></div>
   <div id="filmList"></div>
   <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- Page Watchlist ("à voir") — écran à part entière comme Groupes, voir
+     js/router.js. -->
+<div class="container page" id="watchlistPage" style="display:none;">
+  <div class="page-header">
+    <button class="btn secondary" id="watchlistPageBack">← Retour</button>
+    <h2>À voir</h2>
+  </div>
+
+  <div class="wl-add-form">
+    <div class="field tmdb-search-field">
+      <label>Titre du film</label>
+      <input type="text" id="wlTitleInput" placeholder="Ex. Paprika" autocomplete="off">
+      <div id="wlTmdbResults" class="tmdb-results"></div>
+      <div id="wlTmdbSelected" class="tmdb-selected" style="display:none;">
+        <img id="wlTmdbSelectedPoster" alt="Affiche">
+        <div class="tmdb-selected-info">
+          <div id="wlTmdbSelectedTitle"></div>
+          <button class="crit-help-toggle" id="wlTmdbClearBtn" type="button">Retirer la fiche TMDB</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Note (pourquoi je veux le voir, qui me l'a conseillé…)</label>
+      <textarea id="wlNoteInput" placeholder="Optionnel…" rows="2"></textarea>
+    </div>
+
+    <button class="btn" id="wlAddBtn" type="button">+ Ajouter à la liste</button>
+  </div>
+
+  <div class="wl-list" id="wlList"></div>
 </div>
 
 <!-- Page Groupes : liste — écran à part entière (pas une modal), voir
@@ -207,21 +239,28 @@
       </div>
     </div>
 
-    <label class="manual-toggle-label">
-      <input type="checkbox" id="manualToggle">
-      <span>Note manuelle — sans passer par la grille</span>
-    </label>
-    <div class="manual-toggle-hint">Exceptionnel : pour un film déjà noté avec un référentiel différent, qu'on ne veut pas refaire passer dans la grille actuelle.</div>
+    <div id="criteriaWrap"></div>
 
-    <div class="field" id="manualScoreRow" style="display:none;">
-      <label>Note manuelle</label>
-      <div class="crit-slider-row">
-        <input type="range" min="0" max="5" step="0.5" value="2.5" id="manualScoreSlider">
-        <div class="crit-val" id="manualScoreVal">2.50</div>
+    <!-- Grille par défaut : la notation par critères est le cœur de l'app
+         (voir l'eyebrow "Grille de lecture personnelle"). La note manuelle
+         est une échappatoire exceptionnelle, reléguée sous la grille plutôt
+         qu'affichée en premier — voir aussi .profile-logout-row pour le
+         même principe (secondaire, séparé par un filet). -->
+    <div class="manual-toggle-block">
+      <label class="manual-toggle-label">
+        <input type="checkbox" id="manualToggle">
+        <span>Note manuelle — sans passer par la grille</span>
+      </label>
+      <div class="manual-toggle-hint">Exceptionnel : pour un film déjà noté avec un référentiel différent, qu'on ne veut pas refaire passer dans la grille actuelle.</div>
+
+      <div class="field" id="manualScoreRow" style="display:none;">
+        <label>Note manuelle</label>
+        <div class="crit-slider-row">
+          <input type="range" min="0" max="5" step="0.5" value="2.5" id="manualScoreSlider">
+          <div class="crit-val" id="manualScoreVal">2.50</div>
+        </div>
       </div>
     </div>
-
-    <div id="criteriaWrap"></div>
 
     <div class="field">
       <label>Commentaire</label>
@@ -268,40 +307,6 @@
       <button class="close-x" id="closeAchievements">✕</button>
     </div>
     <div id="achievementsContent"></div>
-  </div>
-</div>
-
-<!-- Modal watchlist -->
-<div class="overlay" id="watchlistOverlay">
-  <div class="modal watchlist-modal">
-    <div class="modal-head">
-      <h2>À voir</h2>
-      <button class="close-x" id="closeWatchlist">✕</button>
-    </div>
-
-    <div class="wl-add-form">
-      <div class="field tmdb-search-field">
-        <label>Titre du film</label>
-        <input type="text" id="wlTitleInput" placeholder="Ex. Paprika" autocomplete="off">
-        <div id="wlTmdbResults" class="tmdb-results"></div>
-        <div id="wlTmdbSelected" class="tmdb-selected" style="display:none;">
-          <img id="wlTmdbSelectedPoster" alt="Affiche">
-          <div class="tmdb-selected-info">
-            <div id="wlTmdbSelectedTitle"></div>
-            <button class="crit-help-toggle" id="wlTmdbClearBtn" type="button">Retirer la fiche TMDB</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Note (pourquoi je veux le voir, qui me l'a conseillé…)</label>
-        <textarea id="wlNoteInput" placeholder="Optionnel…" rows="2"></textarea>
-      </div>
-
-      <button class="btn" id="wlAddBtn" type="button">+ Ajouter à la liste</button>
-    </div>
-
-    <div class="wl-list" id="wlList"></div>
   </div>
 </div>
 
@@ -378,6 +383,9 @@
       <input type="text" id="avatarFilmSearch" placeholder="Chercher dans tes films…">
       <div class="tmdb-results" id="avatarFilmResults"></div>
     </div>
+    <div class="profile-logout-row">
+      <button class="btn secondary" id="logoutBtn" type="button">Déconnexion</button>
+    </div>
     <div class="modal-footer">
       <div></div>
       <div class="right">
@@ -398,11 +406,11 @@
 <script src="js/tmdb.js"></script>
 <script src="js/stats.js"></script>
 <script src="js/achievements.js"></script>
-<script src="js/watchlist.js"></script>
 <script src="js/journal.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/friends.js"></script>
 <script src="js/router.js"></script>
+<script src="js/watchlist.js"></script>
 <script src="js/groups.js"></script>
 <script src="js/proposals.js"></script>
 <script src="js/auth.js"></script>

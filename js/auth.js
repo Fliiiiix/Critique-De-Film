@@ -71,6 +71,10 @@ async function handleSendMagicLink(){
 }
 
 async function handleLogout(){
+  // Le bouton vit maintenant dans la modale profil (voir js/profile.js) —
+  // on la referme avant de couper la session, sinon elle resterait ouverte
+  // par-dessus l'écran de connexion.
+  closeProfileModal();
   await supabaseClient.auth.signOut();
 }
 

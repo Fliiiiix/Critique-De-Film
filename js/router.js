@@ -8,15 +8,17 @@
 //   #/groupes                               -> liste des groupes
 //   #/groupes/:groupId                      -> détail d'un groupe
 //   #/groupes/:groupId/propositions/:propId -> détail d'une proposition
-// Amis/Watchlist/Stats/Journal restent des modals classiques (2 niveaux
-// max, ça reste raisonnable) — voir js/friends.js, js/watchlist.js, etc.
+//   #/watchlist                             -> liste "à voir"
+// Amis/Stats/Journal restent des modals classiques (2 niveaux max, ça reste
+// raisonnable) — voir js/friends.js, js/stats.js, js/journal.js.
 //
 // Pas de framework : hashchange + un switch sur les segments suffisent pour
-// 4 écrans. Les fonctions de chargement/rendu (loadGroups, openGroupDetail,
-// openProposalDetail...) restent dans js/groups.js et js/proposals.js, ce
-// fichier ne fait que décider laquelle appeler.
+// ces écrans. Les fonctions de chargement/rendu (loadGroups, openGroupDetail,
+// openProposalDetail, openWatchlist...) restent dans js/groups.js,
+// js/proposals.js et js/watchlist.js — ce fichier ne fait que décider
+// laquelle appeler.
 
-const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage'];
+const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage'];
 
 // null cache tout (utile pour l'écran de connexion / maintenance, qui gère
 // sa propre visibilité par ailleurs).
@@ -30,10 +32,12 @@ function goHome(){ location.hash = ''; }
 function goToGroups(){ location.hash = '#/groupes'; }
 function goToGroup(groupId){ location.hash = `#/groupes/${groupId}`; }
 function goToProposal(groupId, proposalId){ location.hash = `#/groupes/${groupId}/propositions/${proposalId}`; }
+function goToWatchlist(){ location.hash = '#/watchlist'; }
 
 function parseRoute(){
   const hash = location.hash.replace(/^#\/?/, '');
   const parts = hash.split('/').filter(Boolean);
+  if(parts[0] === 'watchlist' && parts.length === 1) return { name: 'watchlist' };
   if(parts[0] !== 'groupes') return { name: 'home' };
   if(parts.length === 1) return { name: 'groupsList' };
   const groupId = parseInt(parts[1], 10);
@@ -53,6 +57,9 @@ async function renderRoute(){
   const route = parseRoute();
   if(route.name === 'home'){
     showOnlyPage('appContainer');
+  }else if(route.name === 'watchlist'){
+    showOnlyPage('watchlistPage');
+    await openWatchlist();
   }else if(route.name === 'groupsList'){
     showOnlyPage('groupsListPage');
     await openGroups();

@@ -5,6 +5,9 @@
 // item en film noté (ouvre le formulaire principal prérempli) et le retire
 // de la watchlist une fois le film enregistré — voir handleSave() dans
 // js/app.js, qui référence convertingFromWatchlistId.
+//
+// Écran à part entière (#/watchlist), pas une modal — voir js/router.js,
+// même principe que Groupes (js/groups.js).
 
 let watchlist = [];
 let wlTmdbSelected = null; // { tmdb_id, poster_url, overview, release_year, title }
@@ -63,15 +66,11 @@ function renderWatchlist(){
   });
 }
 
+// Page watchlist — appelée par le routeur (#/watchlist).
 async function openWatchlist(){
-  document.getElementById('watchlistOverlay').classList.add('open');
   document.getElementById('wlList').innerHTML = `<div class="empty-state">Chargement…</div>`;
   await loadWatchlist();
   renderWatchlist();
-}
-
-function closeWatchlist(){
-  document.getElementById('watchlistOverlay').classList.remove('open');
 }
 
 async function handleAddToWatchlist(){
@@ -125,8 +124,10 @@ async function handleRemoveFromWatchlist(id){
 // Bascule vers le formulaire principal (grille/note manuelle) prérempli avec
 // le titre et la fiche TMDB déjà connus. L'item n'est retiré de la watchlist
 // qu'une fois le film effectivement enregistré, voir handleSave() (app.js).
+// Retour à l'accueil d'abord (comme avant : fermer la modale watchlist
+// laissait déjà voir l'accueil en dessous) — le formulaire s'ouvre par-dessus.
 function startRatingFromWatchlist(item){
-  closeWatchlist();
+  goHome();
   openModal(null);
   document.getElementById('titleInput').value = item.title;
   if(item.tmdbId){
@@ -215,11 +216,8 @@ async function handleWlTmdbSearch(query){
   }
 }
 
-document.getElementById('watchlistBtn').addEventListener('click', openWatchlist);
-document.getElementById('closeWatchlist').addEventListener('click', closeWatchlist);
-document.getElementById('watchlistOverlay').addEventListener('click', (e) => {
-  if(e.target.id === 'watchlistOverlay') closeWatchlist();
-});
+document.getElementById('watchlistBtn').addEventListener('click', goToWatchlist);
+document.getElementById('watchlistPageBack').addEventListener('click', goHome);
 document.getElementById('wlAddBtn').addEventListener('click', handleAddToWatchlist);
 document.getElementById('wlTitleInput').addEventListener('input', () => {
   clearTimeout(wlTmdbSearchTimer);

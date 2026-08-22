@@ -62,9 +62,11 @@ header{
   color:var(--text-muted);
 }
 /* Photo de profil : bien visible (elle sert aussi de bouton d'accès au
-   profil, voir js/profile.js) — plus de bouton "Profil" séparé. */
+   profil, voir js/profile.js) — plus de bouton "Profil" ni "Déconnexion"
+   séparés dans le header (déconnexion déplacée dans la modale profil, voir
+   .profile-logout-row plus bas), donc on peut lui laisser plus de place. */
 .user-avatar-btn{
-  width:40px; height:40px;
+  width:52px; height:52px;
   border-radius:50%;
   padding:0; margin:0;
   border:1px solid var(--hairline);
@@ -614,6 +616,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .tmdb-selected-info{flex:1; min-width:0;}
 #tmdbSelectedTitle{font-size:13px;}
 
+/* La note manuelle est une échappatoire exceptionnelle (voir le commentaire
+   HTML au-dessus de #manualToggle) — séparée par un filet sous la grille
+   plutôt que d'occuper le haut de la modale. Même principe que
+   .profile-logout-row. */
+.manual-toggle-block{
+  margin-top:20px;
+  padding-top:16px;
+  border-top:1px solid var(--hairline);
+}
 .manual-toggle-label{
   display:flex;
   align-items:center;
@@ -743,6 +754,16 @@ input[type="range"]::-moz-range-thumb{
   align-items:center;
   margin-top:24px;
   padding-top:18px;
+  border-top:1px solid var(--hairline);
+}
+/* Déconnexion : action de compte, volontairement à part des boutons
+   Annuler/Enregistrer (qui portent sur le profil lui-même) — voir la
+   modale profil dans index.html. */
+.profile-logout-row{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:20px;
+  padding-top:16px;
   border-top:1px solid var(--hairline);
 }
 .modal-footer .right{display:flex; gap:10px;}
