@@ -471,7 +471,7 @@ moment sur la fiche d'un film (le formulaire d'édition, seule "page" par
 film qu'a l'app) — sans badge dans ce cas, l'effet de surprise fait partie
 du jeu.
 
-Trois pour l'instant, identifiés par `tmdb_id` (fiable même si le titre est
+Cinq pour l'instant, identifiés par `tmdb_id` (fiable même si le titre est
 retapé différemment) :
 
 - **Fight Club** (🥊) — un flash d'une fraction de seconde, référence
@@ -484,15 +484,30 @@ retapé différemment) :
 - **The Whale** (pas de badge, déclenché en restant 20s sur sa fiche) — un
   ordinateur qui s'envole à travers l'écran, référence à la scène où
   Charlie jette son ordinateur portable.
+- **The Odyssey** (🪓) — l'épreuve de l'arc d'Ulysse : une barre de tension
+  qui redescend toute seule, il faut cliquer (ou taper sur tactile) très
+  vite et sans s'arrêter pour la remplir. Pas d'état d'échec, juste une
+  vraie exigence de rythme (~3 clics/s en continu).
+- **La Cité de Dieu** (🔫) — une carte "façon Cidade de Deus" (affiche du
+  film + ta note + ton commentaire) à l'écran, pensée pour être
+  screenshotée directement. Un bouton Télécharger génère aussi un vrai
+  fichier PNG, mais avec un fond stylisé plutôt que l'affiche réelle :
+  l'API image de TMDB ne renvoie pas d'en-tête CORS permissif, donc un
+  `<canvas>` qui la dessine devient "tainted" et refuse d'être exporté
+  (`toBlob`/`toDataURL`) — vérifié en conditions réelles contre la prod.
+  Seul contournement possible : un proxy serveur (Edge Function Supabase),
+  hors scope pour un easter egg.
 
 Techniquement : purement client (`js/happenings.js`), aucune table dédiée —
 même philosophie que Succès (`js/achievements.js`) : rien à débloquer/
 suivre en base, juste du code qui réagit au `tmdb_id` du film ouvert.
 `prefers-reduced-motion` respecté (bascule sur un simple message plutôt que
-l'animation). Ajouter un happening = une entrée dans le tableau
+l'animation, sauf pour la barre de tension d'Odyssey — un simple remplissage,
+pas un risque). Ajouter un happening = une entrée dans le tableau
 `HAPPENINGS` (tmdb_id, type de déclenchement, fonction associée).
 
 ## Prochaines étapes possibles
 
-- Happenings façon Letterboxd (défis/événements autour d'une sélection de films)
+- D'autres happenings (voir la section ci-dessus pour ceux déjà en place)
+- Interface admin (voir tous les succès/happenings définis, gérer le tout au même endroit)
 - Cache local (offline-first) pour continuer à consulter/noter sans réseau

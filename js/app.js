@@ -197,7 +197,7 @@ function render(){
     if(happening){
       row.querySelector('.happening-badge').addEventListener('click', (e) => {
         e.stopPropagation();
-        happening.run();
+        happening.run(f);
       });
     }
     row.querySelector('.star-btn').addEventListener('click', async (e) => {
