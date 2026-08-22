@@ -4,7 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Critique de films</title>
-<link rel="stylesheet" href="css/style.css">
+<!-- ?v=N sur ce lien et sur chaque <script src="js/..."> plus bas : sans
+     ça, le navigateur d'un visiteur peut garder un vieux JS/CSS en cache
+     alors qu'il a déjà le nouveau HTML (ou l'inverse) juste après un
+     déploiement — les deux ne correspondent plus, ex. un script qui
+     cherche un #id que le HTML qu'il a en fait n'a pas (ou plus), page
+     blanche. Vécu en prod le 22/08/2026 (voir git log). À INCRÉMENTER À
+     CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
+     toujours) — un seul numéro pour tous les fichiers, pas la peine de
+     suivre lequel a changé. -->
+<link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body>
 
@@ -470,22 +479,24 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
+     à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js"></script>
-<script src="js/tmdbConfig.js"></script>
-<script src="js/data.js"></script>
-<script src="js/app.js"></script>
-<script src="js/tmdb.js"></script>
-<script src="js/stats.js"></script>
-<script src="js/achievements.js"></script>
-<script src="js/journal.js"></script>
-<script src="js/profile.js"></script>
-<script src="js/router.js"></script>
-<script src="js/top.js"></script>
-<script src="js/friends.js"></script>
-<script src="js/watchlist.js"></script>
-<script src="js/groups.js"></script>
-<script src="js/proposals.js"></script>
-<script src="js/auth.js"></script>
+<script src="js/supabaseConfig.js?v=2"></script>
+<script src="js/tmdbConfig.js?v=2"></script>
+<script src="js/data.js?v=2"></script>
+<script src="js/app.js?v=2"></script>
+<script src="js/tmdb.js?v=2"></script>
+<script src="js/stats.js?v=2"></script>
+<script src="js/achievements.js?v=2"></script>
+<script src="js/journal.js?v=2"></script>
+<script src="js/profile.js?v=2"></script>
+<script src="js/router.js?v=2"></script>
+<script src="js/top.js?v=2"></script>
+<script src="js/friends.js?v=2"></script>
+<script src="js/watchlist.js?v=2"></script>
+<script src="js/groups.js?v=2"></script>
+<script src="js/proposals.js?v=2"></script>
+<script src="js/auth.js?v=2"></script>
 </body>
 </html>
