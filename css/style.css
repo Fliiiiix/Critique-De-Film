@@ -44,6 +44,12 @@ header{
   align-items:flex-end;
   gap:10px;
 }
+.brand-link{
+  cursor:pointer;
+  transition:opacity .15s;
+}
+.brand-link:hover{opacity:0.82;}
+.brand-link:focus-visible{outline:2px solid var(--amber-dim); outline-offset:4px; border-radius:2px;}
 .user-bar{
   position:absolute;
   top:10px;
@@ -55,13 +61,28 @@ header{
   font-size:11px;
   color:var(--text-muted);
 }
+/* Photo de profil : bien visible (elle sert aussi de bouton d'accès au
+   profil, voir js/profile.js) — plus de bouton "Profil" séparé. */
+.user-avatar-btn{
+  width:40px; height:40px;
+  border-radius:50%;
+  padding:0; margin:0;
+  border:1px solid var(--hairline);
+  background:var(--surface-2);
+  cursor:pointer;
+  flex:none;
+  overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  transition:border-color .15s, transform .15s;
+}
+.user-avatar-btn:hover{border-color:var(--amber-dim); transform:scale(1.05);}
+.user-avatar-btn:focus-visible{outline:2px solid var(--amber-dim); outline-offset:2px;}
 .user-avatar{
-  width:22px; height:22px;
+  width:100%; height:100%;
   border-radius:50%;
   object-fit:cover;
-  border:1px solid var(--hairline);
-  flex:none;
 }
+.user-avatar-fallback{font-size:18px; opacity:0.6;}
 .version-tag{
   font-family:'IBM Plex Mono', monospace;
   font-size:11px;
@@ -1190,6 +1211,14 @@ input[type="range"]::-moz-range-thumb{
   .wl-actions{width:100%; justify-content:flex-end; margin-top:10px;}
   .journal-row{flex-wrap:wrap;}
   .journal-date{margin-left:auto;}
+
+  /* La note "· 8.50 / 5" (.live-score) se faisait écraser par les boutons
+     du footer sur la même ligne et retombait sur 2 lignes — chacun sa
+     ligne, boutons alignés à droite (et capables de wrap à leur tour s'il
+     y en a 3 : Supprimer/Annuler/Enregistrer). */
+  .modal-footer{flex-wrap:wrap; gap:12px 16px;}
+  .live-score{flex:1 1 100%;}
+  .modal-footer .right{flex:1 1 100%; flex-wrap:wrap; justify-content:flex-end;}
 }
 
 @media (max-width:380px){

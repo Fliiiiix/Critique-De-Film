@@ -13,13 +13,17 @@
   <div class="container" style="padding:0;">
     <div class="eyebrow">Grille de lecture personnelle</div>
     <div class="title-row">
-      <h1>Critique de films</h1>
-      <div class="version-tag">v<b>1.4</b></div>
+      <div class="brand-link" id="homeLink" role="link" tabindex="0" title="Retour à l'accueil">
+        <h1>Critique de films</h1>
+      </div>
+      <div class="version-tag">v<b>1.5</b></div>
     </div>
     <div class="user-bar" id="userBar" style="display:none;">
-      <img id="userAvatar" class="user-avatar" alt="">
+      <button class="user-avatar-btn" id="userAvatarBtn" type="button" title="Ton profil" aria-label="Ton profil">
+        <img id="userAvatar" class="user-avatar" alt="">
+        <span id="userAvatarFallback" class="user-avatar-fallback">👤</span>
+      </button>
       <span id="userDisplayName"></span>
-      <button class="btn secondary" id="editProfileBtn">Profil</button>
       <button class="btn secondary" id="logoutBtn">Déconnexion</button>
     </div>
   </div>

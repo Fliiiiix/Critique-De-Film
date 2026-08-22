@@ -66,3 +66,13 @@ async function renderRoute(){
 }
 
 window.addEventListener('hashchange', renderRoute);
+
+// Titre "Critique de films" cliquable = retour à l'accueil en 1 clic depuis
+// n'importe quelle page (le header est toujours visible hors modal — voir
+// css .overlay qui les recouvre). div+role="link" plutôt que <button> car
+// un <h1> n'est pas un contenu autorisé dans <button> (phrasing content).
+const homeLinkEl = document.getElementById('homeLink');
+homeLinkEl.addEventListener('click', goHome);
+homeLinkEl.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goHome(); }
+});

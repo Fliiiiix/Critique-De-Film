@@ -66,13 +66,18 @@ function renderUserBar(){
   const name = (currentProfile && currentProfile.display_name) || currentUser.email;
   document.getElementById('userDisplayName').textContent = name;
 
+  // La photo de profil (agrandie) sert aussi de bouton d'accès au profil,
+  // voir #userAvatarBtn plus bas — pas d'avatar renseigné = icône 👤.
   const avatarEl = document.getElementById('userAvatar');
+  const fallbackEl = document.getElementById('userAvatarFallback');
   const avatarUrl = currentProfile && currentProfile.avatar_url;
   if(avatarUrl){
     avatarEl.src = avatarUrl;
     avatarEl.style.display = '';
+    fallbackEl.style.display = 'none';
   }else{
     avatarEl.style.display = 'none';
+    fallbackEl.style.display = '';
   }
 }
 
@@ -148,7 +153,7 @@ async function handleSaveProfile(){
   showToast('Profil mis à jour');
 }
 
-document.getElementById('editProfileBtn').addEventListener('click', openProfileModal);
+document.getElementById('userAvatarBtn').addEventListener('click', openProfileModal);
 document.getElementById('closeProfile').addEventListener('click', closeProfileModal);
 document.getElementById('cancelProfileBtn').addEventListener('click', closeProfileModal);
 document.getElementById('saveProfileBtn').addEventListener('click', handleSaveProfile);
