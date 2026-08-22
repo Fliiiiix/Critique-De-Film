@@ -33,6 +33,37 @@ body{
   border:1px solid var(--hairline);
   flex:none;
 }
+/* Bordure façon pellicule le long des côtés, sur grand écran seulement —
+   comble le vide sans élargir .container (qui resterait confortable à
+   lire). position:fixed : pas besoin de suivre la hauteur réelle de chaque
+   page, juste assez de span pour dépasser n'importe quel écran (voir
+   fillSprockets() dans js/app.js), coupés par overflow:hidden. */
+.sprockets-side{
+  position:fixed;
+  top:150px;
+  bottom:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+  padding-top:10px;
+  overflow:hidden;
+  opacity:0.5;
+  pointer-events:none;
+  z-index:1;
+}
+.sprockets-side span{
+  width:10px; height:10px;
+  border-radius:2px;
+  background:var(--surface-2);
+  border:1px solid var(--hairline);
+  flex:none;
+}
+.sprockets-side.left{left:24px;}
+.sprockets-side.right{right:24px;}
+@media (max-width:1200px){
+  .sprockets-side{display:none;}
+}
 header{
   padding:8px 32px 28px;
   border-bottom:1px solid var(--hairline);
@@ -448,6 +479,23 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border-color:var(--teal);
 }
 
+/* Top films : le classement est un vrai ordre (contrairement aux 01/02...
+   des critères, qui ne sont que des repères de lecture), donc le rang
+   affiché porte une information réelle — podium (top 3) légèrement mis en
+   avant, sans médaille ni décor superflu. */
+.top-tabs{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;}
+.top-tabs .btn.active{border-color:var(--amber); color:var(--amber);}
+.top-rank{
+  font-family:'IBM Plex Mono', monospace;
+  font-weight:600;
+  font-size:15px;
+  color:var(--text-muted);
+  width:22px;
+  text-align:center;
+  flex:none;
+}
+.top-row:nth-child(-n+3) .top-rank{color:var(--amber); font-size:19px;}
+
 .rewatch-badge{
   display:inline-block;
   font-family:'IBM Plex Mono', monospace;
@@ -772,16 +820,6 @@ input[type="range"]::-moz-range-thumb{
   flex-wrap:wrap;
   gap:8px;
   margin-top:10px;
-}
-/* Déconnexion : action de compte, volontairement à part des boutons
-   Annuler/Enregistrer (qui portent sur le profil lui-même) — voir la
-   modale profil dans index.html. */
-.profile-logout-row{
-  display:flex;
-  justify-content:flex-end;
-  margin-top:20px;
-  padding-top:16px;
-  border-top:1px solid var(--hairline);
 }
 .modal-footer .right{display:flex; gap:10px;}
 .live-score{

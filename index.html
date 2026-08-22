@@ -9,6 +9,11 @@
 <body>
 
 <div class="sprockets" id="sprocketsTop"></div>
+<!-- Bordure façon pellicule le long des côtés — comble le vide sur grand
+     écran plutôt que d'élargir la colonne de contenu (qui resterait
+     confortable à lire). Masqué sous 1200px, où il n'y a plus de place. -->
+<div class="sprockets-side left" id="sprocketsLeft"></div>
+<div class="sprockets-side right" id="sprocketsRight"></div>
 <header>
   <div class="container" style="padding:0;">
     <div class="eyebrow">Grille de lecture personnelle</div>
@@ -24,6 +29,7 @@
       <nav class="header-nav">
         <button class="header-nav-btn" id="watchlistBtn" type="button" title="À voir" aria-label="À voir">🎞️</button>
         <button class="header-nav-btn" id="friendsBtn" type="button" title="Amis" aria-label="Amis">👥</button>
+        <button class="header-nav-btn" id="topBtn" type="button" title="Top films" aria-label="Top films">🏅</button>
       </nav>
       <button class="user-avatar-btn" id="userAvatarBtn" type="button" title="Ton profil" aria-label="Ton profil">
         <img id="userAvatar" class="user-avatar" alt="">
@@ -264,6 +270,24 @@
   </div>
 </div>
 
+<!-- Page Top films — écran à part entière comme Amis/Watchlist/Groupes,
+     voir js/router.js et js/top.js. Deux classements calculés côté serveur
+     (fonctions SECURITY DEFINER, supabase/migrations/015) : jamais de ligne
+     individuelle exposée, seulement des agrégats. -->
+<div class="container page" id="topPage" style="display:none;">
+  <div class="page-header">
+    <button class="btn secondary" id="topPageBack">← Retour</button>
+    <h2>Top films</h2>
+  </div>
+
+  <div class="top-tabs">
+    <button class="btn secondary active" id="topTabGlobal" type="button">Tout le monde</button>
+    <button class="btn secondary" id="topTabFriends" type="button">Mes amis</button>
+  </div>
+
+  <div class="wl-list" id="topList"></div>
+</div>
+
 <button class="fab" id="fabAddBtn" title="Ajouter un film" aria-label="Ajouter un film">+</button>
 
 <!-- Modal -->
@@ -292,8 +316,7 @@
     <!-- Grille par défaut : la notation par critères est le cœur de l'app
          (voir l'eyebrow "Grille de lecture personnelle"). La note manuelle
          est une échappatoire exceptionnelle, reléguée sous la grille plutôt
-         qu'affichée en premier — voir aussi .profile-logout-row pour le
-         même principe (secondaire, séparé par un filet). -->
+         qu'affichée en premier. -->
     <div class="manual-toggle-block">
       <label class="manual-toggle-label">
         <input type="checkbox" id="manualToggle">
@@ -371,11 +394,8 @@
       </div>
     </div>
 
-    <div class="profile-logout-row">
-      <button class="btn secondary" id="logoutBtn" type="button">Déconnexion</button>
-    </div>
     <div class="modal-footer">
-      <div></div>
+      <div><button class="btn secondary" id="logoutBtn" type="button">Déconnexion</button></div>
       <div class="right">
         <button class="btn secondary" id="cancelProfileBtn">Annuler</button>
         <button class="btn" id="saveProfileBtn">Enregistrer</button>
@@ -441,6 +461,7 @@
 <script src="js/journal.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/router.js"></script>
+<script src="js/top.js"></script>
 <script src="js/friends.js"></script>
 <script src="js/watchlist.js"></script>
 <script src="js/groups.js"></script>

@@ -21,7 +21,8 @@ critique-films/
 ├── js/watchlist.js                    → liste "à voir", séparée du catalogue noté (page routée, voir router.js)
 ├── js/journal.js                       → journal des visionnages, revisionnages
 ├── js/friends.js                        → amis (demande/acceptation) + profil en lecture seule (page routée, voir router.js)
-├── js/router.js                          → routeur par hash (#/groupes/..., #/watchlist, #/amis), toutes les pages
+├── js/router.js                          → routeur par hash (#/groupes/..., #/watchlist, #/amis, #/top), toutes les pages
+├── js/top.js                              → top films (tout le monde / mes amis), page routée
 ├── js/groups.js                          → groupes (famille/amis) : création, membres
 ├── js/proposals.js                        → propositions de films dans un groupe : votes + discussion
 └── supabase/
@@ -243,14 +244,21 @@ Chaque chose a sa place plutôt que d'aligner tous les boutons en vrac au même
 niveau (v1.5) :
 
 - **Entête** : le titre (retour accueil en un clic) à gauche ; à droite, les
-  deux pages assez fréquentes pour mériter un accès direct — 🎞️ À voir et
-  👥 Amis (qui contient Groupes) — puis la photo de profil + pseudo (ouvre la
-  modale profil).
+  pages assez fréquentes pour mériter un accès direct — 🎞️ À voir, 👥 Amis
+  (qui contient Groupes) et 🏅 Top films — puis la photo de profil + pseudo
+  (ouvre la modale profil).
 - **Modale profil** : identité (pseudo/avatar), section "Mon activité" (vues
   sur le catalogue passé — Statistiques/Succès/Journal, pas des actions du
-  quotidien), déconnexion.
+  quotidien), déconnexion (sur la même ligne qu'Annuler/Enregistrer, pas
+  isolée sur sa propre ligne).
 - **Toolbar du catalogue** : ne garde que ce qui agit sur la liste affichée —
   recherche/tri, un menu **⋯** pour Export/Import, **+ Ajouter un film**.
+
+Sur grand écran, une double colonne de pastilles façon perforations de
+pellicule longe les deux bords de l'écran (voir `.sprockets-side` dans
+`css/style.css`, généré par `fillSprockets()` dans `js/app.js`) — comble le
+vide plutôt que d'élargir `.container` (qui resterait confortable à lire).
+Masquée sous 1200px de large, où il n'y a plus la place.
 
 En dessous de 600px de large, la toolbar passe en colonne et **+ Ajouter un
 film** est remplacé par un bouton flottant (FAB) en bas à droite — l'entête
@@ -350,6 +358,40 @@ par personne et par proposition, contrainte unique) et
 `group_proposal_comments`, toutes scopées en RLS à l'appartenance au groupe
 via `group_proposals.group_id` → `group_members`. Nécessite
 `supabase/migrations/012_add_group_proposals.sql`.
+
+## Top films
+
+L'icône **🏅** dans l'entête mène à `#/top`, une page à part entière (comme
+Amis/Watchlist/Groupes), avec deux classements au choix (onglets) :
+
+- **Tout le monde** — les films les mieux notés, tous comptes de l'app
+  confondus.
+- **Mes amis** — pareil, mais restreint à moi + mes amis acceptés
+  **directs** (pas les amis de mes amis) : personnel à chaque utilisateur —
+  si j'ai 4 amis, mon top porte sur nous 5 ; si l'un d'eux a 7 amis, le sien
+  porte sur eux 8, indépendamment du mien.
+
+Chaque ligne : rang, affiche, titre, nombre de notes, note moyenne (les 3
+premiers rangs sont mis en avant en amber — un vrai ordre, donc numéroté,
+contrairement aux 01/02… de la grille qui ne sont que des repères de
+lecture). Seuls les films avec une fiche TMDB comptent (`tmdb_id` sert de
+clé pour recouper un même film entre utilisateurs — un ajout manuel sans
+recherche ne peut pas être rapproché de l'entrée de quelqu'un d'autre).
+
+Techniquement : deux fonctions `SECURITY DEFINER` (`get_global_top_films` /
+`get_friends_top_films`, même principe que `is_group_member` —
+`migrations/013`) qui lisent `films` de tout le monde en interne (RLS
+contournée volontairement) mais **ne renvoient que des agrégats** — jamais
+`user_id` ni `review`, donc pas de fuite de "qui a mis quelle note", même
+sur un film noté par une seule personne. La note de chaque utilisateur est
+recalculée en SQL avec la même formule que `computeNote()` côté client
+(`js/app.js`) : moyenne des 7 critères arrondie au demi-point sur 5, ou
+`manual_note` directement si renseignée — puis moyennée entre utilisateurs.
+Pas de seuil minimum de votes pour l'instant (une seule note à 5/5 suffit à
+arriver en tête) : le nombre de notes est affiché à côté pour que ça reste
+lisible, plutôt qu'une formule pondérée façon IMDB, overkill vu l'échelle
+(usage personnel entre amis). Nécessite
+`supabase/migrations/015_add_top_films.sql`.
 
 ## Prochaines étapes possibles
 

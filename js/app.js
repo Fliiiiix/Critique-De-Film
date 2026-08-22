@@ -92,13 +92,21 @@ function showToast(msg){
   t._timer = setTimeout(()=> t.classList.remove('show'), 2200);
 }
 
-function buildSprockets(){
-  const el = document.getElementById('sprocketsTop');
+function fillSprockets(id, count){
+  const el = document.getElementById(id);
   el.innerHTML = '';
-  for(let i=0;i<40;i++){
-    const s = document.createElement('span');
-    el.appendChild(s);
+  for(let i=0;i<count;i++){
+    el.appendChild(document.createElement('span'));
   }
+}
+
+function buildSprockets(){
+  fillSprockets('sprocketsTop', 40);
+  // Colonnes verticales le long des côtés (voir css .sprockets-side) : bien
+  // plus de perforations qu'aucun écran n'en affichera jamais, le surplus
+  // est juste coupé par overflow:hidden plutôt que recalculé à chaque resize.
+  fillSprockets('sprocketsLeft', 60);
+  fillSprockets('sprocketsRight', 60);
 }
 
 function render(){

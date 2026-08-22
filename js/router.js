@@ -7,6 +7,7 @@
 //   (pas de hash)                           -> catalogue (#appContainer)
 //   #/watchlist                             -> liste "à voir"
 //   #/amis                                  -> amis (demandes, liste) + accès Groupes
+//   #/top                                   -> top films (tout le monde / mes amis)
 //   #/groupes                               -> liste des groupes
 //   #/groupes/:groupId                      -> détail d'un groupe
 //   #/groupes/:groupId/propositions/:propId -> détail d'une proposition
@@ -21,7 +22,7 @@
 // js/groups.js, js/proposals.js, js/watchlist.js et js/friends.js — ce
 // fichier ne fait que décider laquelle appeler.
 
-const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage', 'amisPage'];
+const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage', 'amisPage', 'topPage'];
 
 // null cache tout (utile pour l'écran de connexion / maintenance, qui gère
 // sa propre visibilité par ailleurs).
@@ -37,12 +38,14 @@ function goToGroup(groupId){ location.hash = `#/groupes/${groupId}`; }
 function goToProposal(groupId, proposalId){ location.hash = `#/groupes/${groupId}/propositions/${proposalId}`; }
 function goToWatchlist(){ location.hash = '#/watchlist'; }
 function goToAmis(){ location.hash = '#/amis'; }
+function goToTop(){ location.hash = '#/top'; }
 
 function parseRoute(){
   const hash = location.hash.replace(/^#\/?/, '');
   const parts = hash.split('/').filter(Boolean);
   if(parts[0] === 'watchlist' && parts.length === 1) return { name: 'watchlist' };
   if(parts[0] === 'amis' && parts.length === 1) return { name: 'amis' };
+  if(parts[0] === 'top' && parts.length === 1) return { name: 'top' };
   if(parts[0] !== 'groupes') return { name: 'home' };
   if(parts.length === 1) return { name: 'groupsList' };
   const groupId = parseInt(parts[1], 10);
@@ -68,6 +71,9 @@ async function renderRoute(){
   }else if(route.name === 'amis'){
     showOnlyPage('amisPage');
     await openFriends();
+  }else if(route.name === 'top'){
+    showOnlyPage('topPage');
+    await openTop();
   }else if(route.name === 'groupsList'){
     showOnlyPage('groupsListPage');
     await openGroups();
