@@ -191,7 +191,7 @@ function renderAdminHappeningsTab(){
     return `
       <div class="wl-row admin-row${enabled ? '' : ' admin-row-disabled'}">
         <div class="wl-main">
-          <div class="wl-title">${h.icon} ${film ? escapeHtml(film.title) : `tmdb_id ${h.tmdbId} — hors catalogue`}</div>
+          <div class="wl-title">${h.icon || '⏱️'} ${film ? escapeHtml(film.title) : `tmdb_id ${h.tmdbId} — hors catalogue`}</div>
           <div class="wl-note">${triggerLabel} · codé en dur</div>
         </div>
         <div class="wl-actions">
