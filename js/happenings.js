@@ -45,8 +45,55 @@ const HAPPENINGS = [
   }
 ];
 
+// --- Écarts admin (js/admin.js) : happenings désactivés + happenings
+// "génériques" (juste un message) créés depuis l'interface, sans coder.
+// `typeof` en garde, même raison que dans js/achievements.js : doit marcher
+// pour un compte non admin, qui n'a jamais de config chargée.
+function getEffectiveHappenings(){
+  const overrides = (typeof getAdminHappeningOverrides === 'function') ? getAdminHappeningOverrides() : {};
+  const custom = (typeof getAdminCustomHappenings === 'function') ? getAdminCustomHappenings() : [];
+
+  const builtIn = HAPPENINGS.filter(h => !(overrides[h.tmdbId] && overrides[h.tmdbId].enabled === false));
+
+  const customEntries = custom
+    .filter(c => c.enabled !== false)
+    .map(c => ({
+      tmdbId: c.tmdbId,
+      trigger: c.trigger,
+      dwellMs: c.dwellMs,
+      icon: c.icon || '✨',
+      run: (film) => runCustomHappening(c, film)
+    }));
+
+  // Un happening codé en dur gagne toujours face à un générique sur le même
+  // film (le générique n'a de sens que sur un film qui n'en a pas encore).
+  return [...builtIn, ...customEntries];
+}
+
 function getHappeningForFilm(film){
-  return (film && film.tmdbId) ? (HAPPENINGS.find(h => h.tmdbId === film.tmdbId) || null) : null;
+  return (film && film.tmdbId) ? (getEffectiveHappenings().find(h => h.tmdbId === film.tmdbId) || null) : null;
+}
+
+// --- Happening générique (message simple) : créé depuis l'admin sans
+// écrire de code, même modale que Old Boy (titre + texte + fermer). Pas
+// d'animation propre à un film — pour ça, il faut un vrai happening codé en
+// dur comme les autres ci-dessous.
+function runCustomHappening(entry){
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay open';
+  overlay.innerHTML = `
+    <div class="modal happening-modal">
+      <div class="modal-head">
+        <h2>${escapeHtml(entry.icon || '✨')} ${escapeHtml(entry.title || 'Un petit quelque chose')}</h2>
+        <button class="close-x" data-close>✕</button>
+      </div>
+      <p class="happening-caption">${escapeHtml(entry.message || '')}</p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', (e) => {
+    if(e.target === overlay || e.target.closest('[data-close]')) overlay.remove();
+  });
 }
 
 function getClickHappeningForFilm(film){

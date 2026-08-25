@@ -92,6 +92,8 @@ function openProfileModal(){
   setAvatarSourceTab('file');
   document.getElementById('publicProfileToggle').checked = !!(currentProfile && currentProfile.public_profile);
   updatePublicProfileLinkVisibility();
+  // Bouton Admin (js/admin.js) : masqué pour tout le monde sauf ADMIN_EMAIL.
+  document.getElementById('adminBtn').style.display = isAdmin() ? '' : 'none';
   document.getElementById('profileOverlay').classList.add('open');
 }
 

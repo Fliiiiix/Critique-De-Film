@@ -27,6 +27,7 @@ critique-films/
 ├── js/publicProfile.js                     → profil public (#/u/:userId), seule page accessible sans connexion
 ├── js/groups.js                          → groupes (famille/amis) : création, membres
 ├── js/proposals.js                        → propositions de films dans un groupe : votes + discussion
+├── js/admin.js                             → interface admin (succès + happenings), réservée au compte propriétaire
 └── supabase/
     ├── schema.sql                  → schéma complet (nouveau projet)
     └── migrations/                 → changements incrémentaux (projet déjà provisionné)
@@ -520,8 +521,46 @@ suivre en base, juste du code qui réagit au `tmdb_id` du film ouvert.
 `prefers-reduced-motion` respecté (bascule sur un simple message plutôt que
 l'animation, sauf pour l'arc et la barre de tension d'Odyssey — de simples
 changements d'attributs pilotés par le clic, pas d'animation autonome, donc
-pas un risque). Ajouter un happening = une entrée dans le tableau
-`HAPPENINGS` (tmdb_id, type de déclenchement, fonction associée).
+pas un risque). Ajouter un happening codé en dur = une entrée dans le
+tableau `HAPPENINGS` (tmdb_id, type de déclenchement, fonction associée) ;
+un happening simple ("un badge → un message") peut aussi se créer sans
+coder, voir Interface admin ci-dessous.
+
+## Interface admin (succès & happenings)
+
+Un tableau de bord "voir tout / gérer tout" sur les succès et les
+happenings — réservé au compte propriétaire de l'app (email en dur,
+`ADMIN_EMAIL` dans `js/admin.js`), accessible via **🛠️ Admin** dans la
+modale profil (bouton masqué pour tout autre compte). Deux onglets :
+
+- **Succès** — tous les paliers cumulatifs et tous les succès secrets, y
+  compris ceux encore verrouillés (pas de "???" ici, c'est la vue admin).
+  Chaque groupe/succès a un interrupteur Activé/Désactivé (l'exclut du
+  décompte et de l'affichage normal, sans toucher au code — utile pour
+  retirer un succès qu'on regrette). Les seuils des paliers cumulatifs
+  (ex. 10/50/150 films notés pour Cinéphile) sont modifiables directement,
+  avec un bouton ↺ pour revenir aux valeurs par défaut.
+- **Happenings** — la liste complète des cinq happenings codés en dur
+  (avec le film concerné, le déclencheur, activé/désactivé, et un bouton
+  **▶ Revivre** qui rejoue l'expérience à la demande, sans avoir à
+  retrouver la bonne fiche film) et des happenings "génériques" créés
+  depuis l'admin. Un formulaire permet d'en créer un nouveau sans écrire de
+  code : choisir un film déjà noté (avec fiche TMDB), un déclencheur (clic
+  sur badge ou un temps passé sur la fiche), une icône, un titre et un
+  message — affiché dans une modale simple au déclenchement. Une vraie
+  expérience sur mesure (comme l'arc de l'Odyssée ou le défi photo) reste
+  du ressort du code, pas de l'admin.
+
+Techniquement : les définitions (`CUMULATIVE_GROUPS`, `HIDDEN_ACHIEVEMENTS`,
+`HAPPENINGS`) restent dans le code — l'admin ne stocke que les *écarts* par
+rapport à elles (seuil modifié, activé/désactivé) et les happenings créés
+depuis l'interface, dans une seule ligne JSON par compte
+(`admin_config`, `supabase/migrations/018_add_admin_config.sql`, RLS comme
+les autres tables). `js/achievements.js` et `js/happenings.js` appliquent
+ces écarts via `getEffectiveCumulativeGroups()` / `getEffectiveHiddenAchievements()`
+/ `getEffectiveHappenings()` — vérifiés en `typeof` pour continuer à
+fonctionner seuls sur un compte non admin (jamais de config chargée dans ce
+cas). Nécessite `supabase/migrations/018_add_admin_config.sql`.
 
 ## Prochaines étapes possibles
 

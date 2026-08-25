@@ -294,7 +294,7 @@ h1{
 }
 .fab:hover{transform:scale(1.06);}
 .fab:active{transform:scale(0.92);}
-input[type="text"], select, textarea{
+input[type="text"], input[type="number"], select, textarea{
   background:var(--surface);
   border:1px solid var(--hairline);
   color:var(--text);
@@ -305,7 +305,7 @@ input[type="text"], select, textarea{
   outline:none;
 }
 input[type="text"]{flex:1; min-width:180px;}
-input[type="text"]:focus, select:focus, textarea:focus{border-color:var(--amber-dim);}
+input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus{border-color:var(--amber-dim);}
 textarea{width:100%; resize:vertical; line-height:1.5; font-family:'Inter', sans-serif;}
 select{cursor:pointer;}
 /* Upload d'avatar (js/profile.js) — ::file-selector-button plutôt que
@@ -1179,6 +1179,14 @@ input[type="range"]::-moz-range-thumb{
   line-height:1.4;
 }
 .ach-hidden-card.unlocked{border-color:var(--amber-dim);}
+
+/* --- Interface admin (js/admin.js) : réutilise .wl-row (déjà utilisé pour
+   la watchlist/propositions) pour les lignes succès/happenings, plutôt que
+   de redéfinir un layout en ligne de plus. */
+.admin-modal{max-width:780px;}
+.admin-row-disabled{opacity:0.5;}
+.admin-tier-input{width:64px; padding:6px 8px; font-family:'IBM Plex Mono', monospace;}
+.admin-row .wl-actions{flex-wrap:wrap; justify-content:flex-end; row-gap:6px;}
 .wl-add-form{
   border-bottom:1px solid var(--hairline);
   padding-bottom:20px;

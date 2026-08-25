@@ -111,6 +111,28 @@ const HIDDEN_ACHIEVEMENTS = [
   }
 ];
 
+// --- Écarts admin (js/admin.js) : seuils modifiés / succès désactivés ---
+// Les définitions restent ici (CUMULATIVE_GROUPS / HIDDEN_ACHIEVEMENTS) —
+// l'admin ne stocke que la différence par rapport à elles, voir
+// supabase/migrations/018. `typeof` en garde : achievements.js est chargé
+// avant admin.js et doit continuer à fonctionner seul (pour un compte non
+// admin, qui n'a jamais de config chargée).
+function getEffectiveCumulativeGroups(){
+  const overrides = (typeof getAdminAchievementOverrides === 'function') ? getAdminAchievementOverrides().cumulative : {};
+  return CUMULATIVE_GROUPS
+    .filter(g => !(overrides[g.key] && overrides[g.key].enabled === false))
+    .map(g => {
+      const o = overrides[g.key];
+      const tiers = (o && Array.isArray(o.tiers) && o.tiers.length === g.tiers.length) ? o.tiers : g.tiers;
+      return { ...g, tiers };
+    });
+}
+
+function getEffectiveHiddenAchievements(){
+  const overrides = (typeof getAdminAchievementOverrides === 'function') ? getAdminAchievementOverrides().hidden : {};
+  return HIDDEN_ACHIEVEMENTS.filter(h => !(overrides[h.key] && overrides[h.key].enabled === false));
+}
+
 function computeAchievements(){
   const s = {
     total: films.length,
@@ -119,14 +141,14 @@ function computeAchievements(){
     tmdbCount: films.filter(f => f.tmdbId).length
   };
 
-  const cumulative = CUMULATIVE_GROUPS.map(g => {
+  const cumulative = getEffectiveCumulativeGroups().map(g => {
     const value = g.metric(s);
     let tierIndex = -1;
     g.tiers.forEach((t, i) => { if (value >= t.threshold) tierIndex = i; });
     return { ...g, value, tierIndex, next: g.tiers[tierIndex + 1] || null };
   });
 
-  const hidden = HIDDEN_ACHIEVEMENTS.map(h => ({ ...h, unlocked: h.check(films) }));
+  const hidden = getEffectiveHiddenAchievements().map(h => ({ ...h, unlocked: h.check(films) }));
 
   const tiersUnlocked = cumulative.reduce((sum, g) => sum + (g.tierIndex + 1), 0);
   const tiersTotal = cumulative.reduce((sum, g) => sum + g.tiers.length, 0);

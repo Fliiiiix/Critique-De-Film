@@ -38,6 +38,10 @@ async function showApp(){
   document.getElementById('authContainer').style.display = 'none';
   document.getElementById('userBar').style.display = '';
   await loadOrCreateProfile();
+  // Écarts admin (seuils/succès/happenings modifiés, voir js/admin.js) : ne
+  // concernent que le compte propriétaire, chargés avant render() pour que
+  // badges/succès reflètent tout de suite les éventuels réglages.
+  if(isAdmin()) await loadAdminConfig();
   await loadFilms();
   await loadViewings();
   render();

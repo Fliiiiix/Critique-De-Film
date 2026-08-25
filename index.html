@@ -13,7 +13,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
 
@@ -464,6 +464,9 @@
         <button class="btn secondary" id="statsBtn" type="button">📊 Statistiques</button>
         <button class="btn secondary" id="achievementsBtn" type="button">🏆 Succès</button>
         <button class="btn secondary" id="journalBtn" type="button">📅 Journal</button>
+        <!-- Réservé au compte admin (ADMIN_EMAIL, js/admin.js) — masqué par
+             défaut, affiché par openProfileModal() si isAdmin(). -->
+        <button class="btn secondary" id="adminBtn" type="button" style="display:none;">🛠️ Admin</button>
       </div>
     </div>
 
@@ -499,6 +502,21 @@
   </div>
 </div>
 
+<!-- Modal admin (succès + happenings) — voir js/admin.js -->
+<div class="overlay" id="adminOverlay">
+  <div class="modal stats-modal admin-modal">
+    <div class="modal-head">
+      <h2>Admin — succès &amp; happenings</h2>
+      <button class="close-x" id="closeAdmin">✕</button>
+    </div>
+    <div class="avatar-source-tabs" role="tablist" id="adminTabs">
+      <button type="button" class="avatar-source-tab active" data-admin-tab="achievements" role="tab" aria-selected="true">Succès</button>
+      <button type="button" class="avatar-source-tab" data-admin-tab="happenings" role="tab" aria-selected="false">Happenings</button>
+    </div>
+    <div id="adminContent"></div>
+  </div>
+</div>
+
 <!-- Modal journal -->
 <div class="overlay" id="journalOverlay">
   <div class="modal journal-modal">
@@ -526,23 +544,28 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=7"></script>
-<script src="js/tmdbConfig.js?v=7"></script>
-<script src="js/data.js?v=7"></script>
-<script src="js/happenings.js?v=7"></script>
-<script src="js/app.js?v=7"></script>
-<script src="js/tmdb.js?v=7"></script>
-<script src="js/stats.js?v=7"></script>
-<script src="js/achievements.js?v=7"></script>
-<script src="js/journal.js?v=7"></script>
-<script src="js/profile.js?v=7"></script>
-<script src="js/router.js?v=7"></script>
-<script src="js/publicProfile.js?v=7"></script>
-<script src="js/top.js?v=7"></script>
-<script src="js/friends.js?v=7"></script>
-<script src="js/watchlist.js?v=7"></script>
-<script src="js/groups.js?v=7"></script>
-<script src="js/proposals.js?v=7"></script>
-<script src="js/auth.js?v=7"></script>
+<script src="js/supabaseConfig.js?v=8"></script>
+<script src="js/tmdbConfig.js?v=8"></script>
+<script src="js/data.js?v=8"></script>
+<script src="js/happenings.js?v=8"></script>
+<script src="js/app.js?v=8"></script>
+<script src="js/tmdb.js?v=8"></script>
+<script src="js/stats.js?v=8"></script>
+<script src="js/achievements.js?v=8"></script>
+<script src="js/journal.js?v=8"></script>
+<script src="js/profile.js?v=8"></script>
+<!-- Après happenings.js/achievements.js (définitions) et profile.js
+     (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
+     chargement — l'ordre exact importe peu, gardé groupé ici pour la
+     lisibilité. -->
+<script src="js/admin.js?v=8"></script>
+<script src="js/router.js?v=8"></script>
+<script src="js/publicProfile.js?v=8"></script>
+<script src="js/top.js?v=8"></script>
+<script src="js/friends.js?v=8"></script>
+<script src="js/watchlist.js?v=8"></script>
+<script src="js/groups.js?v=8"></script>
+<script src="js/proposals.js?v=8"></script>
+<script src="js/auth.js?v=8"></script>
 </body>
 </html>
