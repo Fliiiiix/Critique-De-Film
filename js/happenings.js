@@ -185,12 +185,18 @@ function runWhaleHappening(){
 }
 
 // --- The Odyssey : l'épreuve de l'arc ---
-// Douze anneaux de hache, un seul arc à bander — cliquer/taper très vite et
-// SANS S'ARRÊTER (la tension retombe dès qu'on relâche le rythme, comme un
-// arc qu'on ne tire pas d'un coup sec). Un arc SVG se bande réellement à
-// l'écran (corde + flèche qui reculent avec la tension) plutôt qu'une
-// simple barre de progression. Pas d'état d'échec : on peut réessayer
-// autant qu'on veut, l'effort suffit à faire le jeu.
+// La vraie épreuve d'Ulysse (Odyssée, chant XXI) n'est PAS de tirer une
+// flèche : c'est de réussir à PLIER l'arc et à accrocher la corde à l'autre
+// extrémité (le "bander"), là où tous les prétendants échouent. Corrigé le
+// 25/08/2026 : la première version montrait une flèche qu'on tire en
+// arrière (un tir), contresens par rapport à l'épreuve elle-même — voir
+// updateOdysseyBow() plus bas pour la nouvelle animation (arc qui se plie +
+// bout libre de la corde qui remonte vers l'encoche du sommet).
+//
+// Cliquer/taper très vite et SANS S'ARRÊTER — la tension retombe dès qu'on
+// relâche le rythme, comme un arc qu'on n'arrive pas à plier d'un coup sec.
+// Pas d'état d'échec : on peut réessayer autant qu'on veut, l'effort suffit
+// à faire le jeu.
 //
 // Réglage : +5% par clic, -2.8% toutes les 100ms (soit -28%/s de décroissance
 // en continu) — il faut donc largement plus de 5 clics/s SOUTENUS pour
@@ -201,30 +207,41 @@ const ODYSSEY_GAIN = 5;
 const ODYSSEY_DECAY = 2.8;
 const ODYSSEY_TICK_MS = 100;
 
-// Coordonnées de l'arc SVG (repos → plein tendu), voir updateOdysseyBow().
+// Coordonnées de l'arc SVG (repos → plié/bandé), voir updateOdysseyBow().
+// Le bout libre de la corde (déjà noué en bas) part d'une position lâche,
+// à l'écart de l'arc — comme tenu à la main avant l'effort — et remonte
+// vers l'encoche du sommet à mesure que la tension augmente, jusqu'à s'y
+// accrocher à 100% (arc bandé).
 const ODYSSEY_BOW_TOP = { x: 110, y: 20 };
 const ODYSSEY_BOW_BOTTOM = { x: 110, y: 180 };
-const ODYSSEY_DRAW_X_REST = 122;
-const ODYSSEY_DRAW_X_FULL = 192;
-const ODYSSEY_BOW_MID_X_REST = 42;
-const ODYSSEY_BOW_MID_X_FULL = 26;
-const ODYSSEY_ARROW_LEN = 96;
+const ODYSSEY_STRING_LOOSE = { x: 168, y: 148 };
+const ODYSSEY_BOW_MID_X_REST = 68;
+const ODYSSEY_BOW_MID_X_FULL = 18;
+const ODYSSEY_STRING_SAG_MAX = 26;
 
 function updateOdysseyBow(tensionPct){
   const t = tensionPct / 100;
-  const drawX = ODYSSEY_DRAW_X_REST + (ODYSSEY_DRAW_X_FULL - ODYSSEY_DRAW_X_REST) * t;
   const bowMidX = ODYSSEY_BOW_MID_X_REST + (ODYSSEY_BOW_MID_X_FULL - ODYSSEY_BOW_MID_X_REST) * t;
+  const endX = ODYSSEY_STRING_LOOSE.x + (ODYSSEY_BOW_TOP.x - ODYSSEY_STRING_LOOSE.x) * t;
+  const endY = ODYSSEY_STRING_LOOSE.y + (ODYSSEY_BOW_TOP.y - ODYSSEY_STRING_LOOSE.y) * t;
   const bowPath = document.getElementById('odysseyBowPath');
   const stringPath = document.getElementById('odysseyStringPath');
-  const arrowShaft = document.getElementById('odysseyArrowShaft');
-  const arrowHead = document.getElementById('odysseyArrowHead');
+  const stringEnd = document.getElementById('odysseyStringEnd');
   if(!bowPath) return; // modale déjà fermée entre-temps
+
   bowPath.setAttribute('d', `M${ODYSSEY_BOW_TOP.x},${ODYSSEY_BOW_TOP.y} Q${bowMidX},100 ${ODYSSEY_BOW_BOTTOM.x},${ODYSSEY_BOW_BOTTOM.y}`);
-  stringPath.setAttribute('d', `M${ODYSSEY_BOW_TOP.x},${ODYSSEY_BOW_TOP.y} L${drawX},100 L${ODYSSEY_BOW_BOTTOM.x},${ODYSSEY_BOW_BOTTOM.y}`);
-  const headX = drawX - ODYSSEY_ARROW_LEN;
-  arrowShaft.setAttribute('x1', drawX); arrowShaft.setAttribute('y1', 100);
-  arrowShaft.setAttribute('x2', headX + 10); arrowShaft.setAttribute('y2', 100);
-  arrowHead.setAttribute('points', `${headX - 14},100 ${headX + 12},92 ${headX + 12},108`);
+
+  // La corde pend lâche, à l'écart de l'arc (courbe bombée vers la droite)
+  // tant qu'elle n'est pas accrochée — le bombé se résorbe avec la tension,
+  // jusqu'à une ligne droite et tendue (accrochée) à 100%.
+  const sag = ODYSSEY_STRING_SAG_MAX * (1 - t);
+  const midX = (ODYSSEY_BOW_BOTTOM.x + endX) / 2 + sag;
+  const midY = (ODYSSEY_BOW_BOTTOM.y + endY) / 2;
+  stringPath.setAttribute('d', `M${ODYSSEY_BOW_BOTTOM.x},${ODYSSEY_BOW_BOTTOM.y} Q${midX},${midY} ${endX},${endY}`);
+
+  stringEnd.setAttribute('cx', endX);
+  stringEnd.setAttribute('cy', endY);
+  stringEnd.setAttribute('r', t >= 1 ? 5.5 : 4);
 }
 
 function runOdysseyHappening(){
@@ -236,16 +253,17 @@ function runOdysseyHappening(){
         <h2>L'épreuve de l'arc</h2>
         <button class="close-x" data-close>✕</button>
       </div>
-      <p class="happening-caption" id="odysseyCaption">Douze anneaux de hache, un seul arc. Tire vite — et sans t'arrêter, ou la corde retombe.</p>
+      <p class="happening-caption" id="odysseyCaption">Douze anneaux de hache, un seul arc à bander : plie-le et accroche la corde à l'encoche du sommet — vite, et sans t'arrêter, ou elle retombe.</p>
       <svg class="odyssey-bow" viewBox="0 0 220 200" aria-hidden="true">
         <line x1="15" y1="100" x2="205" y2="100" class="odyssey-bow-guide"/>
+        <!-- Encoche du sommet : où le bout libre de la corde doit venir s'accrocher, voir updateOdysseyBow(). -->
+        <line x1="98" y1="13" x2="122" y2="27" class="odyssey-notch"/>
         <path id="odysseyBowPath" class="odyssey-bow-path" d=""/>
         <path id="odysseyStringPath" class="odyssey-string-path" d=""/>
-        <line id="odysseyArrowShaft" class="odyssey-arrow-shaft" x1="0" y1="0" x2="0" y2="0"/>
-        <polygon id="odysseyArrowHead" class="odyssey-arrow-head" points=""/>
+        <circle id="odysseyStringEnd" class="odyssey-string-end" cx="0" cy="0" r="4"/>
       </svg>
       <div class="odyssey-track"><div class="odyssey-fill" id="odysseyFill"></div></div>
-      <button class="btn odyssey-pull-btn" id="odysseyPullBtn" type="button">TIRE !</button>
+      <button class="btn odyssey-bend-btn" id="odysseyBendBtn" type="button">BANDE-LE !</button>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -254,7 +272,7 @@ function runOdysseyHappening(){
   let won = false;
   const fill = document.getElementById('odysseyFill');
   const caption = document.getElementById('odysseyCaption');
-  const pullBtn = document.getElementById('odysseyPullBtn');
+  const bendBtn = document.getElementById('odysseyBendBtn');
   updateOdysseyBow(0);
 
   // La tension retombe toute seule, vite — voir les constantes ODYSSEY_*
@@ -274,7 +292,7 @@ function runOdysseyHappening(){
     if(e.target === overlay || e.target.closest('[data-close]')) stopWatching();
   });
 
-  function pull(){
+  function bend(){
     if(won) return;
     tension = Math.min(100, tension + ODYSSEY_GAIN);
     fill.style.width = tension + '%';
@@ -283,8 +301,8 @@ function runOdysseyHappening(){
       won = true;
       clearInterval(decay);
       caption.textContent = '« Aucun de vous n\'était digne de bander cet arc. » Toi, si.';
-      pullBtn.disabled = true;
-      pullBtn.textContent = 'ÉPREUVE RÉUSSIE';
+      bendBtn.disabled = true;
+      bendBtn.textContent = 'ÉPREUVE RÉUSSIE';
       showToast('Tu es digne d\'Ithaque 🏹');
     }
   }
@@ -293,8 +311,8 @@ function runOdysseyHappening(){
   // (avec preventDefault, qui supprime le click émulé qui suivrait sinon —
   // sinon double comptage) : latence plus faible et aucun tap perdu au
   // rythme très rapide qu'exige l'épreuve, voir ODYSSEY_GAIN/DECAY plus haut.
-  pullBtn.addEventListener('click', pull);
-  pullBtn.addEventListener('touchstart', (e) => { e.preventDefault(); pull(); }, { passive: false });
+  bendBtn.addEventListener('click', bend);
+  bendBtn.addEventListener('touchstart', (e) => { e.preventDefault(); bend(); }, { passive: false });
 }
 
 // --- La Cité de Dieu : le défi photo ---

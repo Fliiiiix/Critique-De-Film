@@ -495,14 +495,18 @@ retapé différemment) :
 - **The Whale** (pas de badge, déclenché en restant 20s sur sa fiche) — un
   ordinateur qui s'envole à travers l'écran, référence à la scène où
   Charlie jette son ordinateur portable.
-- **The Odyssey** (🪓) — l'épreuve de l'arc d'Ulysse : un arc SVG qui se
-  bande réellement à l'écran (corde et flèche qui reculent, voir
-  `updateOdysseyBow()`), au rythme de clics (ou taps tactile) très
-  rapprochés. La tension redescend toute seule dès qu'on s'arrête — corrigé
-  le 25/08/2026 pour être vraiment exigeant : +5%/clic contre -28%/s de
-  décroissance en continu, il faut donc plus de 5 clics/s SOUTENUS pour
-  progresser net (la toute première version, ~3 clics/s requis, se laissait
-  bander trop facilement). Pas d'état d'échec, juste réessayer.
+- **The Odyssey** (🪓) — l'épreuve de l'arc d'Ulysse : PAS un tir, mais le
+  fait de plier l'arc et d'accrocher la corde à l'encoche du sommet (le
+  "bander"), comme dans le texte. Un arc SVG se plie réellement à l'écran
+  et le bout libre de la corde remonte vers l'encoche jusqu'à s'y accrocher
+  à 100% (voir `updateOdysseyBow()`), au rythme de clics (ou taps tactile)
+  très rapprochés — la tension redescend toute seule dès qu'on s'arrête.
+  Corrigé le 25/08/2026 (deux fois) : d'abord pour être vraiment exigeant
+  (+5%/clic contre -28%/s de décroissance en continu, il faut donc plus de
+  5 clics/s SOUTENUS pour progresser net — la toute première version,
+  ~3 clics/s requis, se laissait bander trop facilement), puis parce que
+  l'animation montrait une flèche qu'on tire en arrière (un tir, contresens
+  par rapport à l'épreuve elle-même). Pas d'état d'échec, juste réessayer.
 - **La Cité de Dieu** (🔫) — le défi photo : prendre une vraie photo,
   maintenant (appareil photo sur mobile via `capture="environment"`, fichier
   existant sur PC), que l'app habille façon pellicule Cidade de Deus
