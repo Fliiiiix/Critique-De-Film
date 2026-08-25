@@ -565,5 +565,4 @@ cas). Nécessite `supabase/migrations/018_add_admin_config.sql`.
 ## Prochaines étapes possibles
 
 - D'autres happenings (voir la section ci-dessus pour ceux déjà en place)
-- Interface admin (voir tous les succès/happenings définis, gérer le tout au même endroit)
 - Cache local (offline-first) pour continuer à consulter/noter sans réseau
