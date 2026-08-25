@@ -199,6 +199,7 @@ async function openGroupDetail(groupId){
   document.getElementById('groupProposalsList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
   document.getElementById('proposalTitleInput').value = '';
   clearProposalTmdbSelection();
+  document.getElementById('groupActivityList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
 
   const members = await loadGroupMembers(groupId);
   groupMembersCache[groupId] = members;
@@ -206,6 +207,13 @@ async function openGroupDetail(groupId){
 
   await loadProposals(groupId);
   renderGroupProposals();
+
+  // Fil d'activité du groupe (js/activity.js) — pour qu'un groupe revisité
+  // ne semble pas mort. Après les propositions plutôt qu'en parallèle :
+  // loadActivity() hydrate friendProfiles au besoin, autant laisser
+  // loadGroupMembers() (déjà groupé) faire le gros du travail en premier.
+  const events = await loadActivity({ scope: 'group', groupId });
+  renderActivityListInto(document.getElementById('groupActivityList'), events);
 }
 
 document.getElementById('groupDetailBack').addEventListener('click', goToGroups);

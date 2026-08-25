@@ -28,6 +28,7 @@ critique-films/
 ├── js/groups.js                          → groupes (famille/amis) : création, membres
 ├── js/proposals.js                        → propositions de films dans un groupe : votes + discussion
 ├── js/admin.js                             → interface admin (succès + happenings), réservée au compte propriétaire
+├── js/activity.js                           → fil d'activité (amis + groupes), lecture seule côté client
 └── supabase/
     ├── schema.sql                  → schéma complet (nouveau projet)
     └── migrations/                 → changements incrémentaux (projet déjà provisionné)
@@ -412,6 +413,33 @@ par personne et par proposition, contrainte unique) et
 `group_proposal_comments`, toutes scopées en RLS à l'appartenance au groupe
 via `group_proposals.group_id` → `group_members`. Nécessite
 `supabase/migrations/012_add_group_proposals.sql`.
+
+## Fil d'activité
+
+Section **Activité récente** en bas du détail d'un groupe : qui a proposé
+un film, commenté ou rejoint le groupe récemment — pour qu'un groupe déjà
+créé ne semble pas mort en y revenant (v1.6, premier étage d'une refonte
+pensée pour inciter davantage à utiliser Amis/Groupes — la suite viendra
+côté Amis dans une prochaine étape).
+
+Techniquement : une seule table `activity_events`, portée `friend` ou
+`group` (colonne `scope`), pensée dès le départ pour les deux usages même
+si seule la portée groupe est branchée pour l'instant. Jamais écrite
+directement par le client — uniquement par des fonctions trigger
+`SECURITY DEFINER` (`log_proposal_created`, `log_proposal_commented`,
+`log_group_joined`) déclenchées sur `group_proposals`/
+`group_proposal_comments`/`group_members`, même principe que le trigger qui
+ajoute automatiquement le créateur d'un groupe comme membre
+(`migrations/011`). Une policy RLS unique branche sur `scope` : côté
+groupe via `is_group_member()` (`migrations/013`), côté ami via la même
+sous-requête que "Friends can view shared films" (`migrations/009`). Les
+lignes existantes ont été rétro-remplies une fois à la création de la
+table (`created_at`/`joined_at` déjà serveur des tables sources) pour que
+les groupes déjà en place aient un historique dès le déploiement — pas de
+retro-remplissage pour un futur événement "note de film" côté amis, qui
+n'a aucun horodatage serveur fiable à réutiliser (`films.added` est une
+horloge client, pas fiable pour un flux inter-utilisateurs). Nécessite
+`supabase/migrations/019_add_activity_events.sql`.
 
 ## Top films
 

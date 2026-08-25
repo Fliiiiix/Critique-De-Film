@@ -13,7 +13,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=10">
+<link rel="stylesheet" href="css/style.css?v=11">
 </head>
 <body>
 
@@ -30,7 +30,7 @@
       <div class="brand-link" id="homeLink" role="link" tabindex="0" title="Retour à l'accueil">
         <h1>Critique de films</h1>
       </div>
-      <div class="version-tag">v<b>1.5</b></div>
+      <div class="version-tag">v<b>1.6</b></div>
     </div>
     <div class="user-bar" id="userBar" style="display:none;">
       <!-- Amis contient Groupes (un groupe se fait avec des amis) — pas
@@ -278,6 +278,13 @@
       <button class="btn" id="proposeFilmBtn" type="button">+ Proposer au groupe</button>
     </div>
     <div class="wl-list" id="groupProposalsList"></div>
+  </div>
+
+  <!-- Fil d'activité (js/activity.js) : qui a proposé/commenté/rejoint
+       récemment — pour qu'un groupe revisité ne semble pas mort. -->
+  <div class="stats-section">
+    <div class="stats-section-title">Activité récente</div>
+    <div class="wl-list" id="groupActivityList"></div>
   </div>
 
   <div class="modal-footer">
@@ -544,28 +551,34 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=10"></script>
-<script src="js/tmdbConfig.js?v=10"></script>
-<script src="js/data.js?v=10"></script>
-<script src="js/happenings.js?v=10"></script>
-<script src="js/app.js?v=10"></script>
-<script src="js/tmdb.js?v=10"></script>
-<script src="js/stats.js?v=10"></script>
-<script src="js/achievements.js?v=10"></script>
-<script src="js/journal.js?v=10"></script>
-<script src="js/profile.js?v=10"></script>
+<script src="js/supabaseConfig.js?v=11"></script>
+<script src="js/tmdbConfig.js?v=11"></script>
+<script src="js/data.js?v=11"></script>
+<script src="js/happenings.js?v=11"></script>
+<script src="js/app.js?v=11"></script>
+<script src="js/tmdb.js?v=11"></script>
+<script src="js/stats.js?v=11"></script>
+<script src="js/achievements.js?v=11"></script>
+<script src="js/journal.js?v=11"></script>
+<script src="js/profile.js?v=11"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=10"></script>
-<script src="js/router.js?v=10"></script>
-<script src="js/publicProfile.js?v=10"></script>
-<script src="js/top.js?v=10"></script>
-<script src="js/friends.js?v=10"></script>
-<script src="js/watchlist.js?v=10"></script>
-<script src="js/groups.js?v=10"></script>
-<script src="js/proposals.js?v=10"></script>
-<script src="js/auth.js?v=10"></script>
+<script src="js/admin.js?v=11"></script>
+<script src="js/router.js?v=11"></script>
+<script src="js/publicProfile.js?v=11"></script>
+<script src="js/top.js?v=11"></script>
+<script src="js/friends.js?v=11"></script>
+<!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
+     journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
+     openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
+     fonctions globales appelées après chargement complet), gardé groupé
+     ici pour la lisibilité. -->
+<script src="js/activity.js?v=11"></script>
+<script src="js/watchlist.js?v=11"></script>
+<script src="js/groups.js?v=11"></script>
+<script src="js/proposals.js?v=11"></script>
+<script src="js/auth.js?v=11"></script>
 </body>
 </html>
