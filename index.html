@@ -13,7 +13,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=6">
+<link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
 
@@ -417,22 +417,30 @@
       <input type="text" id="displayNameInput" placeholder="Ton pseudo">
     </div>
     <div class="field">
-      <label>Avatar (URL d'une image)</label>
-      <input type="text" id="avatarUrlInput" placeholder="https://…">
-    </div>
-    <div class="field">
-      <!-- Envoi immédiat au choix du fichier (pas de bouton "Uploader" à
-           part) — remplit avatarUrlInput ci-dessus avec l'URL publique
-           obtenue, même principe que le choix d'une affiche plus bas. Voir
-           supabase/migrations/017 (bucket Storage). -->
-      <label>Ou uploader une image depuis cet appareil (5 Mo max)</label>
-      <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp,image/gif">
-      <div class="avatar-upload-status" id="avatarUploadStatus"></div>
-    </div>
-    <div class="field">
-      <label>Ou choisir l'affiche d'un film déjà noté</label>
-      <input type="text" id="avatarFilmSearch" placeholder="Chercher dans tes films…">
-      <div class="tmdb-results" id="avatarFilmResults"></div>
+      <label>Avatar</label>
+      <!-- 3 champs à part (URL / fichier / affiche d'un film) tenaient trop
+           de place — regroupés en 2 onglets. avatarUrlInput reste la seule
+           source de vérité envoyée à la sauvegarde (handleSaveProfile) :
+           l'upload de fichier y écrit l'URL publique obtenue, le choix d'un
+           film y écrit son affiche, exactement comme avant. -->
+      <div class="avatar-source-tabs" role="tablist">
+        <button type="button" class="avatar-source-tab active" data-avatar-tab="file" role="tab" aria-selected="true">Depuis cet appareil</button>
+        <button type="button" class="avatar-source-tab" data-avatar-tab="url" role="tab" aria-selected="false">URL ou un de tes films</button>
+      </div>
+
+      <div class="avatar-source-pane" id="avatarPaneFile">
+        <!-- Envoi immédiat au choix du fichier (pas de bouton "Uploader" à
+             part) — remplit avatarUrlInput avec l'URL publique obtenue. Voir
+             supabase/migrations/017 (bucket Storage). -->
+        <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp,image/gif">
+        <div class="avatar-upload-status" id="avatarUploadStatus"></div>
+      </div>
+
+      <div class="avatar-source-pane" id="avatarPaneUrl" style="display:none;">
+        <input type="text" id="avatarUrlInput" placeholder="https://…">
+        <input type="text" id="avatarFilmSearch" placeholder="…ou chercher l'affiche d'un film déjà noté" style="margin-top:8px;">
+        <div class="tmdb-results" id="avatarFilmResults"></div>
+      </div>
     </div>
 
     <!-- Opt-in, false par défaut côté base (supabase/migrations/016) —
@@ -518,23 +526,23 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=6"></script>
-<script src="js/tmdbConfig.js?v=6"></script>
-<script src="js/data.js?v=6"></script>
-<script src="js/happenings.js?v=6"></script>
-<script src="js/app.js?v=6"></script>
-<script src="js/tmdb.js?v=6"></script>
-<script src="js/stats.js?v=6"></script>
-<script src="js/achievements.js?v=6"></script>
-<script src="js/journal.js?v=6"></script>
-<script src="js/profile.js?v=6"></script>
-<script src="js/router.js?v=6"></script>
-<script src="js/publicProfile.js?v=6"></script>
-<script src="js/top.js?v=6"></script>
-<script src="js/friends.js?v=6"></script>
-<script src="js/watchlist.js?v=6"></script>
-<script src="js/groups.js?v=6"></script>
-<script src="js/proposals.js?v=6"></script>
-<script src="js/auth.js?v=6"></script>
+<script src="js/supabaseConfig.js?v=7"></script>
+<script src="js/tmdbConfig.js?v=7"></script>
+<script src="js/data.js?v=7"></script>
+<script src="js/happenings.js?v=7"></script>
+<script src="js/app.js?v=7"></script>
+<script src="js/tmdb.js?v=7"></script>
+<script src="js/stats.js?v=7"></script>
+<script src="js/achievements.js?v=7"></script>
+<script src="js/journal.js?v=7"></script>
+<script src="js/profile.js?v=7"></script>
+<script src="js/router.js?v=7"></script>
+<script src="js/publicProfile.js?v=7"></script>
+<script src="js/top.js?v=7"></script>
+<script src="js/friends.js?v=7"></script>
+<script src="js/watchlist.js?v=7"></script>
+<script src="js/groups.js?v=7"></script>
+<script src="js/proposals.js?v=7"></script>
+<script src="js/auth.js?v=7"></script>
 </body>
 </html>

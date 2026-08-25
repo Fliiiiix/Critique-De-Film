@@ -122,6 +122,13 @@ critères) est rejeté sans toucher aux données existantes.
 Chaque critère a une définition fixe, une échelle de repères (0 / 0.5 / 1) et
 4 questions pour trancher rapidement — voir `js/data.js`.
 
+Vécu en prod le 25/08/2026 : au doigt, scroller la fiche d'un film touchait
+souvent un curseur au passage et changeait la note sans le vouloir. Fixé via
+`touch-action: pan-y` sur tous les `input[type="range"]` (`css/style.css`) —
+un geste vertical y est désormais toujours traité comme un scroll de page,
+jamais comme un drag du curseur ; seul un geste horizontal (ou un tap direct)
+interagit encore avec le slider.
+
 ### Trier/filtrer par critère individuel
 
 Deux niveaux plutôt qu'un seul sélecteur surchargé : le tri général
@@ -202,10 +209,13 @@ Pas de bouton "Profil" séparé dans l'entête : la **photo de profil**
 elle-même (agrandie, en haut à droite) fait office de bouton — cliquer
 dessus ouvre la modale profil. Sans avatar renseigné, une icône 👤 la
 remplace pour rester visible et cliquable. La modale permet de définir un
-pseudo et un avatar — trois façons au choix, qui remplissent toutes le même
-champ URL au final : coller une URL d'image, **uploader un fichier depuis
-l'appareil** (5 Mo max, voir plus bas), ou choisir l'affiche d'un film déjà
-noté. Regroupe aussi les vues sur **mon activité** (section "Mon activité" :
+pseudo et un avatar — deux onglets ("Depuis cet appareil" / "URL ou un de
+tes films", voir `setAvatarSourceTab()` dans `js/profile.js`) qui remplissent
+tous les deux le même champ URL au final : le premier **uploade un fichier
+depuis l'appareil** (5 Mo max, voir plus bas), le second accepte soit une URL
+d'image collée, soit l'affiche d'un film déjà noté. Regroupés en 2 onglets
+plutôt que 3 champs toujours affichés (retour direct, moins de place prise
+dans la modale). Regroupe aussi les vues sur **mon activité** (section "Mon activité" :
 📊 Statistiques, 🏆 Succès, 📅 Journal — voir plus bas), le lien du **profil
 public** (voir plus bas) et la **déconnexion** (sur la ligne
 d'Annuler/Enregistrer, à gauche — plus dans l'entête). Chaque utilisateur a
@@ -216,7 +226,7 @@ connectent avec leur propre email. Nécessite
 
 ### Upload d'avatar (Supabase Storage)
 
-La case "Ou uploader une image depuis cet appareil" envoie le fichier dès
+L'onglet "Depuis cet appareil" envoie le fichier dès
 qu'il est choisi (pas de bouton "Uploader" séparé) et remplit le champ URL
 avec l'adresse publique obtenue — même principe que le choix d'une affiche
 de film. Chemin fixe par utilisateur (`avatars/<user_id>/avatar`, sans
@@ -484,25 +494,32 @@ retapé différemment) :
 - **The Whale** (pas de badge, déclenché en restant 20s sur sa fiche) — un
   ordinateur qui s'envole à travers l'écran, référence à la scène où
   Charlie jette son ordinateur portable.
-- **The Odyssey** (🪓) — l'épreuve de l'arc d'Ulysse : une barre de tension
-  qui redescend toute seule, il faut cliquer (ou taper sur tactile) très
-  vite et sans s'arrêter pour la remplir. Pas d'état d'échec, juste une
-  vraie exigence de rythme (~3 clics/s en continu).
-- **La Cité de Dieu** (🔫) — une carte "façon Cidade de Deus" (affiche du
-  film + ta note + ton commentaire) à l'écran, pensée pour être
-  screenshotée directement. Un bouton Télécharger génère aussi un vrai
-  fichier PNG, mais avec un fond stylisé plutôt que l'affiche réelle :
-  l'API image de TMDB ne renvoie pas d'en-tête CORS permissif, donc un
-  `<canvas>` qui la dessine devient "tainted" et refuse d'être exporté
-  (`toBlob`/`toDataURL`) — vérifié en conditions réelles contre la prod.
-  Seul contournement possible : un proxy serveur (Edge Function Supabase),
-  hors scope pour un easter egg.
+- **The Odyssey** (🪓) — l'épreuve de l'arc d'Ulysse : un arc SVG qui se
+  bande réellement à l'écran (corde et flèche qui reculent, voir
+  `updateOdysseyBow()`), au rythme de clics (ou taps tactile) très
+  rapprochés. La tension redescend toute seule dès qu'on s'arrête — corrigé
+  le 25/08/2026 pour être vraiment exigeant : +5%/clic contre -28%/s de
+  décroissance en continu, il faut donc plus de 5 clics/s SOUTENUS pour
+  progresser net (la toute première version, ~3 clics/s requis, se laissait
+  bander trop facilement). Pas d'état d'échec, juste réessayer.
+- **La Cité de Dieu** (🔫) — le défi photo : prendre une vraie photo,
+  maintenant (appareil photo sur mobile via `capture="environment"`, fichier
+  existant sur PC), que l'app habille façon pellicule Cidade de Deus
+  (désaturée, contrastée, grain, vignette, bande basse façon Polaroid avec
+  le titre du film). Corrigé le 25/08/2026 : la première version générait
+  une carte à partir de la note/du commentaire (rien à *prendre* soi-même,
+  pas fidèle à l'idée d'origine). Effet de bord bienvenu : la photo vient
+  d'un fichier local (`blob:` URL) et non de TMDB, donc le `<canvas>` qui la
+  dessine n'est plus "tainted" — contrairement à la V1 (voir ancien
+  problème CORS documenté dans l'historique git), le bouton Télécharger
+  fonctionne ici pour de vrai, avec l'image réelle.
 
 Techniquement : purement client (`js/happenings.js`), aucune table dédiée —
 même philosophie que Succès (`js/achievements.js`) : rien à débloquer/
 suivre en base, juste du code qui réagit au `tmdb_id` du film ouvert.
 `prefers-reduced-motion` respecté (bascule sur un simple message plutôt que
-l'animation, sauf pour la barre de tension d'Odyssey — un simple remplissage,
+l'animation, sauf pour l'arc et la barre de tension d'Odyssey — de simples
+changements d'attributs pilotés par le clic, pas d'animation autonome, donc
 pas un risque). Ajouter un happening = une entrée dans le tableau
 `HAPPENINGS` (tmdb_id, type de déclenchement, fonction associée).
 

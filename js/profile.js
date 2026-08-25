@@ -89,10 +89,28 @@ function openProfileModal(){
   document.getElementById('avatarUploadStatus').classList.remove('error');
   document.getElementById('avatarFilmSearch').value = '';
   document.getElementById('avatarFilmResults').innerHTML = '';
+  setAvatarSourceTab('file');
   document.getElementById('publicProfileToggle').checked = !!(currentProfile && currentProfile.public_profile);
   updatePublicProfileLinkVisibility();
   document.getElementById('profileOverlay').classList.add('open');
 }
+
+// --- Onglets "Depuis cet appareil" / "URL ou un de tes films" ---
+// Regroupe ce qui était 3 champs toujours visibles (URL, fichier, affiche
+// d'un film) en 2 onglets — avatarUrlInput reste seul à faire foi à
+// l'enregistrement, voir handleSaveProfile().
+function setAvatarSourceTab(tab){
+  document.querySelectorAll('.avatar-source-tab').forEach(btn => {
+    const active = btn.dataset.avatarTab === tab;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  document.getElementById('avatarPaneFile').style.display = tab === 'file' ? '' : 'none';
+  document.getElementById('avatarPaneUrl').style.display = tab === 'url' ? '' : 'none';
+}
+document.querySelectorAll('.avatar-source-tab').forEach(btn => {
+  btn.addEventListener('click', () => setAvatarSourceTab(btn.dataset.avatarTab));
+});
 
 // --- Upload d'avatar réel (Supabase Storage, voir migrations/017) ---
 // Envoi dès le choix du fichier (pas de bouton "Uploader" séparé) : remplit

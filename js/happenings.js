@@ -138,10 +138,48 @@ function runWhaleHappening(){
 }
 
 // --- The Odyssey : l'épreuve de l'arc ---
-// Douze anneaux de hache, un seul arc à bander — cliquer/taper très
-// vite et sans s'arrêter (la tension retombe si on relâche le rythme,
-// comme un arc qu'on ne tire pas d'un coup sec). Pas d'état d'échec :
-// on peut réessayer autant qu'on veut, l'effort suffit à faire le jeu.
+// Douze anneaux de hache, un seul arc à bander — cliquer/taper très vite et
+// SANS S'ARRÊTER (la tension retombe dès qu'on relâche le rythme, comme un
+// arc qu'on ne tire pas d'un coup sec). Un arc SVG se bande réellement à
+// l'écran (corde + flèche qui reculent avec la tension) plutôt qu'une
+// simple barre de progression. Pas d'état d'échec : on peut réessayer
+// autant qu'on veut, l'effort suffit à faire le jeu.
+//
+// Réglage : +5% par clic, -2.8% toutes les 100ms (soit -28%/s de décroissance
+// en continu) — il faut donc largement plus de 5 clics/s SOUTENUS pour
+// progresser net (5 × 5 = 25 < 28). Vécu en prod le 25/08/2026 : la première
+// version (+6%/clic, -2.5% / 150ms, ≈3 clics/s requis) se laissait bander
+// trop facilement, sans vraie sensation d'effort.
+const ODYSSEY_GAIN = 5;
+const ODYSSEY_DECAY = 2.8;
+const ODYSSEY_TICK_MS = 100;
+
+// Coordonnées de l'arc SVG (repos → plein tendu), voir updateOdysseyBow().
+const ODYSSEY_BOW_TOP = { x: 110, y: 20 };
+const ODYSSEY_BOW_BOTTOM = { x: 110, y: 180 };
+const ODYSSEY_DRAW_X_REST = 122;
+const ODYSSEY_DRAW_X_FULL = 192;
+const ODYSSEY_BOW_MID_X_REST = 42;
+const ODYSSEY_BOW_MID_X_FULL = 26;
+const ODYSSEY_ARROW_LEN = 96;
+
+function updateOdysseyBow(tensionPct){
+  const t = tensionPct / 100;
+  const drawX = ODYSSEY_DRAW_X_REST + (ODYSSEY_DRAW_X_FULL - ODYSSEY_DRAW_X_REST) * t;
+  const bowMidX = ODYSSEY_BOW_MID_X_REST + (ODYSSEY_BOW_MID_X_FULL - ODYSSEY_BOW_MID_X_REST) * t;
+  const bowPath = document.getElementById('odysseyBowPath');
+  const stringPath = document.getElementById('odysseyStringPath');
+  const arrowShaft = document.getElementById('odysseyArrowShaft');
+  const arrowHead = document.getElementById('odysseyArrowHead');
+  if(!bowPath) return; // modale déjà fermée entre-temps
+  bowPath.setAttribute('d', `M${ODYSSEY_BOW_TOP.x},${ODYSSEY_BOW_TOP.y} Q${bowMidX},100 ${ODYSSEY_BOW_BOTTOM.x},${ODYSSEY_BOW_BOTTOM.y}`);
+  stringPath.setAttribute('d', `M${ODYSSEY_BOW_TOP.x},${ODYSSEY_BOW_TOP.y} L${drawX},100 L${ODYSSEY_BOW_BOTTOM.x},${ODYSSEY_BOW_BOTTOM.y}`);
+  const headX = drawX - ODYSSEY_ARROW_LEN;
+  arrowShaft.setAttribute('x1', drawX); arrowShaft.setAttribute('y1', 100);
+  arrowShaft.setAttribute('x2', headX + 10); arrowShaft.setAttribute('y2', 100);
+  arrowHead.setAttribute('points', `${headX - 14},100 ${headX + 12},92 ${headX + 12},108`);
+}
+
 function runOdysseyHappening(){
   const overlay = document.createElement('div');
   overlay.className = 'overlay open';
@@ -151,7 +189,14 @@ function runOdysseyHappening(){
         <h2>L'épreuve de l'arc</h2>
         <button class="close-x" data-close>✕</button>
       </div>
-      <p class="happening-caption" id="odysseyCaption">Douze anneaux de hache, un seul arc. Tire vite — et sans t'arrêter.</p>
+      <p class="happening-caption" id="odysseyCaption">Douze anneaux de hache, un seul arc. Tire vite — et sans t'arrêter, ou la corde retombe.</p>
+      <svg class="odyssey-bow" viewBox="0 0 220 200" aria-hidden="true">
+        <line x1="15" y1="100" x2="205" y2="100" class="odyssey-bow-guide"/>
+        <path id="odysseyBowPath" class="odyssey-bow-path" d=""/>
+        <path id="odysseyStringPath" class="odyssey-string-path" d=""/>
+        <line id="odysseyArrowShaft" class="odyssey-arrow-shaft" x1="0" y1="0" x2="0" y2="0"/>
+        <polygon id="odysseyArrowHead" class="odyssey-arrow-head" points=""/>
+      </svg>
       <div class="odyssey-track"><div class="odyssey-fill" id="odysseyFill"></div></div>
       <button class="btn odyssey-pull-btn" id="odysseyPullBtn" type="button">TIRE !</button>
     </div>
@@ -163,15 +208,16 @@ function runOdysseyHappening(){
   const fill = document.getElementById('odysseyFill');
   const caption = document.getElementById('odysseyCaption');
   const pullBtn = document.getElementById('odysseyPullBtn');
+  updateOdysseyBow(0);
 
-  // La tension retombe toute seule — sans clics assez rapprochés et
-  // nombreux, impossible d'atteindre 100 (voir le réglage des deux
-  // constantes ci-dessous : il faut environ 3 clics/s en continu).
+  // La tension retombe toute seule, vite — voir les constantes ODYSSEY_*
+  // en haut du fichier pour le calcul du rythme minimum requis.
   const decay = setInterval(() => {
     if(won) return;
-    tension = Math.max(0, tension - 2.5);
+    tension = Math.max(0, tension - ODYSSEY_DECAY);
     fill.style.width = tension + '%';
-  }, 150);
+    updateOdysseyBow(tension);
+  }, ODYSSEY_TICK_MS);
 
   function stopWatching(){
     clearInterval(decay);
@@ -181,10 +227,11 @@ function runOdysseyHappening(){
     if(e.target === overlay || e.target.closest('[data-close]')) stopWatching();
   });
 
-  pullBtn.addEventListener('click', () => {
+  function pull(){
     if(won) return;
-    tension = Math.min(100, tension + 6);
+    tension = Math.min(100, tension + ODYSSEY_GAIN);
     fill.style.width = tension + '%';
+    updateOdysseyBow(tension);
     if(tension >= 100){
       won = true;
       clearInterval(decay);
@@ -193,43 +240,46 @@ function runOdysseyHappening(){
       pullBtn.textContent = 'ÉPREUVE RÉUSSIE';
       showToast('Tu es digne d\'Ithaque 🏹');
     }
-  });
+  }
+  // click couvre souris ET clavier (Entrée/Espace sur le bouton focus) —
+  // gardé comme seul déclencheur pour ces deux-là. En plus, touchstart
+  // (avec preventDefault, qui supprime le click émulé qui suivrait sinon —
+  // sinon double comptage) : latence plus faible et aucun tap perdu au
+  // rythme très rapide qu'exige l'épreuve, voir ODYSSEY_GAIN/DECAY plus haut.
+  pullBtn.addEventListener('click', pull);
+  pullBtn.addEventListener('touchstart', (e) => { e.preventDefault(); pull(); }, { passive: false });
 }
 
-// --- La Cité de Dieu : ta fiche, façon Cidade de Deus ---
-// Une carte à l'écran (affiche réelle du film en fond) qu'on peut
-// screenshotter directement — "prendre en photo" au sens propre. Le
-// bouton Télécharger génère en plus un vrai fichier, mais SANS l'affiche
-// réelle en fond : l'API image de TMDB ne renvoie pas d'en-tête CORS
-// permissif, donc un <canvas> qui la dessine devient "tainted" et
-// toBlob()/toDataURL() refusent de l'exporter (testé en conditions
-// réelles contre la prod — erreur "Tainted canvases may not be
-// exported"). Contournable uniquement avec un proxy serveur (Edge
-// Function Supabase) — hors scope pour un easter egg.
+// --- La Cité de Dieu : le défi photo ---
+// Version corrigée le 25/08/2026 : la V1 générait une carte à partir de la
+// note/du commentaire (rien à "prendre" soi-même), pas fidèle à l'idée
+// d'origine. Ici le vrai défi est de prendre une photo maintenant (via
+// l'appareil photo sur mobile, ou un fichier existant sur PC) — l'app
+// l'habille ensuite façon pellicule Cidade de Deus (désaturée, contrastée,
+// grain, vignette). Bénéfice inattendu : la photo vient d'un <input
+// type="file"> local (blob: URL), jamais de TMDB — le <canvas> qui la
+// dessine n'est donc PAS "tainted" (voir le souci CORS rencontré sur la V1
+// affiche) : le bouton Télécharger fonctionne pour de vrai, avec l'image
+// réelle cette fois.
 function runCityOfGodHappening(film){
-  const note = getDisplayNote(film);
-  const noteText = note !== null ? note.toFixed(1) : '—';
   const overlay = document.createElement('div');
   overlay.className = 'overlay open';
   overlay.innerHTML = `
     <div class="modal happening-modal cog-modal">
       <div class="modal-head">
-        <h2>Ta fiche, façon Cidade de Deus</h2>
+        <h2>Le défi photo, façon favela</h2>
         <button class="close-x" data-close>✕</button>
       </div>
-      <p class="happening-caption">Capture d'écran directe pour garder l'affiche réelle en fond — le bouton Télécharger génère un fichier, mais sans elle (contrainte technique de l'image TMDB, voir js/happenings.js).</p>
-      <div class="cog-card">
-        ${film.posterUrl ? `<img class="cog-card-bg" src="${film.posterUrl}" alt="">` : ''}
-        <div class="cog-card-overlay">
-          <div class="cog-card-title">${escapeHtml(film.title)}</div>
-          <div class="cog-card-note">${noteText} <span>/ 5</span></div>
-          ${film.review ? `<div class="cog-card-review">« ${escapeHtml(film.review)} »</div>` : ''}
-          <div class="cog-card-brand">Critique de films</div>
-        </div>
+      <p class="happening-caption" id="cogCaption">Prends une photo. Une vraie, maintenant — qui raconte quelque chose, comme un plan de Cidade de Deus. On s'occupe de l'ambiance.</p>
+      <div id="cogIntro">
+        <input type="file" accept="image/*" capture="environment" id="cogPhotoInput">
       </div>
-      <div class="modal-footer">
-        <div></div>
-        <div class="right"><button class="btn" id="cogDownloadBtn" type="button">Télécharger</button></div>
+      <div id="cogResult" style="display:none;">
+        <canvas class="cog-canvas" id="cogCanvas"></canvas>
+        <div class="modal-footer">
+          <div><button class="btn secondary" id="cogRetakeBtn" type="button">Reprendre</button></div>
+          <div class="right"><button class="btn" id="cogDownloadBtn" type="button">Télécharger</button></div>
+        </div>
       </div>
     </div>
   `;
@@ -237,7 +287,94 @@ function runCityOfGodHappening(film){
   overlay.addEventListener('click', (e) => {
     if(e.target === overlay || e.target.closest('[data-close]')) overlay.remove();
   });
-  document.getElementById('cogDownloadBtn').addEventListener('click', () => downloadCityOfGodCard(film, noteText));
+
+  const photoInput = document.getElementById('cogPhotoInput');
+  const intro = document.getElementById('cogIntro');
+  const result = document.getElementById('cogResult');
+  const caption = document.getElementById('cogCaption');
+  const canvas = document.getElementById('cogCanvas');
+
+  photoInput.addEventListener('change', () => {
+    const file = photoInput.files && photoInput.files[0];
+    if(!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      renderCogPhoto(canvas, img, film);
+      URL.revokeObjectURL(url);
+      intro.style.display = 'none';
+      result.style.display = '';
+      caption.textContent = 'Défi relevé. Télécharge-la, ou reprends-en une autre.';
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      showToast('Photo illisible, réessaie.');
+    };
+    img.src = url;
+  });
+
+  document.getElementById('cogRetakeBtn').addEventListener('click', () => {
+    photoInput.value = '';
+    result.style.display = 'none';
+    intro.style.display = '';
+    caption.textContent = 'Prends une photo. Une vraie, maintenant — qui raconte quelque chose, comme un plan de Cidade de Deus. On s\'occupe de l\'ambiance.';
+  });
+
+  document.getElementById('cogDownloadBtn').addEventListener('click', () => {
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `critique-films-defi-photo-${film.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    }, 'image/png');
+  });
+}
+
+// Grade façon pellicule (désaturée/contrastée/chaude) + vignette + grain +
+// bande façon Polaroid en bas avec le titre du film. photoWidth plafonné à
+// 900 pour garder un fichier léger — l'aspect ratio d'origine est conservé.
+function renderCogPhoto(canvas, img, film){
+  const maxW = 900;
+  const scale = Math.min(1, maxW / img.naturalWidth);
+  const pw = Math.round(img.naturalWidth * scale);
+  const ph = Math.round(img.naturalHeight * scale);
+  const bandH = 130;
+  canvas.width = pw;
+  canvas.height = ph + bandH;
+  const ctx = canvas.getContext('2d');
+
+  ctx.filter = 'saturate(0.4) contrast(1.3) sepia(0.22) brightness(0.9)';
+  ctx.drawImage(img, 0, 0, pw, ph);
+  ctx.filter = 'none';
+
+  // Vignette.
+  const vign = ctx.createRadialGradient(pw / 2, ph / 2, ph * 0.35, pw / 2, ph / 2, ph * 0.75);
+  vign.addColorStop(0, 'rgba(0,0,0,0)');
+  vign.addColorStop(1, 'rgba(0,0,0,0.55)');
+  ctx.fillStyle = vign;
+  ctx.fillRect(0, 0, pw, ph);
+
+  // Grain léger, façon pellicule — points semi-transparents plutôt qu'un
+  // vrai bruit par pixel (beaucoup plus rapide).
+  ctx.fillStyle = 'rgba(237,228,211,0.06)';
+  for(let i = 0; i < Math.round((pw * ph) / 900); i++){
+    ctx.fillRect(Math.random() * pw, Math.random() * ph, 1.4, 1.4);
+  }
+
+  // Bande basse façon Polaroid.
+  ctx.fillStyle = '#17140f';
+  ctx.fillRect(0, ph, pw, bandH);
+  ctx.fillStyle = '#d1a13f';
+  ctx.font = `italic 600 ${Math.max(22, Math.round(pw / 26))}px Georgia, serif`;
+  ctx.textAlign = 'left';
+  ctx.fillText(truncateCanvasTextOneLine(ctx, film.title, pw - 56), 28, ph + 48);
+  ctx.fillStyle = '#948c78';
+  ctx.font = '600 13px "IBM Plex Mono", monospace';
+  ctx.fillText('DÉFI PHOTO RELEVÉ · CRITIQUE DE FILMS', 28, ph + bandH - 20);
 }
 
 function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
@@ -269,58 +406,16 @@ function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
   ctx.fillText(line, x, curY);
 }
 
-// Fond stylisé (dégradé + grain léger) plutôt que l'affiche réelle — voir
-// le commentaire au-dessus de runCityOfGodHappening() pour la raison.
-function downloadCityOfGodCard(film, noteText){
-  const canvas = document.createElement('canvas');
-  canvas.width = 900;
-  canvas.height = 1200;
-  const ctx = canvas.getContext('2d');
-
-  const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  grad.addColorStop(0, '#211c16');
-  grad.addColorStop(1, '#0f0d09');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Grain léger, façon pellicule — quelques centaines de points semi-
-  // transparents plutôt qu'un vrai bruit par pixel (beaucoup plus rapide).
-  ctx.fillStyle = 'rgba(237,228,211,0.05)';
-  for(let i = 0; i < 900; i++){
-    ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1.5, 1.5);
+// Une seule ligne, tronquée avec "…" si besoin — contrairement à
+// wrapCanvasText() ci-dessus (pensée pour plusieurs lignes), utile quand la
+// mise en page suivante (ex. la bande du défi photo) réserve une hauteur
+// fixe pour une seule ligne de titre.
+function truncateCanvasTextOneLine(ctx, text, maxWidth){
+  if(ctx.measureText(text).width <= maxWidth) return text;
+  let t = text;
+  while(t.length > 1 && ctx.measureText(t + '…').width > maxWidth){
+    t = t.slice(0, -1);
   }
-
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#8a713a';
-  ctx.font = '600 22px "IBM Plex Mono", monospace';
-  ctx.fillText('CRITIQUE DE FILMS', 60, 90);
-
-  ctx.fillStyle = '#d1a13f';
-  ctx.font = 'italic 600 52px Georgia, serif';
-  wrapCanvasText(ctx, film.title, 60, 220, canvas.width - 120, 58, 3);
-
-  ctx.fillStyle = '#ede4d3';
-  ctx.font = '700 90px Georgia, serif';
-  ctx.fillText(noteText, 60, 440);
-  const noteWidth = ctx.measureText(noteText).width;
-  ctx.font = '600 32px Georgia, serif';
-  ctx.fillStyle = '#948c78';
-  ctx.fillText('/ 5', 60 + noteWidth + 16, 440);
-
-  if(film.review){
-    ctx.fillStyle = '#c9bfa8';
-    ctx.font = 'italic 30px Georgia, serif';
-    wrapCanvasText(ctx, '« ' + film.review + ' »', 60, 560, canvas.width - 120, 42, 8);
-  }
-
-  canvas.toBlob((blob) => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `critique-films-${film.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
-  }, 'image/png');
+  return t + '…';
 }
+

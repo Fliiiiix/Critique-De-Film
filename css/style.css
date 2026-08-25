@@ -816,6 +816,14 @@ input[type="range"]{
   background:var(--hairline);
   border-radius:2px;
   outline:none;
+  /* Vécu en prod le 25/08/2026 : au doigt, un scroll qui passe sur une
+     barre de notation la faisait sauter à la valeur touchée, changeant la
+     note sans le vouloir. touch-action:pan-y dit au navigateur qu'un geste
+     vertical sur cet élément est un scroll de page (jamais un drag de
+     curseur) — seul un geste horizontal (ou un tap) est encore traité comme
+     une interaction avec le slider. Fix standard pour ce conflit slider
+     horizontal / liste qui scrolle verticalement, aucune perte d'usage. */
+  touch-action:pan-y;
 }
 input[type="range"]::-webkit-slider-thumb{
   -webkit-appearance:none;
@@ -831,6 +839,28 @@ input[type="range"]::-moz-range-thumb{
   background:var(--amber);
   cursor:pointer;
   border:2px solid #17140f;
+}
+.avatar-source-tabs{
+  display:flex;
+  gap:6px;
+  margin-bottom:10px;
+}
+.avatar-source-tab{
+  flex:1;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.03em;
+  padding:8px 6px;
+  border:1px solid var(--hairline);
+  background:transparent;
+  color:var(--text-muted);
+  border-radius:4px;
+  cursor:pointer;
+}
+.avatar-source-tab.active{
+  color:var(--amber);
+  border-color:var(--amber-dim);
+  background:rgba(209,161,63,0.08);
 }
 .crit-help-toggle{
   font-family:'IBM Plex Mono', monospace;
@@ -1417,11 +1447,28 @@ input[type="range"]::-moz-range-thumb{
   100%{left:110%; transform:rotate(680deg);}
 }
 
-/* The Odyssey : l'épreuve de l'arc. */
+/* The Odyssey : l'épreuve de l'arc. Un arc SVG se bande réellement (corde +
+   flèche qui reculent) au rythme des clics, voir updateOdysseyBow() dans
+   js/happenings.js. Simples changements d'attributs SVG pilotés par le
+   clic, pas d'animation autonome : pas besoin d'exception
+   prefers-reduced-motion ici (même raisonnement que la barre ci-dessous,
+   déjà jugée sans risque). */
+.odyssey-bow{
+  width:100%;
+  max-width:260px;
+  height:auto;
+  margin:14px auto 0;
+  display:block;
+}
+.odyssey-bow-guide{stroke:var(--hairline); stroke-width:1; stroke-dasharray:3 4;}
+.odyssey-bow-path{fill:none; stroke:var(--amber-dim); stroke-width:6; stroke-linecap:round;}
+.odyssey-string-path{fill:none; stroke:var(--text-muted); stroke-width:1.5;}
+.odyssey-arrow-shaft{stroke:var(--amber); stroke-width:3;}
+.odyssey-arrow-head{fill:var(--amber);}
 .odyssey-track{
-  margin-top:16px;
-  height:16px;
-  border-radius:8px;
+  margin-top:14px;
+  height:10px;
+  border-radius:6px;
   background:var(--surface-2);
   border:1px solid var(--hairline);
   overflow:hidden;
@@ -1439,66 +1486,22 @@ input[type="range"]::-moz-range-thumb{
   font-size:15px;
   letter-spacing:0.1em;
   user-select:none;
+  touch-action:manipulation; /* pas de délai double-tap-zoom sur du mash rapide */
 }
 .odyssey-pull-btn:disabled{opacity:0.6; cursor:default;}
 
-/* La Cité de Dieu : carte affiche + note + commentaire, à screenshotter
-   directement (voir le commentaire dans js/happenings.js sur pourquoi le
-   bouton Télécharger n'a pas la vraie affiche en fond). */
+/* La Cité de Dieu : le défi photo — canvas généré par renderCogPhoto()
+   (js/happenings.js), affiché responsive. */
 .cog-modal{max-width:460px;}
-.cog-card{
-  position:relative;
-  aspect-ratio:3/4;
+#cogIntro input[type="file"]{margin-top:12px; width:100%;}
+.cog-canvas{
+  display:block;
+  width:100%;
+  height:auto;
   border-radius:6px;
-  overflow:hidden;
   border:1px solid var(--hairline);
   margin-top:12px;
   background:var(--surface-2);
-}
-.cog-card-bg{
-  position:absolute; inset:0;
-  width:100%; height:100%;
-  object-fit:cover;
-  filter:saturate(1.1) contrast(1.05);
-}
-.cog-card-overlay{
-  position:absolute; inset:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-end;
-  padding:20px;
-  text-align:left;
-  background:linear-gradient(to top, rgba(10,6,4,0.97) 0%, rgba(10,6,4,0.6) 45%, rgba(10,6,4,0.05) 75%);
-}
-.cog-card-title{
-  font-family:'Fraunces', serif;
-  font-style:italic;
-  font-weight:600;
-  font-size:22px;
-  color:#f4ecd8;
-}
-.cog-card-note{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:28px;
-  font-weight:600;
-  color:var(--amber);
-  margin-top:4px;
-}
-.cog-card-note span{font-size:15px; color:#c9bfa8; font-weight:400;}
-.cog-card-review{
-  font-size:13px;
-  font-style:italic;
-  color:#c9bfa8;
-  margin-top:10px;
-  line-height:1.5;
-}
-.cog-card-brand{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:10px;
-  letter-spacing:0.1em;
-  text-transform:uppercase;
-  color:rgba(244,236,216,0.55);
-  margin-top:14px;
 }
 
 @media (prefers-reduced-motion:reduce){
