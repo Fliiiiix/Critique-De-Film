@@ -29,6 +29,7 @@ critique-films/
 ├── js/proposals.js                        → propositions de films dans un groupe : votes + discussion
 ├── js/admin.js                             → interface admin (succès + happenings), réservée au compte propriétaire
 ├── js/activity.js                           → fil d'activité (amis + groupes), lecture seule côté client
+├── js/invites.js                             → lien d'invitation de groupe (#/invite/:token)
 └── supabase/
     ├── schema.sql                  → schéma complet (nouveau projet)
     └── migrations/                 → changements incrémentaux (projet déjà provisionné)
@@ -371,10 +372,22 @@ d'avoir sa propre icône dans l'entête.
 Accessible depuis le bas de la page Amis (section "Groupes"), permet de créer
 un groupe (nom + description optionnelle) — le créateur en devient
 automatiquement membre. Depuis le détail d'un groupe, le créateur peut
-ajouter n'importe lequel de ses amis acceptés (pas de flux invitation
-séparé : l'amitié fait déjà office de consentement) et retirer un membre ;
-les autres membres peuvent quitter le groupe. Seul le créateur peut supprimer
+ajouter n'importe lequel de ses amis acceptés et retirer un membre ; les
+autres membres peuvent quitter le groupe. Seul le créateur peut supprimer
 le groupe (retire tous les membres).
+
+**Lien d'invitation** (v1.6) — section "Inviter", visible du seul créateur :
+génère un lien à partager (`#/invite/:token`) qui permet à quiconque
+l'ouvre de rejoindre le groupe directement, sans passer par une amitié au
+préalable. Volontairement limité : ouvrir le lien ne fait **que** rejoindre
+le groupe, jamais devenir ami (devenir ami donne accès en lecture à tout le
+catalogue noté de l'autre — bien plus qu'un simple clic sur un lien ne
+devrait accorder). Fonctionne même sans connexion : la page affiche un
+aperçu ("Invitation à rejoindre X") puis invite à se connecter, et rejoint
+le groupe automatiquement une fois la connexion faite (le token est
+mémorisé en `localStorage` le temps de l'aller-retour du lien magique, qui
+autrement ferait perdre l'information — voir `handleSendMagicLink()` dans
+`js/auth.js`). Le créateur peut révoquer un lien à tout moment.
 
 Contrairement aux amis, un groupe **ne partage pas les catalogues notés** de
 ses membres — c'est une base pour la brique suivante (proposer des films,
@@ -413,6 +426,17 @@ par personne et par proposition, contrainte unique) et
 `group_proposal_comments`, toutes scopées en RLS à l'appartenance au groupe
 via `group_proposals.group_id` → `group_members`. Nécessite
 `supabase/migrations/012_add_group_proposals.sql`.
+
+**Séance élue** (v1.6) — le créateur du groupe peut élire une proposition
+comme prochain film à voir (bouton "Élire", avec une date optionnelle),
+affichée en bandeau en haut de la page du groupe. Donne un vrai
+aboutissement au vote plutôt qu'une liste qui s'accumule sans jamais rien
+trancher. Un seul film élu à la fois par groupe (index partiel unique sur
+`group_proposals.group_id where chosen`) ; élire un autre film désélectionne
+automatiquement le précédent (même fonction `set_chosen_proposal`, pour
+rester atomique). Nécessite
+`supabase/migrations/020_add_chosen_proposal_and_invites.sql` (même
+migration que le lien d'invitation ci-dessus).
 
 ## Fil d'activité
 

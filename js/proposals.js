@@ -26,8 +26,54 @@ function rowToProposal(row){
     posterUrl: row.poster_url || null,
     overview: row.overview || null,
     releaseYear: row.release_year || null,
-    createdAt: row.created_at
+    createdAt: row.created_at,
+    chosen: !!row.chosen,
+    chosenAt: row.chosen_at || null,
+    watchDate: row.watch_date || null
   };
+}
+
+// --- Séance élue (voir supabase/migrations/020) : le créateur du groupe
+// marque une proposition comme le prochain film à voir, avec une date
+// optionnelle. Owner-only côté RPC (vérifié en dur dans la fonction) — le
+// bouton n'est de toute façon affiché qu'au créateur, voir renderGroupProposals().
+function chosenProposal(groupId){
+  return proposals.find(p => p.groupId === groupId && p.chosen) || null;
+}
+
+async function markAsChosen(groupId, proposalId, watchDate){
+  const { error } = await supabaseClient.rpc('set_chosen_proposal', {
+    p_group_id: groupId, p_proposal_id: proposalId, p_watch_date: watchDate || null
+  });
+  if(error){
+    showToast('Erreur — réessaie');
+    console.error(error);
+    return;
+  }
+  proposals.forEach(p => {
+    if(p.groupId !== groupId) return;
+    const isTarget = p.id === proposalId;
+    p.chosen = isTarget;
+    p.chosenAt = isTarget ? new Date().toISOString() : null;
+    p.watchDate = isTarget ? (watchDate || null) : null;
+  });
+  renderGroupProposals();
+  if(typeof renderChosenBanner === 'function') renderChosenBanner(groupId);
+  showToast('Séance élue');
+}
+
+async function unmarkChosen(groupId){
+  const { error } = await supabaseClient.rpc('unset_chosen_proposal', { p_group_id: groupId });
+  if(error){
+    showToast('Erreur — réessaie');
+    console.error(error);
+    return;
+  }
+  proposals.forEach(p => {
+    if(p.groupId === groupId){ p.chosen = false; p.chosenAt = null; p.watchDate = null; }
+  });
+  renderGroupProposals();
+  if(typeof renderChosenBanner === 'function') renderChosenBanner(groupId);
 }
 
 function proposalScore(proposalId){
@@ -80,18 +126,27 @@ function renderGroupProposals(){
     list.innerHTML = `<div class="tmdb-empty">Aucune proposition pour l'instant — propose un film ci-dessus.</div>`;
     return;
   }
+  const isOwner = typeof groups !== 'undefined' && groups.some(g => g.id === currentGroupId && g.ownerId === currentUser.id);
+
   list.innerHTML = proposals.map(p => {
     const score = proposalScore(p.id);
     const my = myVoteOn(p.id);
     const commentCount = proposalCommentCounts[p.id] || 0;
     const proposer = friendDisplayName(p.proposedBy);
+    const chosenBadge = p.chosen ? ` <span class="review-badge" title="Séance élue">🎟️</span>` : '';
+    let chosenAction = '';
+    if(isOwner){
+      chosenAction = p.chosen
+        ? `<button class="btn secondary" data-unchoose="${p.id}" type="button">Retirer</button>`
+        : `<button class="btn secondary" data-choose="${p.id}" type="button">Élire</button>`;
+    }
     return `
     <div class="wl-row proposal-row">
       ${p.posterUrl
         ? `<img class="film-poster" src="${p.posterUrl}" alt="" loading="lazy">`
         : `<div class="film-poster film-poster-placeholder">🎬</div>`}
       <div class="wl-main">
-        <div class="wl-title">${escapeHtml(p.title)}${p.releaseYear ? ` <span class="wl-year">(${p.releaseYear})</span>` : ''}</div>
+        <div class="wl-title">${escapeHtml(p.title)}${p.releaseYear ? ` <span class="wl-year">(${p.releaseYear})</span>` : ''}${chosenBadge}</div>
         <div class="wl-note">Proposé par ${escapeHtml(proposer)}</div>
       </div>
       <div class="vote-controls-inline">
@@ -100,6 +155,7 @@ function renderGroupProposals(){
         <button class="vote-btn${my === -1 ? ' active' : ''}" data-vote="-1" data-id="${p.id}" type="button">▼</button>
       </div>
       <div class="wl-actions">
+        ${chosenAction}
         <button class="btn secondary" data-open="${p.id}" type="button">💬 ${commentCount}</button>
       </div>
     </div>`;
@@ -109,6 +165,19 @@ function renderGroupProposals(){
   });
   list.querySelectorAll('button[data-open]').forEach(btn => {
     btn.addEventListener('click', () => goToProposal(currentGroupId, parseInt(btn.dataset.open, 10)));
+  });
+  list.querySelectorAll('button[data-choose]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      let watchDate = prompt('Date de la séance (AAAA-MM-JJ), ou laisse vide :') || null;
+      if(watchDate && !/^\d{4}-\d{2}-\d{2}$/.test(watchDate)){
+        showToast('Date ignorée — format attendu AAAA-MM-JJ');
+        watchDate = null;
+      }
+      markAsChosen(currentGroupId, parseInt(btn.dataset.choose, 10), watchDate);
+    });
+  });
+  list.querySelectorAll('button[data-unchoose]').forEach(btn => {
+    btn.addEventListener('click', () => unmarkChosen(currentGroupId));
   });
 }
 

@@ -126,12 +126,46 @@ async function loadGroupMembers(groupId){
   return data.map(r => ({ userId: r.user_id, joinedAt: r.joined_at }));
 }
 
+// --- Bandeau "Séance élue" (voir js/proposals.js, migrations/020) ---
+// Fonction à part (pas juste inline dans renderGroupDetail) : appelée aussi
+// juste après markAsChosen()/unmarkChosen(), qui n'ont pas de raison de
+// refaire tout le rendu du détail groupe pour un simple changement de
+// bandeau.
+function renderChosenBanner(groupId){
+  const el = document.getElementById('chosenBanner');
+  if(!el) return;
+  const p = (typeof chosenProposal === 'function') ? chosenProposal(groupId) : null;
+  if(!p){
+    el.style.display = 'none';
+    el.innerHTML = '';
+    return;
+  }
+  const dateLabel = p.watchDate
+    ? new Date(p.watchDate + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
+  el.style.display = '';
+  el.innerHTML = `
+    🎟️ <b>Séance élue :</b> ${escapeHtml(p.title)}${dateLabel ? ` — ${dateLabel}` : ''}
+  `;
+}
+
 function renderGroupDetail(group, members){
   const isOwner = group.ownerId === currentUser.id;
   document.getElementById('groupDetailTitle').textContent = group.name;
   const descEl = document.getElementById('groupDetailDesc');
   descEl.textContent = group.description || '';
   descEl.style.display = group.description ? '' : 'none';
+  renderChosenBanner(group.id);
+
+  // Lien d'invitation (voir js/invites.js) : owner seul, même gabarit que
+  // "Ajouter un ami" ci-dessous.
+  const inviteSection = document.getElementById('groupInviteSection');
+  if(isOwner){
+    inviteSection.style.display = '';
+    renderInviteBox(group.id);
+  }else{
+    inviteSection.style.display = 'none';
+  }
 
   const memberIds = members.map(m => m.userId);
 
@@ -195,6 +229,8 @@ async function openGroupDetail(groupId){
   document.getElementById('groupDetailTitle').textContent = group.name;
   document.getElementById('groupMembersList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
   document.getElementById('groupAddFriendSection').style.display = 'none';
+  document.getElementById('groupInviteSection').style.display = 'none';
+  document.getElementById('chosenBanner').style.display = 'none';
   document.getElementById('groupDetailFooter').innerHTML = '';
   document.getElementById('groupProposalsList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
   document.getElementById('proposalTitleInput').value = '';

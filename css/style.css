@@ -990,6 +990,17 @@ input[type="range"]::-moz-range-thumb{
   margin-top:4px;
 }
 .stats-section{margin-bottom:28px;}
+/* Bandeau "Séance élue" (js/proposals.js, migrations/020) — même famille
+   que .ach-summary (accent ambre) mais en bandeau plein-largeur plutôt
+   qu'un bloc centré, pour rester visible sans dominer la page. */
+.chosen-banner{
+  background:var(--bg);
+  border:1px solid var(--amber-dim);
+  border-radius:4px;
+  padding:12px 16px;
+  margin-bottom:20px;
+  font-size:14px;
+}
 .stats-section-title{
   font-family:'Fraunces', serif;
   font-style:italic;

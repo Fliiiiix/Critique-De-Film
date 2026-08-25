@@ -11,6 +11,7 @@
 //   #/groupes                               -> liste des groupes
 //   #/groupes/:groupId                      -> détail d'un groupe
 //   #/groupes/:groupId/propositions/:propId -> détail d'une proposition
+//   #/invite/:token                         -> invitation à rejoindre un groupe
 // Stats/Succès/Journal (vues sur mon activité passée, pas des actions) et le
 // profil (identité + déconnexion) restent des modals classiques, ouvertes
 // depuis l'entête ou la page Amis — voir js/profile.js, js/stats.js,
@@ -28,7 +29,7 @@
 // le reste, et js/auth.js → initAuth() qui la laisse passer avant même de
 // vérifier la session Supabase.
 
-const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage', 'amisPage', 'topPage', 'publicProfilePage'];
+const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage', 'amisPage', 'topPage', 'publicProfilePage', 'invitePage'];
 
 // null cache tout (utile pour l'écran de connexion / maintenance, qui gère
 // sa propre visibilité par ailleurs).
@@ -54,6 +55,7 @@ function parseRoute(){
   if(parts[0] === 'amis' && parts.length === 1) return { name: 'amis' };
   if(parts[0] === 'top' && parts.length === 1) return { name: 'top' };
   if(parts[0] === 'u' && parts.length === 2) return { name: 'publicProfile', userId: parts[1] };
+  if(parts[0] === 'invite' && parts.length === 2) return { name: 'invite', token: parts[1] };
   if(parts[0] !== 'groupes') return { name: 'home' };
   if(parts.length === 1) return { name: 'groupsList' };
   const groupId = parseInt(parts[1], 10);
@@ -76,6 +78,16 @@ async function renderRoute(){
   if(route.name === 'publicProfile'){
     showOnlyPage('publicProfilePage');
     await renderPublicProfilePage(route.userId);
+    return;
+  }
+  // #/invite/:token doit rester affichable qu'on soit connecté ou non
+  // (renderInvitePage() gère les deux cas) — mais l'ARRIVÉE sur cette URL
+  // sans session (lien ouvert dans un nouvel onglet, F5...) passe par
+  // initAuth() (js/auth.js), pas par ici : ce cas ne couvre qu'une
+  // navigation vers #/invite/:token depuis une session déjà active.
+  if(route.name === 'invite'){
+    showOnlyPage('invitePage');
+    await renderInvitePage(route.token);
     return;
   }
   if(!currentUser) return;

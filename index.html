@@ -13,7 +13,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=11">
+<link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body>
 
@@ -138,6 +138,17 @@
   <div id="publicProfileContent"></div>
 </div>
 
+<!-- Page invitation de groupe (#/invite/:token) — voir js/invites.js. Doit
+     rester affichable sans connexion (aperçu + "Se connecter"), comme
+     #publicProfilePage ci-dessus. -->
+<div class="container page" id="invitePage" style="display:none;">
+  <div class="page-header">
+    <button class="btn secondary" id="invitePageBack">← Retour</button>
+    <h2>Invitation</h2>
+  </div>
+  <div id="inviteContent"></div>
+</div>
+
 <!-- Page Watchlist ("à voir") — écran à part entière comme Groupes, voir
      js/router.js. -->
 <div class="container page" id="watchlistPage" style="display:none;">
@@ -250,6 +261,10 @@
   </div>
   <p class="auth-intro" id="groupDetailDesc" style="display:none;"></p>
 
+  <!-- Séance élue (js/proposals.js, migrations/020) : masqué tant qu'aucune
+       proposition n'est élue. -->
+  <div class="chosen-banner" id="chosenBanner" style="display:none;"></div>
+
   <div class="stats-section">
     <div class="stats-section-title">Membres</div>
     <div class="wl-list" id="groupMembersList"></div>
@@ -258,6 +273,12 @@
   <div class="stats-section" id="groupAddFriendSection" style="display:none;">
     <div class="stats-section-title">Ajouter un ami</div>
     <div class="wl-list" id="groupAddFriendList"></div>
+  </div>
+
+  <!-- Lien d'invitation (js/invites.js) : owner seul. -->
+  <div class="stats-section" id="groupInviteSection" style="display:none;">
+    <div class="stats-section-title">Inviter</div>
+    <div id="groupInviteBox"></div>
   </div>
 
   <div class="stats-section">
@@ -551,34 +572,37 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=11"></script>
-<script src="js/tmdbConfig.js?v=11"></script>
-<script src="js/data.js?v=11"></script>
-<script src="js/happenings.js?v=11"></script>
-<script src="js/app.js?v=11"></script>
-<script src="js/tmdb.js?v=11"></script>
-<script src="js/stats.js?v=11"></script>
-<script src="js/achievements.js?v=11"></script>
-<script src="js/journal.js?v=11"></script>
-<script src="js/profile.js?v=11"></script>
+<script src="js/supabaseConfig.js?v=12"></script>
+<script src="js/tmdbConfig.js?v=12"></script>
+<script src="js/data.js?v=12"></script>
+<script src="js/happenings.js?v=12"></script>
+<script src="js/app.js?v=12"></script>
+<script src="js/tmdb.js?v=12"></script>
+<script src="js/stats.js?v=12"></script>
+<script src="js/achievements.js?v=12"></script>
+<script src="js/journal.js?v=12"></script>
+<script src="js/profile.js?v=12"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=11"></script>
-<script src="js/router.js?v=11"></script>
-<script src="js/publicProfile.js?v=11"></script>
-<script src="js/top.js?v=11"></script>
-<script src="js/friends.js?v=11"></script>
+<script src="js/admin.js?v=12"></script>
+<script src="js/router.js?v=12"></script>
+<script src="js/publicProfile.js?v=12"></script>
+<script src="js/top.js?v=12"></script>
+<script src="js/friends.js?v=12"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=11"></script>
-<script src="js/watchlist.js?v=11"></script>
-<script src="js/groups.js?v=11"></script>
-<script src="js/proposals.js?v=11"></script>
-<script src="js/auth.js?v=11"></script>
+<script src="js/activity.js?v=12"></script>
+<script src="js/watchlist.js?v=12"></script>
+<script src="js/groups.js?v=12"></script>
+<script src="js/proposals.js?v=12"></script>
+<!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
+     proposals.js (chosenProposal) — voir js/invites.js. -->
+<script src="js/invites.js?v=12"></script>
+<script src="js/auth.js?v=12"></script>
 </body>
 </html>

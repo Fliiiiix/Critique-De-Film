@@ -46,6 +46,11 @@ async function showApp(){
   await loadViewings();
   render();
   await renderRoute(); // gère un lien direct vers une page Groupes (F5, etc.)
+  // Après renderRoute() : un lien d'invitation ouvert sans session (voir
+  // renderInvitePage(), js/invites.js) mémorise son token en localStorage
+  // avant la connexion — on le consomme ici, une fois l'app pleinement
+  // chargée, pour rejoindre le groupe et y rediriger.
+  await consumePendingInviteIfAny();
 }
 
 function handleSession(session){
@@ -97,6 +102,26 @@ document.getElementById('logoutBtn').addEventListener('click', handleLogout);
   // sur cette URL ne passe pas par hashchange (voir js/router.js), d'où ce
   // rendu explicite ici.
   if(parseRoute().name === 'publicProfile'){ await renderRoute(); return; }
+  // #/invite/:token doit aussi rester accessible SANS session (aperçu +
+  // "Se connecter"), et surtout SURVIVRE à showAuthScreen() qui viderait le
+  // hash (location.hash = '') si on laissait le flux normal gérer une
+  // session absente — donc traité à part, avant checkMaintenance(), comme
+  // publicProfile juste au-dessus.
+  if(parseRoute().name === 'invite'){
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    currentUser = session ? session.user : null;
+    if(currentUser){
+      // Connecté : le flux normal (showApp -> renderRoute) affiche la page
+      // d'invitation comme n'importe quelle autre route, avec un vrai
+      // bouton "Rejoindre" plutôt qu'une adhésion automatique au chargement.
+      handleSession(session);
+    }else{
+      showOnlyPage('invitePage');
+      await renderInvitePage(parseRoute().token);
+    }
+    supabaseClient.auth.onAuthStateChange((_event, s) => handleSession(s));
+    return;
+  }
   if(await checkMaintenance()) return; // stoppe tout : pas de session, pas de films chargés
   const { data: { session } } = await supabaseClient.auth.getSession();
   handleSession(session);
