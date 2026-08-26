@@ -1662,6 +1662,21 @@ input[type="range"]::-moz-range-thumb{
   background:var(--surface-2);
 }
 
+/* Se7en : la boîte. Un seul secousse bref au clic sur "Ouvrir" — gardé
+   court et non répété comme le flash de Fight Club (voir la note sur
+   l'épilepsie photosensible dans js/happenings.js), même si une secousse
+   pure n'a pas ce risque-là ; surtout, ça reste fidèle à la scène : un
+   sursaut, jamais un vrai flash de contenu. */
+#sevenOpenBtn{margin-top:16px;}
+.seven-shake{animation:sevenShake .4s ease-in-out;}
+@keyframes sevenShake{
+  0%, 100%{transform:translateX(0);}
+  20%{transform:translateX(-6px);}
+  40%{transform:translateX(5px);}
+  60%{transform:translateX(-4px);}
+  80%{transform:translateX(3px);}
+}
+
 @media (prefers-reduced-motion:reduce){
   .oldboy-corridor-track{animation:none; transform:translateX(-140px);}
 }

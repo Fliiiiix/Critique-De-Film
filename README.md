@@ -595,7 +595,7 @@ moment sur la fiche d'un film (le formulaire d'édition, seule "page" par
 film qu'a l'app) — sans badge dans ce cas, l'effet de surprise fait partie
 du jeu.
 
-Cinq pour l'instant, identifiés par `tmdb_id` (fiable même si le titre est
+Six pour l'instant, identifiés par `tmdb_id` (fiable même si le titre est
 retapé différemment) :
 
 - **Fight Club** (🥊) — un flash d'une fraction de seconde, référence
@@ -631,6 +631,11 @@ retapé différemment) :
   dessine n'est plus "tainted" — contrairement à la V1 (voir ancien
   problème CORS documenté dans l'historique git), le bouton Télécharger
   fonctionne ici pour de vrai, avec l'image réelle.
+- **Se7en** (📦) — la boîte, dans le désert. Fidèle au parti pris du film
+  (on ne voit jamais ce qu'il y a dedans, seulement la réaction de Mills) :
+  cliquer "Ouvrir la boîte" ne révèle RIEN, juste un sursaut (secousse
+  d'écran brève) et la réplique — pas de gadget qui montrerait un contenu,
+  ç'aurait trahi ce qui fait la force de la scène.
 
 Techniquement : purement client (`js/happenings.js`), aucune table dédiée —
 même philosophie que Succès (`js/achievements.js`) : rien à débloquer/

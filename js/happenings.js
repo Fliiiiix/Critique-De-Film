@@ -42,6 +42,12 @@ const HAPPENINGS = [
     trigger: 'click',
     icon: '🔫',
     run: runCityOfGodHappening
+  },
+  {
+    tmdbId: 807, // Se7en (1995)
+    trigger: 'click',
+    icon: '📦',
+    run: runSevenHappening
   }
 ];
 
@@ -482,5 +488,38 @@ function truncateCanvasTextOneLine(ctx, text, maxWidth){
     t = t.slice(0, -1);
   }
   return t + '…';
+}
+
+// --- Se7en : la boîte ---
+// Le film ne montre jamais ce qu'il y a dedans, seulement la réaction de
+// Mills — sa vraie force est justement de ne rien montrer. Même parti pris
+// ici plutôt qu'un gadget qui "révélerait" quelque chose : ouvrir la boîte
+// ne montre RIEN, juste un sursaut (secousse d'écran, jamais un flash de
+// contenu comme Fight Club) et la réplique.
+function runSevenHappening(){
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay open';
+  overlay.innerHTML = `
+    <div class="modal happening-modal">
+      <div class="modal-head">
+        <h2>📦 Une boîte, dans le désert.</h2>
+        <button class="close-x" data-close aria-label="Fermer">✕</button>
+      </div>
+      <p class="happening-caption" id="sevenCaption">John Doe a livré son dernier colis. Mills insiste pour l'ouvrir.</p>
+      <button class="btn" id="sevenOpenBtn" type="button">Ouvrir la boîte</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', (e) => {
+    if(e.target === overlay || e.target.closest('[data-close]')) overlay.remove();
+  });
+  document.getElementById('sevenOpenBtn').addEventListener('click', () => {
+    document.getElementById('sevenOpenBtn').remove();
+    document.getElementById('sevenCaption').textContent = '« Qu\'est-ce qu\'il y a dans la boîte ?! »';
+    if(!prefersReducedMotion()){
+      overlay.classList.add('seven-shake');
+      setTimeout(() => overlay.classList.remove('seven-shake'), 400);
+    }
+  });
 }
 
