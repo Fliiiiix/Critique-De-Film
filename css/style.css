@@ -447,8 +447,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background:var(--bg);
   border:1px solid var(--hairline);
 }
+/* Taille volontairement généreuse (v1.6) : l'affiche est le seul élément
+   vraiment "cinéma" d'une ligne de liste, le reste (titre, badges, note)
+   est du texte — un des rares endroits où prendre un vrai risque visuel
+   sans perturber la lecture en liste. Classe partagée par toutes les
+   listes de films de l'app (catalogue, watchlist, tops, recommandations,
+   catalogue d'un ami) : un seul changement les fait toutes bénéficier de
+   la même présence. */
 .film-poster{
-  width:38px; height:56px;
+  width:52px; height:78px;
   object-fit:cover;
   border-radius:3px;
   border:1px solid var(--hairline);
@@ -459,7 +466,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   align-items:center;
   justify-content:center;
   background:var(--bg);
-  font-size:16px;
+  font-size:22px;
   opacity:0.5;
 }
 .review-badge{
@@ -783,6 +790,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .tmdb-selected img{width:32px; height:48px; object-fit:cover; border-radius:2px; flex:none;}
 .tmdb-selected-info{flex:1; min-width:0;}
 #tmdbSelectedTitle{font-size:13px;}
+/* Fiche confirmée dans la modale principale (édition/ajout d'un film) :
+   seule occurrence de .tmdb-selected qui mérite une vraie affiche plutôt
+   qu'une vignette (watchlist/proposition restent des formulaires rapides,
+   pas la peine d'y répéter le même traitement). */
+#tmdbSelected{padding:12px; gap:14px;}
+#tmdbSelected img{width:56px; height:84px; border-radius:4px;}
+#tmdbSelectedTitle{font-family:'Fraunces', serif; font-weight:500; font-size:16px;}
 
 /* La note manuelle est une échappatoire exceptionnelle (voir le commentaire
    HTML au-dessus de #manualToggle) — séparée par un filet sous la grille
@@ -1158,11 +1172,30 @@ input[type="range"]::-moz-range-thumb{
   margin-bottom:0;
 }
 .stats-extreme{
+  display:flex;
+  align-items:center;
+  gap:12px;
   background:var(--bg);
   border:1px solid var(--hairline);
   border-radius:4px;
   padding:12px 14px;
 }
+.stats-extreme-poster{
+  width:42px; height:62px;
+  object-fit:cover;
+  border-radius:3px;
+  border:1px solid var(--hairline);
+  flex:none;
+}
+.stats-extreme-poster-placeholder{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--surface);
+  font-size:18px;
+  opacity:0.5;
+}
+.stats-extreme-info{min-width:0;}
 .stats-extreme-label{
   font-family:'IBM Plex Mono', monospace;
   font-size:10px;
@@ -1175,6 +1208,9 @@ input[type="range"]::-moz-range-thumb{
   font-family:'Fraunces', serif;
   font-size:15px;
   margin-bottom:4px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
 .stats-extreme-note{
   font-family:'IBM Plex Mono', monospace;
@@ -1635,7 +1671,7 @@ input[type="range"]::-moz-range-thumb{
   .film-row{padding:12px; gap:12px;}
   .film-row .holes{display:none;}
   .film-title{font-size:15px;}
-  .film-poster{width:30px; height:44px;}
+  .film-poster{width:44px; height:64px;}
   .stats-extremes{grid-template-columns:1fr;}
   .user-bar{position:static; margin-top:10px; flex-wrap:wrap;}
 

@@ -101,15 +101,25 @@ function renderStatsInto(content, list = films){
     <div class="stats-section stats-extremes">
       ${s.best ? `
       <div class="stats-extreme">
-        <div class="stats-extreme-label">Mieux noté</div>
-        <div class="stats-extreme-title">${escapeHtml(s.best.title)}</div>
-        <div class="stats-extreme-note">${getDisplayNote(s.best).toFixed(1)} / 5</div>
+        ${s.best.posterUrl
+          ? `<img class="stats-extreme-poster" src="${s.best.posterUrl}" alt="" loading="lazy">`
+          : `<div class="stats-extreme-poster stats-extreme-poster-placeholder">🎬</div>`}
+        <div class="stats-extreme-info">
+          <div class="stats-extreme-label">Mieux noté</div>
+          <div class="stats-extreme-title">${escapeHtml(s.best.title)}</div>
+          <div class="stats-extreme-note">${getDisplayNote(s.best).toFixed(1)} / 5</div>
+        </div>
       </div>` : ''}
       ${s.worst && s.worst !== s.best ? `
       <div class="stats-extreme">
-        <div class="stats-extreme-label">Moins bien noté</div>
-        <div class="stats-extreme-title">${escapeHtml(s.worst.title)}</div>
-        <div class="stats-extreme-note">${getDisplayNote(s.worst).toFixed(1)} / 5</div>
+        ${s.worst.posterUrl
+          ? `<img class="stats-extreme-poster" src="${s.worst.posterUrl}" alt="" loading="lazy">`
+          : `<div class="stats-extreme-poster stats-extreme-poster-placeholder">🎬</div>`}
+        <div class="stats-extreme-info">
+          <div class="stats-extreme-label">Moins bien noté</div>
+          <div class="stats-extreme-title">${escapeHtml(s.worst.title)}</div>
+          <div class="stats-extreme-note">${getDisplayNote(s.worst).toFixed(1)} / 5</div>
+        </div>
       </div>` : ''}
     </div>
   `;
