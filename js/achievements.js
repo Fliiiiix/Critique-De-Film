@@ -230,11 +230,11 @@ function openAchievements(){
   // d'abord évite deux modales de tailles différentes superposées.
   closeProfileModal();
   renderAchievements();
-  document.getElementById('achievementsOverlay').classList.add('open');
+  openOverlay('achievementsOverlay');
 }
 
 function closeAchievements(){
-  document.getElementById('achievementsOverlay').classList.remove('open');
+  closeOverlay('achievementsOverlay');
 }
 
 document.getElementById('achievementsBtn').addEventListener('click', openAchievements);

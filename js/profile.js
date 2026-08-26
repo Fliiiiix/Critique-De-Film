@@ -94,7 +94,7 @@ function openProfileModal(){
   updatePublicProfileLinkVisibility();
   // Bouton Admin (js/admin.js) : masqué pour tout le monde sauf ADMIN_EMAIL.
   document.getElementById('adminBtn').style.display = isAdmin() ? '' : 'none';
-  document.getElementById('profileOverlay').classList.add('open');
+  openOverlay('profileOverlay');
 }
 
 // --- Onglets "Depuis cet appareil" / "URL ou un de tes films" ---
@@ -225,7 +225,7 @@ document.getElementById('avatarFilmSearch').addEventListener('input', (e) => {
 });
 
 function closeProfileModal(){
-  document.getElementById('profileOverlay').classList.remove('open');
+  closeOverlay('profileOverlay');
 }
 
 async function handleSaveProfile(){

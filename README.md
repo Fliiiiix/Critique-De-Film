@@ -679,6 +679,32 @@ ces écarts via `getEffectiveCumulativeGroups()` / `getEffectiveHiddenAchievemen
 fonctionner seuls sur un compte non admin (jamais de config chargée dans ce
 cas). Nécessite `supabase/migrations/018_add_admin_config.sql`.
 
+## Micro-interactions & état de chargement (v1.6)
+
+Les 7 fenêtres modales de l'app (édition de film, profil, statistiques,
+succès, admin, journal, profil d'ami) s'ouvraient déjà avec une animation
+(`overlayIn`/`modalIn`) mais se fermaient d'un coup, sans transition. Elles
+partagent maintenant une fermeture symétrique (`overlayOut`/`modalOut`,
+`openOverlay()`/`closeOverlay()` dans `js/ui.js`) — chaque `close*()` garde
+ses propres à-côtés (ex. `closeModal()` remet `editingId` à `null`) via un
+callback plutôt que de dupliquer cette logique 7 fois. Cliquer sur l'étoile
+favori ou enregistrer une note déclenche en plus un petit pulse sur
+l'élément concerné (`pulseElement()`), retour visuel immédiat en plus du
+toast déjà présent.
+
+Le catalogue affiche 5 lignes grisées animées (`.film-row.skeleton`) le
+temps du tout premier chargement (session + requête Supabase) au lieu d'un
+espace vide — `render()` les remplace dès qu'il tourne pour de vrai, aucun
+changement JS nécessaire pour ça.
+
+Distinction volontaire pour `prefers-reduced-motion` (réglage système
+"Réduire les animations") : la fermeture de modale et le chargement grisé
+sont des animations autonomes/en boucle une fois lancées, donc coupées sous
+ce réglage (même traitement que l'ouverture de modale, la transition de
+page ou le couloir Old Boy déjà en place) ; le pulse étoile/sauvegarde est
+au contraire piloté en direct par le clic — il reste actif quel que soit ce
+réglage, comme l'arc final d'Odyssée.
+
 ## Prochaines étapes possibles
 
 - D'autres happenings (voir la section ci-dessus pour ceux déjà en place)

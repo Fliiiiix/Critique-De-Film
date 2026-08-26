@@ -175,11 +175,11 @@ function openJournal(){
   // d'abord évite deux modales de tailles différentes superposées.
   closeProfileModal();
   renderJournal();
-  document.getElementById('journalOverlay').classList.add('open');
+  openOverlay('journalOverlay');
 }
 
 function closeJournal(){
-  document.getElementById('journalOverlay').classList.remove('open');
+  closeOverlay('journalOverlay');
 }
 
 document.getElementById('journalBtn').addEventListener('click', openJournal);

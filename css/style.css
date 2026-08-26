@@ -512,6 +512,21 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .star-btn:hover{transform:scale(1.15);}
 .star-btn.active{color:var(--amber);}
+/* Micro-interactions (js/ui.js, pulseElement()) : retour visuel direct au
+   clic étoile/sauvegarde — pas d'exception prefers-reduced-motion ici,
+   contrairement à overlayOut/modalOut plus haut : ce n'est pas une
+   animation autonome, elle EST le geste (même règle que l'arc d'Odyssée). */
+.star-btn.pulse{animation:starPulse .3s ease-out;}
+@keyframes starPulse{
+  0%{transform:scale(1);}
+  40%{transform:scale(1.35);}
+  100%{transform:scale(1);}
+}
+.counter.pulse{animation:savePulse .5s ease-out;}
+@keyframes savePulse{
+  0%{box-shadow:0 0 0 0 rgba(209,161,63,0.55);}
+  100%{box-shadow:0 0 0 8px rgba(209,161,63,0);}
+}
 
 .manual-badge{
   display:inline-block;
@@ -530,6 +545,30 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .counter.manual{
   color:var(--teal);
   border-color:var(--teal);
+}
+
+/* État de chargement (index.html, #filmList) : 5 lignes statiques le temps
+   du 1er chargement réel, remplacées dès que render() tourne (voir le
+   commentaire dans index.html) — animation autonome/en boucle, garde donc
+   l'exception prefers-reduced-motion (contrairement à starPulse/savePulse
+   ci-dessus, pilotées en direct par un clic). */
+.film-row.skeleton{cursor:default;}
+.film-row.skeleton:hover{border-color:var(--hairline); transform:none; box-shadow:none;}
+.skeleton-block{
+  background:linear-gradient(90deg, var(--surface-2) 25%, var(--hairline) 50%, var(--surface-2) 75%);
+  background-size:200% 100%;
+  border-radius:3px;
+  animation:skeletonShimmer 1.4s ease-in-out infinite;
+}
+.skeleton-poster{width:38px; height:56px; flex:none;}
+.skeleton-line{height:14px;}
+.skeleton-counter{width:56px; height:30px; flex:none;}
+@keyframes skeletonShimmer{
+  0%{background-position:200% 0;}
+  100%{background-position:-200% 0;}
+}
+@media (prefers-reduced-motion:reduce){
+  .skeleton-block{animation:none;}
 }
 
 /* Top films : le classement est un vrai ordre (contrairement aux 01/02...
@@ -632,6 +671,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   z-index:50;
 }
 .overlay.open{display:flex; animation:overlayIn .15s ease-out;}
+/* Fermeture (js/ui.js, closeOverlay()) : symétrique de .open, garde
+   display:flex le temps de l'animation de sortie plutôt que de disparaître
+   d'un coup comme avant cette version. */
+.overlay.closing{display:flex; animation:overlayOut .15s ease-in forwards;}
+.overlay.closing .modal{animation:modalOut .15s ease-in forwards;}
 .modal{
   background:var(--surface);
   border:1px solid var(--hairline);
@@ -643,8 +687,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 @keyframes overlayIn{from{opacity:0;} to{opacity:1;}}
 @keyframes modalIn{from{opacity:0; transform:translateY(8px) scale(.98);} to{opacity:1; transform:translateY(0) scale(1);}}
+@keyframes overlayOut{from{opacity:1;} to{opacity:0;}}
+@keyframes modalOut{from{opacity:1; transform:translateY(0) scale(1);} to{opacity:0; transform:translateY(8px) scale(.98);}}
 @media (prefers-reduced-motion:reduce){
-  .overlay.open, .modal{animation:none;}
+  .overlay.open, .modal, .overlay.closing, .overlay.closing .modal{animation:none;}
 }
 .modal-head{
   display:flex;

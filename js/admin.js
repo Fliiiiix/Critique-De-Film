@@ -354,11 +354,11 @@ async function openAdminModal(){
   closeProfileModal();
   if(!adminConfigLoaded) await loadAdminConfig();
   setAdminTab('achievements');
-  document.getElementById('adminOverlay').classList.add('open');
+  openOverlay('adminOverlay');
 }
 
 function closeAdminModal(){
-  document.getElementById('adminOverlay').classList.remove('open');
+  closeOverlay('adminOverlay');
 }
 
 document.querySelectorAll('#adminTabs .avatar-source-tab').forEach(btn => {

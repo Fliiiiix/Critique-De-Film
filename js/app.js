@@ -177,6 +177,7 @@ function render(){
     const happening = getClickHappeningForFilm(f);
     const row = document.createElement('div');
     row.className = 'film-row';
+    row.dataset.id = f.id; // cible du pulse de sauvegarde (voir handleSave()) et du pulse favori ci-dessous
     const sub = (isManual ? 'Note manuelle · ancien référentiel' : '7 critères notés') + (f.releaseYear ? ` · ${f.releaseYear}` : '');
     row.innerHTML = `
       <div class="holes"><span></span><span></span><span></span></div>
@@ -211,6 +212,10 @@ function render(){
       }
       f.fav = newFav;
       render();
+      // render() reconstruit tout le DOM de la liste (voir plus haut) — le
+      // bouton cliqué n'existe déjà plus, on pulse celui qui vient d'être
+      // recréé pour le même film plutôt que l'ancienne référence.
+      pulseElement(document.querySelector(`.star-btn[data-id="${f.id}"]`));
     });
     list.appendChild(row);
   });
@@ -318,7 +323,6 @@ function openModal(id){
   // Repart d'une conversion watchlist propre à chaque ouverture — seule
   // startRatingFromWatchlist() (js/watchlist.js) la positionne ensuite.
   convertingFromWatchlistId = null;
-  const overlay = document.getElementById('overlay');
   const film = id ? films.find(f => f.id === id) : null;
   const manualNote = film && film.manualNote != null ? film.manualNote : null;
 
@@ -360,7 +364,7 @@ function openModal(id){
     renderViewingsSection(film.id);
   }
 
-  overlay.classList.add('open');
+  openOverlay('overlay');
   document.getElementById('titleInput').focus();
   // Happenings "dwell" (ex. The Whale) : se déclenchent en restant un
   // moment sur la fiche d'un film précis — voir js/happenings.js.
@@ -368,10 +372,11 @@ function openModal(id){
 }
 
 function closeModal(){
-  document.getElementById('overlay').classList.remove('open');
-  editingId = null;
-  convertingFromWatchlistId = null;
-  clearDwellWatch();
+  closeOverlay('overlay', () => {
+    editingId = null;
+    convertingFromWatchlistId = null;
+    clearDwellWatch();
+  });
 }
 
 async function handleSave(){
@@ -388,6 +393,12 @@ async function handleSave(){
   const tmdbFields = tmdbSelected
     ? { tmdb_id: tmdbSelected.tmdb_id, poster_url: tmdbSelected.poster_url, overview: tmdbSelected.overview, release_year: tmdbSelected.release_year, original_title: tmdbSelected.original_title }
     : { tmdb_id: null, poster_url: null, overview: null, release_year: null, original_title: null };
+
+  // Capturé avant closeModal() : son extraCleanup (js/ui.js) remet
+  // editingId à null, mais seulement une fois l'animation de fermeture
+  // terminée — pas question de dépendre de ce timing ici. Réassigné plus
+  // bas côté création (id généré par Supabase, connu qu'après l'insert).
+  let pulseId = editingId;
 
   if(editingId){
     const { error } = await supabaseClient.from('films')
@@ -421,6 +432,7 @@ async function handleSave(){
       return;
     }
     films.push(rowToFilm(data));
+    pulseId = data.id;
 
     // Premier visionnage automatique, daté de l'ajout — voir js/journal.js.
     await addViewing(data.id, data.added);
@@ -438,6 +450,10 @@ async function handleSave(){
   }
   closeModal();
   render();
+  // Pulse silencieux sur la note qui vient d'être enregistrée, en plus du
+  // toast déjà là — peut ne rien trouver (film sur une autre page de la
+  // pagination), pulseElement() ignore alors simplement l'appel.
+  pulseElement(document.querySelector(`.film-row[data-id="${pulseId}"] .counter`));
   showToast('Film enregistré');
 }
 

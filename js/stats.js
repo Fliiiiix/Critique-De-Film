@@ -124,11 +124,11 @@ function openStats(){
   // d'abord évite deux modales de tailles différentes superposées.
   closeProfileModal();
   renderStats();
-  document.getElementById('statsOverlay').classList.add('open');
+  openOverlay('statsOverlay');
 }
 
 function closeStats(){
-  document.getElementById('statsOverlay').classList.remove('open');
+  closeOverlay('statsOverlay');
 }
 
 document.getElementById('statsBtn').addEventListener('click', openStats);

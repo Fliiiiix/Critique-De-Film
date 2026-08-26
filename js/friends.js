@@ -393,7 +393,7 @@ async function openFriendProfile(userId){
   document.getElementById('friendProfileTitle').textContent = friendDisplayName(userId);
   const content = document.getElementById('friendProfileContent');
   content.innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
-  document.getElementById('friendProfileOverlay').classList.add('open');
+  openOverlay('friendProfileOverlay');
 
   const [{ data, error }, compat] = await Promise.all([
     supabaseClient.from('films').select('*').eq('user_id', userId).order('added', { ascending: false }),
@@ -452,7 +452,7 @@ async function openFriendProfile(userId){
 // elle revient naturellement sur la page Amis en dessous — plus besoin de
 // fermer quoi que ce soit d'autre.
 function closeFriendProfile(){
-  document.getElementById('friendProfileOverlay').classList.remove('open');
+  closeOverlay('friendProfileOverlay');
 }
 
 document.getElementById('closeFriendProfile').addEventListener('click', closeFriendProfile);
