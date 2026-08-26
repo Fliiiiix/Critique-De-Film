@@ -376,6 +376,7 @@ async function openFriends(){
   await loadFriendships();
   renderFriendsPage();
   await openFriendsSideSections();
+  markSeen('amis'); // pas attendu : n'a pas à retarder l'affichage de la page
 }
 
 document.getElementById('friendsBtn').addEventListener('click', goToAmis);

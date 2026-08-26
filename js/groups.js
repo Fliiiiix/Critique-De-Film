@@ -93,6 +93,7 @@ async function openGroups(){
   document.getElementById('groupDescInput').value = '';
   await loadGroups();
   renderGroupsList();
+  markSeen('groupes'); // pas attendu : n'a pas à retarder l'affichage de la page
 }
 
 // Pas d'icône Groupes dans l'entête : on y arrive depuis la page Amis

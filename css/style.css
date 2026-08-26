@@ -101,6 +101,7 @@ header{
   gap:2px;
 }
 .header-nav-btn{
+  position:relative; /* point du badge .has-unread ci-dessous */
   background:none;
   border:none;
   color:var(--text-muted);
@@ -112,6 +113,17 @@ header{
   transition:background .15s, color .15s;
 }
 .header-nav-btn:hover{background:var(--surface-2); color:var(--text);}
+/* Badge "non lu" (js/activityState.js) : un seul point, sur 👥, qui couvre
+   Amis + Groupes (pas d'icône Groupes séparée dans l'entête). */
+.header-nav-btn.has-unread::after{
+  content:'';
+  position:absolute;
+  top:6px; right:6px;
+  width:8px; height:8px;
+  border-radius:50%;
+  background:var(--danger);
+  border:1.5px solid var(--bg);
+}
 /* Photo de profil : bien visible (elle sert aussi de bouton d'accès au
    profil, voir js/profile.js) — plus de bouton "Profil" ni "Déconnexion"
    séparés dans le header (déconnexion déplacée dans la modale profil, voir
@@ -1001,6 +1013,24 @@ input[type="range"]::-moz-range-thumb{
   margin-bottom:20px;
   font-size:14px;
 }
+/* Digest de retour (js/activityState.js) : même famille que .chosen-banner
+   (accent ambre, bandeau plein-largeur) mais vit hors des pages à bascule
+   (voir index.html) donc porte son propre espacement vertical plutôt que
+   de compter sur .page. */
+.digest-banner{
+  background:var(--surface);
+  border:1px solid var(--amber-dim);
+  border-radius:4px;
+  padding:16px 32px;
+  margin:16px auto;
+}
+.digest-title{
+  font-family:'Fraunces', serif;
+  font-style:italic;
+  font-size:16px;
+  margin-bottom:12px;
+}
+.digest-banner .wl-list{margin-bottom:14px;}
 .stats-section-title{
   font-family:'Fraunces', serif;
   font-style:italic;

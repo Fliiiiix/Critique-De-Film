@@ -500,6 +500,32 @@ cercle d'amis (soi + amis acceptés directs, même périmètre que le Top
 "Mes amis") et pas encore notés par soi-même (`get_friend_recommendations`,
 même gabarit que `get_friends_top_films` de `migrations/015`).
 
+## Digest de retour & badges de notification (v1.6)
+
+Un point rouge sur 👥 dans l'entête (l'icône Amis, qui contient l'accès
+Groupes) dès qu'un ami ou un groupe a de l'activité pas encore vue —
+disparaît dès l'ouverture de la page concernée (`markSeen('amis')` /
+`markSeen('groupes')`), et le reste après un F5 ou depuis un autre appareil
+puisque le "vu" est stocké en base, pas en `localStorage`. À la connexion,
+un bandeau **"Depuis ta dernière visite"** résume ce qui s'est passé côté
+amis/groupes en ton absence (notes, propositions, commentaires, séances
+élues…), plafonné aux 14 derniers jours ou 20 événements (le plus petit des
+deux) pour qu'un retour après plusieurs mois n'inonde pas la page — un clic
+sur "Marquer comme vu" le referme et avance le curseur pour la prochaine
+visite.
+
+Techniquement : une table dédiée `user_activity_state`
+(`last_seen_amis`/`last_seen_groupes`/`last_digest_at`, une ligne par
+utilisateur) plutôt que `localStorage`, RLS identique à `admin_config`
+(chacun ne lit/écrit que sa propre ligne). Toujours en lecture sur
+`activity_events` (aucune nouvelle fonction `SECURITY DEFINER`) filtrée sur
+`created_at > dernier vu` et `actor_id <> moi` — ce qu'on a fait soi-même
+(noter un film, rejoindre un groupe…) n'allume jamais son propre badge.
+Première visite après ce déploiement : la ligne est créée avec les 3
+horodatages à "maintenant", pour ne pas faire apparaître d'un coup des mois
+d'historique existant en "non lu". Nécessite
+`supabase/migrations/023_add_user_activity_state.sql`.
+
 ## Top films
 
 L'icône **🏅** dans l'entête mène à `#/top`, une page à part entière (comme
