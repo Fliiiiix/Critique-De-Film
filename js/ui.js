@@ -17,10 +17,30 @@
 
 const OVERLAY_CLOSE_MS = 200; // > durée de overlayOut/modalOut (150ms), filet de sécurité si animationend ne se déclenche pas
 
+// --- Focus clavier (accessibilité) ---
+// Aucune des 7 modales ne déplaçait le focus à l'ouverture (sauf
+// openModal(), qui pointe explicitement sur #titleInput après avoir
+// appelé openOverlay() — cet appel plus spécifique gagne simplement en
+// s'exécutant après) ni ne le restaurait à la fermeture : un utilisateur
+// au clavier/lecteur d'écran restait "perdu" derrière l'overlay, ou son
+// focus atterrissait sur un bouton masqué (display:none) une fois la
+// modale refermée. overlayReturnFocus retient, PAR modale, l'élément à
+// refocaliser à la fermeture — pas une seule variable partagée, sinon
+// closeProfileModal() → openAchievements() (voir js/achievements.js)
+// écraserait la cible de la première avant que son délai de fermeture ne
+// se déclenche, et volerait le focus à la modale ouverte par-dessus.
+const overlayReturnFocus = {};
+
 function openOverlay(id){
   const el = document.getElementById(id);
+  overlayReturnFocus[id] = document.activeElement;
   el.classList.remove('closing'); // une fermeture pouvait être en cours
   el.classList.add('open');
+  const modal = el.querySelector('.modal');
+  const focusable = modal && modal.querySelector(
+    'input, textarea, select, button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+  );
+  if(focusable) focusable.focus({ preventScroll: true });
 }
 
 function closeOverlay(id, extraCleanup){
@@ -33,7 +53,20 @@ function closeOverlay(id, extraCleanup){
     return;
   }
   el.classList.remove('open');
+  const restoreFocus = () => {
+    const target = overlayReturnFocus[id];
+    delete overlayReturnFocus[id];
+    // offsetParent === null : élément caché (display:none, une autre
+    // modale ouverte par-dessus l'a fermé entre-temps) — rien à faire.
+    // document.querySelector('.overlay.open') : une AUTRE modale s'est
+    // ouverte pendant que celle-ci se refermait (cf. commentaire plus
+    // haut) — ne pas lui voler le focus.
+    if(target && document.contains(target) && target.offsetParent !== null && !document.querySelector('.overlay.open')){
+      target.focus({ preventScroll: true });
+    }
+  };
   if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    restoreFocus();
     if(extraCleanup) extraCleanup();
     return;
   }
@@ -44,11 +77,38 @@ function closeOverlay(id, extraCleanup){
     done = true;
     el.removeEventListener('animationend', finish);
     el.classList.remove('closing');
+    restoreFocus();
     if(extraCleanup) extraCleanup();
   };
   el.addEventListener('animationend', finish);
   setTimeout(finish, OVERLAY_CLOSE_MS);
 }
+
+// Échap ferme la modale ouverte, gestionnaire unique plutôt qu'un par
+// modale — cohérent avec l'ouverture/fermeture déjà centralisées ici.
+// Construit la table à chaque appui plutôt qu'une fois au chargement : les
+// close*() référencés ne sont pas encore déclarés quand ce fichier
+// s'exécute (il est chargé avant app.js/profile.js/etc., voir index.html)
+// — seule leur résolution AU MOMENT du keydown, bien après le chargement
+// complet, est sûre.
+document.addEventListener('keydown', (e) => {
+  if(e.key !== 'Escape') return;
+  const closers = {
+    overlay: () => closeModal(),
+    profileOverlay: () => closeProfileModal(),
+    statsOverlay: () => closeStats(),
+    achievementsOverlay: () => closeAchievements(),
+    adminOverlay: () => closeAdminModal(),
+    journalOverlay: () => closeJournal(),
+    friendProfileOverlay: () => closeFriendProfile()
+  };
+  for(const id in closers){
+    if(document.getElementById(id).classList.contains('open')){
+      closers[id]();
+      return; // une seule à la fois : les modales ne s'empilent jamais dans cette app
+    }
+  }
+});
 
 // --- Micro-interactions ponctuelles (étoile favori, sauvegarde) ---
 // Pilotées en direct par un clic (pas autonomes/en boucle) : PAS

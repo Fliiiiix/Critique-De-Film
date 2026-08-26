@@ -13,7 +13,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=18">
+<link rel="stylesheet" href="css/style.css?v=19">
 </head>
 <body>
 
@@ -110,7 +110,7 @@
            et js/profile.js) — la toolbar ne garde que ce qui agit sur le
            catalogue affiché ici. -->
       <div class="menu-wrap" id="moreMenuWrap">
-        <button class="btn secondary icon-only" id="moreMenuBtn" title="Plus d'options" aria-haspopup="true" aria-expanded="false">⋯</button>
+        <button class="btn secondary icon-only" id="moreMenuBtn" title="Plus d'options" aria-label="Plus d'options" aria-haspopup="true" aria-expanded="false">⋯</button>
         <div class="dropdown-menu" id="moreMenu">
           <button id="exportBtn">⬇ Exporter (JSON)</button>
           <button id="importBtn">⬆ Importer (JSON)</button>
@@ -130,8 +130,8 @@
          buildSortOptions() dans js/app.js — pas de doublon à la main. -->
     <select id="sortCriterion"></select>
     <div class="sort-dir-toggle">
-      <button class="btn secondary active" id="sortDirDesc" type="button" title="Décroissant">↓</button>
-      <button class="btn secondary" id="sortDirAsc" type="button" title="Croissant">↑</button>
+      <button class="btn secondary active" id="sortDirDesc" type="button" title="Décroissant" aria-label="Décroissant" aria-pressed="true">↓</button>
+      <button class="btn secondary" id="sortDirAsc" type="button" title="Croissant" aria-label="Croissant" aria-pressed="false">↑</button>
     </div>
     <label for="critFilterMin">Seuil minimum : <b id="critFilterMinVal">0.00</b></label>
     <input type="range" id="critFilterMin" min="0" max="1" step="0.05" value="0">
@@ -419,7 +419,7 @@
   <div class="modal">
     <div class="modal-head">
       <h2 id="modalTitle">Nouveau film</h2>
-      <button class="close-x" id="closeModal">✕</button>
+      <button class="close-x" id="closeModal" aria-label="Fermer">✕</button>
     </div>
 
     <div class="field tmdb-search-field">
@@ -493,7 +493,7 @@
   <div class="modal">
     <div class="modal-head">
       <h2>Ton profil</h2>
-      <button class="close-x" id="closeProfile">✕</button>
+      <button class="close-x" id="closeProfile" aria-label="Fermer">✕</button>
     </div>
     <div class="field">
       <label>Pseudo</label>
@@ -568,7 +568,7 @@
   <div class="modal stats-modal">
     <div class="modal-head">
       <h2>Statistiques</h2>
-      <button class="close-x" id="closeStats">✕</button>
+      <button class="close-x" id="closeStats" aria-label="Fermer">✕</button>
     </div>
     <div id="statsContent"></div>
   </div>
@@ -579,7 +579,7 @@
   <div class="modal stats-modal achievements-modal">
     <div class="modal-head">
       <h2>Succès</h2>
-      <button class="close-x" id="closeAchievements">✕</button>
+      <button class="close-x" id="closeAchievements" aria-label="Fermer">✕</button>
     </div>
     <div id="achievementsContent"></div>
   </div>
@@ -590,7 +590,7 @@
   <div class="modal stats-modal admin-modal">
     <div class="modal-head">
       <h2>Admin — succès &amp; happenings</h2>
-      <button class="close-x" id="closeAdmin">✕</button>
+      <button class="close-x" id="closeAdmin" aria-label="Fermer">✕</button>
     </div>
     <div class="avatar-source-tabs" role="tablist" id="adminTabs">
       <button type="button" class="avatar-source-tab active" data-admin-tab="achievements" role="tab" aria-selected="true">Succès</button>
@@ -605,7 +605,7 @@
   <div class="modal journal-modal">
     <div class="modal-head">
       <h2>Journal</h2>
-      <button class="close-x" id="closeJournal">✕</button>
+      <button class="close-x" id="closeJournal" aria-label="Fermer">✕</button>
     </div>
     <div id="journalContent"></div>
   </div>
@@ -616,7 +616,7 @@
   <div class="modal stats-modal">
     <div class="modal-head">
       <h2 id="friendProfileTitle">Profil</h2>
-      <button class="close-x" id="closeFriendProfile">✕</button>
+      <button class="close-x" id="closeFriendProfile" aria-label="Fermer">✕</button>
     </div>
     <div id="friendProfileContent"></div>
   </div>
@@ -627,53 +627,53 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=18"></script>
-<script src="js/tmdbConfig.js?v=18"></script>
-<script src="js/data.js?v=18"></script>
-<script src="js/happenings.js?v=18"></script>
+<script src="js/supabaseConfig.js?v=19"></script>
+<script src="js/tmdbConfig.js?v=19"></script>
+<script src="js/data.js?v=19"></script>
+<script src="js/happenings.js?v=19"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=18"></script>
+<script src="js/ui.js?v=19"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=18"></script>
-<script src="js/app.js?v=18"></script>
-<script src="js/tmdb.js?v=18"></script>
-<script src="js/stats.js?v=18"></script>
-<script src="js/achievements.js?v=18"></script>
-<script src="js/journal.js?v=18"></script>
-<script src="js/profile.js?v=18"></script>
+<script src="js/offline.js?v=19"></script>
+<script src="js/app.js?v=19"></script>
+<script src="js/tmdb.js?v=19"></script>
+<script src="js/stats.js?v=19"></script>
+<script src="js/achievements.js?v=19"></script>
+<script src="js/journal.js?v=19"></script>
+<script src="js/profile.js?v=19"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=18"></script>
-<script src="js/router.js?v=18"></script>
-<script src="js/publicProfile.js?v=18"></script>
-<script src="js/top.js?v=18"></script>
-<script src="js/friends.js?v=18"></script>
+<script src="js/admin.js?v=19"></script>
+<script src="js/router.js?v=19"></script>
+<script src="js/publicProfile.js?v=19"></script>
+<script src="js/top.js?v=19"></script>
+<script src="js/friends.js?v=19"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=18"></script>
-<script src="js/watchlist.js?v=18"></script>
-<script src="js/groups.js?v=18"></script>
-<script src="js/proposals.js?v=18"></script>
+<script src="js/activity.js?v=19"></script>
+<script src="js/watchlist.js?v=19"></script>
+<script src="js/groups.js?v=19"></script>
+<script src="js/proposals.js?v=19"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=18"></script>
+<script src="js/invites.js?v=19"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=18"></script>
-<script src="js/auth.js?v=18"></script>
+<script src="js/activityState.js?v=19"></script>
+<script src="js/auth.js?v=19"></script>
 </body>
 </html>

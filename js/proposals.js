@@ -150,9 +150,9 @@ function renderGroupProposals(){
         <div class="wl-note">Proposé par ${escapeHtml(proposer)}</div>
       </div>
       <div class="vote-controls-inline">
-        <button class="vote-btn${my === 1 ? ' active' : ''}" data-vote="1" data-id="${p.id}" type="button">▲</button>
+        <button class="vote-btn${my === 1 ? ' active' : ''}" data-vote="1" data-id="${p.id}" type="button" aria-label="Voter pour" aria-pressed="${my === 1}">▲</button>
         <span class="vote-count">${score}</span>
-        <button class="vote-btn${my === -1 ? ' active' : ''}" data-vote="-1" data-id="${p.id}" type="button">▼</button>
+        <button class="vote-btn${my === -1 ? ' active' : ''}" data-vote="-1" data-id="${p.id}" type="button" aria-label="Voter contre" aria-pressed="${my === -1}">▼</button>
       </div>
       <div class="wl-actions">
         ${chosenAction}
@@ -330,9 +330,9 @@ function renderProposalDetailVotes(){
   const score = proposalScore(currentProposal.id);
   const my = myVoteOn(currentProposal.id);
   document.getElementById('proposalDetailVotes').innerHTML = `
-    <button class="vote-btn${my === 1 ? ' active' : ''}" id="proposalDetailUp" type="button">▲</button>
+    <button class="vote-btn${my === 1 ? ' active' : ''}" id="proposalDetailUp" type="button" aria-label="Voter pour" aria-pressed="${my === 1}">▲</button>
     <span class="vote-count">${score}</span>
-    <button class="vote-btn${my === -1 ? ' active' : ''}" id="proposalDetailDown" type="button">▼</button>
+    <button class="vote-btn${my === -1 ? ' active' : ''}" id="proposalDetailDown" type="button" aria-label="Voter contre" aria-pressed="${my === -1}">▼</button>
   `;
   document.getElementById('proposalDetailUp').addEventListener('click', () => castVote(currentProposal.id, 1));
   document.getElementById('proposalDetailDown').addEventListener('click', () => castVote(currentProposal.id, -1));

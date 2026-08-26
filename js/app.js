@@ -198,10 +198,10 @@ function render(){
         ? `<img class="film-poster" src="${f.posterUrl}" alt="" loading="lazy">`
         : `<div class="film-poster film-poster-placeholder">🎬</div>`}
       <div class="film-main">
-        <div class="film-title">${escapeHtml(f.title)}${isManual ? '<span class="manual-badge" title="Note manuelle — référentiel différent">manuel</span>' : ''}${f.review ? '<span class="review-badge" title="Commentaire enregistré">💬</span>' : ''}${rewatches > 1 ? `<span class="rewatch-badge" title="Revu ${rewatches} fois">↻ ×${rewatches}</span>` : ''}${happening ? `<button class="happening-badge" type="button" title="Un petit quelque chose à découvrir...">${happening.icon}</button>` : ''}</div>
+        <div class="film-title">${escapeHtml(f.title)}${isManual ? '<span class="manual-badge" title="Note manuelle — référentiel différent">manuel</span>' : ''}${f.review ? '<span class="review-badge" title="Commentaire enregistré">💬</span>' : ''}${rewatches > 1 ? `<span class="rewatch-badge" title="Revu ${rewatches} fois">↻ ×${rewatches}</span>` : ''}${happening ? `<button class="happening-badge" type="button" title="Un petit quelque chose à découvrir..." aria-label="Un petit quelque chose à découvrir...">${happening.icon}</button>` : ''}</div>
         <div class="film-sub">${sub}</div>
       </div>
-      <button class="star-btn ${f.fav ? 'active' : ''}" data-id="${f.id}" title="Favori">${f.fav ? '★' : '☆'}</button>
+      <button class="star-btn ${f.fav ? 'active' : ''}" data-id="${f.id}" type="button" title="Favori" aria-label="${f.fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}" aria-pressed="${f.fav}">${f.fav ? '★' : '☆'}</button>
       <div class="counter ${isManual ? 'manual' : ''}">${note !== null ? note.toFixed(1) : '—'}</div>
     `;
     row.addEventListener('click', (e) => {
@@ -605,7 +605,9 @@ function updateSortMode(){
   if(!active){
     sortDir = 'desc';
     document.getElementById('sortDirDesc').classList.add('active');
+    document.getElementById('sortDirDesc').setAttribute('aria-pressed', 'true');
     document.getElementById('sortDirAsc').classList.remove('active');
+    document.getElementById('sortDirAsc').setAttribute('aria-pressed', 'false');
     document.getElementById('critFilterMin').value = 0;
     document.getElementById('critFilterMinVal').textContent = '0.00';
   }
@@ -619,7 +621,9 @@ document.getElementById('sortCriterion').addEventListener('change', () => { curr
 function setSortDir(dir){
   sortDir = dir;
   document.getElementById('sortDirDesc').classList.toggle('active', dir === 'desc');
+  document.getElementById('sortDirDesc').setAttribute('aria-pressed', String(dir === 'desc'));
   document.getElementById('sortDirAsc').classList.toggle('active', dir === 'asc');
+  document.getElementById('sortDirAsc').setAttribute('aria-pressed', String(dir === 'asc'));
   currentPage = 1;
   render();
 }

@@ -733,6 +733,30 @@ Techniquement, deux mécanismes complémentaires (`js/offline.js`) :
    `loadWatchlist()` s'y replient quand la requête Supabase échoue, plutôt
    que de vider la liste et donner l'impression que tout a disparu.
 
+## Accessibilité (v1.6)
+
+Premier passage dédié (au clavier/lecteur d'écran en particulier — le
+contraste de couleurs, lui, était déjà large sur tout le thème sombre) :
+
+- **Focus clavier centralisé** (`js/ui.js`, `openOverlay()`/
+  `closeOverlay()`) : ouvrir une des 7 modales de l'app y déplace le focus
+  (sur son premier champ, ou son bouton fermer à défaut d'un champ), la
+  refermer le restitue à l'élément qui l'avait ouverte — sauf si une autre
+  modale s'est ouverte entre-temps par-dessus (ex. "Succès" depuis le
+  profil), auquel cas on ne lui vole pas le focus.
+- **Échap ferme la modale ouverte**, un seul gestionnaire pour les 7 plutôt
+  que de le répéter — aucune n'y répondait avant cette version.
+- **Boutons icône seule** (fermer ✕, étoile favori, vote ▲/▼, tri ↓/↑, "⋯
+  Plus d'options", badge happening) : `aria-label` explicite en plus du
+  `title` déjà là pour la souris — un glyphe seul (✕, ★, ▲…) n'a pas de nom
+  fiable pour un lecteur d'écran. Les boutons à bascule (favori, vote, sens
+  de tri) portent aussi `aria-pressed`, synchronisé à chaque changement
+  d'état.
+- **Curseurs de notation** (grille 7 critères + note manuelle) : un bug de
+  spécificité CSS faisait perdre le focus clavier visible sur ces sliders
+  spécifiquement (`input[type="range"]{outline:none;}` l'emportait
+  silencieusement sur la règle générique de focus) — corrigé.
+
 ## Prochaines étapes possibles
 
 - D'autres happenings (voir la section ci-dessus pour ceux déjà en place)

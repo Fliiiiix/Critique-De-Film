@@ -897,6 +897,16 @@ input[type="range"]{
      horizontal / liste qui scrolle verticalement, aucune perte d'usage. */
   touch-action:pan-y;
 }
+/* Sans ce doublon, le focus clavier restait invisible sur les sliders :
+   input[type="range"]{outline:none;} ci-dessus a la même spécificité que
+   la règle générique input:focus-visible plus haut dans ce fichier et,
+   venant après elle dans la feuille, l'emportait silencieusement — un
+   utilisateur au clavier ne voyait alors aucun indicateur en tabulant
+   jusqu'à la note manuelle ou un critère de la grille. */
+input[type="range"]:focus-visible{
+  outline:2px solid var(--amber-dim);
+  outline-offset:2px;
+}
 input[type="range"]::-webkit-slider-thumb{
   -webkit-appearance:none;
   width:14px;height:14px;
