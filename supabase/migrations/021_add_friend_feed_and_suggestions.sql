@@ -20,7 +20,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = public
-as $$
+as $func$
 declare
   v_note numeric;
 begin
@@ -32,7 +32,7 @@ begin
   values ('friend', new.user_id, null, 'film_rated', new.title, new.poster_url, v_note, new.created_at);
   return new;
 end;
-$$;
+$func$;
 
 create trigger trg_log_film_rated
   after insert on public.films
@@ -49,7 +49,7 @@ language sql
 security definer
 set search_path = public
 stable
-as $$
+as $func$
   with my_friends as (
     select addressee_id as uid from public.friendships
       where requester_id = auth.uid() and status = 'accepted'
@@ -80,7 +80,7 @@ as $$
   group by c.uid, p.display_name, p.avatar_url
   order by mutual_count desc
   limit p_limit;
-$$;
+$func$;
 
 revoke all on function public.get_friend_suggestions(int) from public;
 grant execute on function public.get_friend_suggestions(int) to authenticated;
@@ -101,7 +101,7 @@ language sql
 security definer
 set search_path = public
 stable
-as $$
+as $func$
   with my_circle as (
     select auth.uid() as uid
     union
@@ -135,7 +135,7 @@ as $$
     ))) >= 4
   order by avg_note desc, rating_count desc
   limit p_limit;
-$$;
+$func$;
 
 revoke all on function public.get_friend_recommendations(int) from public;
 grant execute on function public.get_friend_recommendations(int) to authenticated;
