@@ -367,6 +367,16 @@ En bas de la page, une section **Groupes** mène vers `#/groupes` (voir plus
 bas) — un groupe se fait avec des amis, donc c'est ici que ça vit plutôt que
 d'avoir sa propre icône dans l'entête.
 
+**Compatibilité ciné** (v1.6) — dans le profil en lecture seule d'un ami,
+une tuile affiche un pourcentage de compatibilité calculé sur les films
+notés par les deux (recoupés par fiche TMDB) :
+`100 × (1 − moyenne des écarts de note / 5)`. N'apparaît que s'il existe au
+moins un film en commun. Calculé par `get_friend_compatibility`,
+`SECURITY DEFINER` qui vérifie l'amitié acceptée en interne — la fonction
+lit les deux catalogues pour comparer les notes, mais ne renvoie jamais
+rien tant que la relation n'est pas une amitié acceptée. Nécessite
+`supabase/migrations/022_add_compat_and_group_stats.sql`.
+
 ## Groupes
 
 Accessible depuis le bas de la page Amis (section "Groupes"), permet de créer
@@ -410,6 +420,15 @@ timing du trigger qui l'ajoute comme membre (`migrations/014`). Trigger qui
 ajoute automatiquement le créateur comme membre à la création. Nécessite
 `supabase/migrations/011_add_groups.sql` puis `013_fix_group_members_recursion.sql`
 et `014_fix_groups_owner_select_race.sql`.
+
+**Goûts du groupe** (v1.6) — section dans le détail du groupe listant les
+films notés par **au moins 2 membres**, triés par note moyenne
+(`get_group_top_films`, `SECURITY DEFINER`). Seuil volontaire : à la
+différence des amis, les membres d'un groupe n'ont normalement aucun accès
+en lecture au catalogue individuel des autres — un film noté par une seule
+personne n'apparaît donc jamais, ça reviendrait de fait à exposer sa note
+à tout le groupe. Nécessite
+`supabase/migrations/022_add_compat_and_group_stats.sql`.
 
 ## Propositions de films (dans un groupe)
 

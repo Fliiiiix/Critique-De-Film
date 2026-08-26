@@ -13,7 +13,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=13">
+<link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body>
 
@@ -322,6 +322,14 @@
     <div class="wl-list" id="groupProposalsList"></div>
   </div>
 
+  <!-- Goûts du groupe (get_group_top_films, migrations/022) : films notés
+       par au moins 2 membres — jamais un seul, ça reviendrait à exposer sa
+       note individuelle à tout le groupe. -->
+  <div class="stats-section">
+    <div class="stats-section-title">Goûts du groupe</div>
+    <div class="wl-list" id="groupTopFilmsList"></div>
+  </div>
+
   <!-- Fil d'activité (js/activity.js) : qui a proposé/commenté/rejoint
        récemment — pour qu'un groupe revisité ne semble pas mort. -->
   <div class="stats-section">
@@ -593,37 +601,37 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=13"></script>
-<script src="js/tmdbConfig.js?v=13"></script>
-<script src="js/data.js?v=13"></script>
-<script src="js/happenings.js?v=13"></script>
-<script src="js/app.js?v=13"></script>
-<script src="js/tmdb.js?v=13"></script>
-<script src="js/stats.js?v=13"></script>
-<script src="js/achievements.js?v=13"></script>
-<script src="js/journal.js?v=13"></script>
-<script src="js/profile.js?v=13"></script>
+<script src="js/supabaseConfig.js?v=14"></script>
+<script src="js/tmdbConfig.js?v=14"></script>
+<script src="js/data.js?v=14"></script>
+<script src="js/happenings.js?v=14"></script>
+<script src="js/app.js?v=14"></script>
+<script src="js/tmdb.js?v=14"></script>
+<script src="js/stats.js?v=14"></script>
+<script src="js/achievements.js?v=14"></script>
+<script src="js/journal.js?v=14"></script>
+<script src="js/profile.js?v=14"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=13"></script>
-<script src="js/router.js?v=13"></script>
-<script src="js/publicProfile.js?v=13"></script>
-<script src="js/top.js?v=13"></script>
-<script src="js/friends.js?v=13"></script>
+<script src="js/admin.js?v=14"></script>
+<script src="js/router.js?v=14"></script>
+<script src="js/publicProfile.js?v=14"></script>
+<script src="js/top.js?v=14"></script>
+<script src="js/friends.js?v=14"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=13"></script>
-<script src="js/watchlist.js?v=13"></script>
-<script src="js/groups.js?v=13"></script>
-<script src="js/proposals.js?v=13"></script>
+<script src="js/activity.js?v=14"></script>
+<script src="js/watchlist.js?v=14"></script>
+<script src="js/groups.js?v=14"></script>
+<script src="js/proposals.js?v=14"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=13"></script>
-<script src="js/auth.js?v=13"></script>
+<script src="js/invites.js?v=14"></script>
+<script src="js/auth.js?v=14"></script>
 </body>
 </html>

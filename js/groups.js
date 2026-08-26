@@ -235,6 +235,7 @@ async function openGroupDetail(groupId){
   document.getElementById('groupProposalsList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
   document.getElementById('proposalTitleInput').value = '';
   clearProposalTmdbSelection();
+  document.getElementById('groupTopFilmsList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
   document.getElementById('groupActivityList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
 
   const members = await loadGroupMembers(groupId);
@@ -244,12 +245,44 @@ async function openGroupDetail(groupId){
   await loadProposals(groupId);
   renderGroupProposals();
 
-  // Fil d'activité du groupe (js/activity.js) — pour qu'un groupe revisité
-  // ne semble pas mort. Après les propositions plutôt qu'en parallèle :
-  // loadActivity() hydrate friendProfiles au besoin, autant laisser
-  // loadGroupMembers() (déjà groupé) faire le gros du travail en premier.
-  const events = await loadActivity({ scope: 'group', groupId });
+  // Fil d'activité + goûts du groupe (js/activity.js, migrations/022) —
+  // pour qu'un groupe revisité ne semble pas mort. Après les propositions
+  // plutôt qu'en parallèle : loadActivity() hydrate friendProfiles au
+  // besoin, autant laisser loadGroupMembers() (déjà groupé) faire le gros
+  // du travail en premier.
+  const [topFilms, events] = await Promise.all([
+    loadGroupTopFilms(groupId),
+    loadActivity({ scope: 'group', groupId })
+  ]);
+  renderGroupTopFilms(topFilms);
   renderActivityListInto(document.getElementById('groupActivityList'), events);
+}
+
+// --- Goûts du groupe (v1.6, phase 4) : films notés par au moins 2 membres
+// (having count(*) >= 2 côté SQL, migrations/022) — jamais un seul, ça
+// reviendrait à exposer sa note individuelle à tout le groupe. ---
+async function loadGroupTopFilms(groupId){
+  const { data, error } = await supabaseClient.rpc('get_group_top_films', { p_group_id: groupId, p_limit: 15 });
+  if(error){ console.error(error); return []; }
+  return data || [];
+}
+
+function renderGroupTopFilms(films){
+  const wrap = document.getElementById('groupTopFilmsList');
+  wrap.innerHTML = films.length === 0
+    ? `<div class="tmdb-empty">Pas encore de film noté par au moins 2 membres du groupe.</div>`
+    : films.map(f => `
+        <div class="wl-row">
+          ${f.poster_url
+            ? `<img class="film-poster" src="${f.poster_url}" alt="" loading="lazy">`
+            : `<div class="film-poster film-poster-placeholder">🎬</div>`}
+          <div class="wl-main">
+            <div class="wl-title">${escapeHtml(f.title)}${f.release_year ? ` <span class="wl-year">(${f.release_year})</span>` : ''}</div>
+            <div class="wl-note">${f.rating_count} membres l'ont noté</div>
+          </div>
+          <div class="counter">${Number(f.avg_note).toFixed(1)}</div>
+        </div>
+      `).join('');
 }
 
 document.getElementById('groupDetailBack').addEventListener('click', goToGroups);

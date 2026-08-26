@@ -337,6 +337,17 @@ function renderFriendRecommendations(films){
       `).join('');
 }
 
+// --- Compatibilité ciné (v1.6, phase 4) — voir openFriendProfile() plus
+// bas. get_friend_compatibility() (migrations/022) renvoie un résultat vide
+// si la relation n'est pas (ou plus) une amitié acceptée : compat est alors
+// null ici, la tuile ne s'affiche simplement pas.
+async function loadFriendCompatibility(userId){
+  const { data, error } = await supabaseClient.rpc('get_friend_compatibility', { p_friend_id: userId });
+  if(error){ console.error(error); return null; }
+  const row = data && data[0];
+  return (row && row.common_count > 0) ? row : null;
+}
+
 // Rechargées après un ajout d'ami depuis les suggestions (le compteur
 // d'amis en commun / la liste elle-même doivent refléter le changement),
 // sans redemander la liste des demandes en cours.
@@ -383,11 +394,10 @@ async function openFriendProfile(userId){
   content.innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
   document.getElementById('friendProfileOverlay').classList.add('open');
 
-  const { data, error } = await supabaseClient
-    .from('films')
-    .select('*')
-    .eq('user_id', userId)
-    .order('added', { ascending: false });
+  const [{ data, error }, compat] = await Promise.all([
+    supabaseClient.from('films').select('*').eq('user_id', userId).order('added', { ascending: false }),
+    loadFriendCompatibility(userId)
+  ]);
   if(error){
     content.innerHTML = `<div class="empty-state">Impossible de charger ce catalogue.</div>`;
     console.error(error);
@@ -420,6 +430,16 @@ async function openFriendProfile(userId){
         }).join('');
 
   content.innerHTML = '';
+  if(compat){
+    const compatEl = document.createElement('div');
+    compatEl.className = 'ach-summary';
+    compatEl.innerHTML = `
+      <div class="ach-summary-count">${compat.compatibility}%</div>
+      <div class="ach-summary-label">Compatibilité ciné · ${compat.common_count} film${compat.common_count > 1 ? 's' : ''} en commun</div>
+      <div class="ach-summary-bar"><div class="ach-summary-fill" style="width:${Math.max(0, Math.min(100, compat.compatibility))}%"></div></div>
+    `;
+    content.appendChild(compatEl);
+  }
   content.appendChild(statsEl);
   const listWrap = document.createElement('div');
   listWrap.className = 'stats-section';
