@@ -262,6 +262,95 @@ document.getElementById('friendSearchInput').addEventListener('input', () => {
   friendSearchTimer = setTimeout(() => handleFriendSearch(query), 350);
 });
 
+// --- Fil d'activité, suggestions, recommandations (v1.6, phase 3) ---
+// Trois sections pensées pour donner une raison de revenir sur cette page
+// même sans demande en attente : voir qui a noté quoi (loadActivity(),
+// js/activity.js), à qui envoyer une demande (get_friend_suggestions,
+// migrations/021), quoi regarder ensuite (get_friend_recommendations).
+
+async function loadFriendSuggestions(){
+  const { data, error } = await supabaseClient.rpc('get_friend_suggestions', { p_limit: 8 });
+  if(error){ console.error(error); return []; }
+  let suggestions = data || [];
+  // Complète avec des profils "au hasard" pas encore ajoutés quand les amis
+  // d'amis ne suffisent pas (ex. compte tout neuf, aucun ami commun) — pas
+  // besoin de SQL dédié, profiles est déjà lisible par tout compte connecté
+  // (migrations/009).
+  if(suggestions.length < 5){
+    const exclude = new Set([currentUser.id, ...suggestions.map(s => s.user_id), ...friendships.map(otherUserId)]);
+    const { data: extra, error: extraErr } = await supabaseClient
+      .from('profiles')
+      .select('user_id, display_name, avatar_url')
+      .order('created_at', { ascending: false })
+      .limit(30); // marge large : on filtre ensuite côté client (exclusions)
+    if(extraErr) console.error(extraErr);
+    else{
+      extra.filter(p => !exclude.has(p.user_id)).slice(0, 5 - suggestions.length).forEach(p => {
+        suggestions.push({ user_id: p.user_id, display_name: p.display_name, avatar_url: p.avatar_url, mutual_count: 0 });
+      });
+    }
+  }
+  suggestions.forEach(s => cacheProfile(s.user_id, s.display_name, s.avatar_url));
+  return suggestions;
+}
+
+function renderFriendSuggestions(suggestions){
+  const wrap = document.getElementById('friendSuggestionsList');
+  if(suggestions.length === 0){
+    wrap.innerHTML = `<div class="tmdb-empty">Pas de suggestion pour l'instant.</div>`;
+    return;
+  }
+  wrap.innerHTML = suggestions.map(s => friendRowHtml(
+    s.user_id,
+    `<button class="btn" data-add="${s.user_id}" type="button">Ajouter</button>`,
+    s.mutual_count > 0 ? `${s.mutual_count} ami${s.mutual_count > 1 ? 's' : ''} en commun` : null
+  )).join('');
+  wrap.querySelectorAll('button[data-add]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await sendFriendRequest(btn.dataset.add);
+      openFriendsSideSections();
+    });
+  });
+}
+
+async function loadFriendRecommendations(){
+  const { data, error } = await supabaseClient.rpc('get_friend_recommendations', { p_limit: 15 });
+  if(error){ console.error(error); return []; }
+  return data || [];
+}
+
+function renderFriendRecommendations(films){
+  const wrap = document.getElementById('friendRecommendationsList');
+  wrap.innerHTML = films.length === 0
+    ? `<div class="tmdb-empty">Rien à recommander pour l'instant — note plus de films en commun avec tes amis.</div>`
+    : films.map(f => `
+        <div class="wl-row">
+          ${f.poster_url
+            ? `<img class="film-poster" src="${f.poster_url}" alt="" loading="lazy">`
+            : `<div class="film-poster film-poster-placeholder">🎬</div>`}
+          <div class="wl-main">
+            <div class="wl-title">${escapeHtml(f.title)}${f.release_year ? ` <span class="wl-year">(${f.release_year})</span>` : ''}</div>
+            <div class="wl-note">${f.rating_count} note${f.rating_count > 1 ? 's' : ''} dans ton cercle</div>
+          </div>
+          <div class="counter">${Number(f.avg_note).toFixed(1)}</div>
+        </div>
+      `).join('');
+}
+
+// Rechargées après un ajout d'ami depuis les suggestions (le compteur
+// d'amis en commun / la liste elle-même doivent refléter le changement),
+// sans redemander la liste des demandes en cours.
+async function openFriendsSideSections(){
+  const [activity, suggestions, recommendations] = await Promise.all([
+    loadActivity({ scope: 'friend', limit: 15 }),
+    loadFriendSuggestions(),
+    loadFriendRecommendations()
+  ]);
+  renderActivityListInto(document.getElementById('friendActivityList'), activity);
+  renderFriendSuggestions(suggestions);
+  renderFriendRecommendations(recommendations);
+}
+
 // --- Page amis (liste + demandes) — appelée par le routeur (#/amis). ---
 
 async function openFriends(){
@@ -270,8 +359,12 @@ async function openFriends(){
   document.getElementById('friendsList').innerHTML = '';
   document.getElementById('friendSearchInput').value = '';
   document.getElementById('friendSearchResults').innerHTML = '';
+  document.getElementById('friendActivityList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
+  document.getElementById('friendSuggestionsList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
+  document.getElementById('friendRecommendationsList').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
   await loadFriendships();
   renderFriendsPage();
+  await openFriendsSideSections();
 }
 
 document.getElementById('friendsBtn').addEventListener('click', goToAmis);

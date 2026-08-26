@@ -441,29 +441,45 @@ migration que le lien d'invitation ci-dessus).
 ## Fil d'activité
 
 Section **Activité récente** en bas du détail d'un groupe : qui a proposé
-un film, commenté ou rejoint le groupe récemment — pour qu'un groupe déjà
-créé ne semble pas mort en y revenant (v1.6, premier étage d'une refonte
-pensée pour inciter davantage à utiliser Amis/Groupes — la suite viendra
-côté Amis dans une prochaine étape).
+un film, commenté, élu une séance ou rejoint le groupe récemment — pour
+qu'un groupe déjà créé ne semble pas mort en y revenant. Même section en
+haut de la page Amis (`#/amis`), cette fois pour les notes de films de son
+cercle d'amis (v1.6).
 
 Techniquement : une seule table `activity_events`, portée `friend` ou
-`group` (colonne `scope`), pensée dès le départ pour les deux usages même
-si seule la portée groupe est branchée pour l'instant. Jamais écrite
-directement par le client — uniquement par des fonctions trigger
-`SECURITY DEFINER` (`log_proposal_created`, `log_proposal_commented`,
-`log_group_joined`) déclenchées sur `group_proposals`/
-`group_proposal_comments`/`group_members`, même principe que le trigger qui
-ajoute automatiquement le créateur d'un groupe comme membre
-(`migrations/011`). Une policy RLS unique branche sur `scope` : côté
-groupe via `is_group_member()` (`migrations/013`), côté ami via la même
-sous-requête que "Friends can view shared films" (`migrations/009`). Les
-lignes existantes ont été rétro-remplies une fois à la création de la
-table (`created_at`/`joined_at` déjà serveur des tables sources) pour que
-les groupes déjà en place aient un historique dès le déploiement — pas de
-retro-remplissage pour un futur événement "note de film" côté amis, qui
-n'a aucun horodatage serveur fiable à réutiliser (`films.added` est une
-horloge client, pas fiable pour un flux inter-utilisateurs). Nécessite
-`supabase/migrations/019_add_activity_events.sql`.
+`group` (colonne `scope`). Jamais écrite directement par le client —
+uniquement par des fonctions trigger `SECURITY DEFINER`
+(`log_proposal_created`, `log_proposal_commented`, `log_group_joined`,
+`log_film_rated`) déclenchées sur `group_proposals`/
+`group_proposal_comments`/`group_members`/`films`, plus une insertion
+directe dans `set_chosen_proposal` (`migrations/020`, pas un trigger — la
+séance élue est un appel explicite, pas un `INSERT` déclenché), même
+principe que le trigger qui ajoute
+automatiquement le créateur d'un groupe comme membre (`migrations/011`).
+Une policy RLS unique branche sur `scope` : côté groupe via
+`is_group_member()` (`migrations/013`), côté ami via la même sous-requête
+que "Friends can view shared films" (`migrations/009`). Les événements de
+groupe existants ont été rétro-remplis une fois à la création de la table
+(`created_at`/`joined_at` déjà serveur des tables sources) — pas de
+rétro-remplissage pour les notes de films côté amis, qui n'ont aucun
+horodatage serveur fiable à réutiliser pour l'historique déjà noté
+(`films.added` est une horloge client, pas fiable pour un flux
+inter-utilisateurs) : le fil "notes" ne remonte donc que depuis le
+déploiement de cette fonctionnalité. Nécessite
+`supabase/migrations/019_add_activity_events.sql` puis
+`021_add_friend_feed_and_suggestions.sql`.
+
+**Suggestions d'amis** — section sous "Mes amis" : amis d'amis pas encore
+ajoutés, classés par nombre de connaissances communes
+(`get_friend_suggestions`), complétée par des profils récents de l'app
+quand il n'y a pas (ou peu) de connaissances communes à proposer (compte
+neuf) — cette partie ne demande aucune fonction dédiée, `profiles` est déjà
+lisible par tout compte connecté depuis `migrations/009`.
+
+**Recommandé par tes amis** — films aimés (note moyenne ≥ 4/5) par son
+cercle d'amis (soi + amis acceptés directs, même périmètre que le Top
+"Mes amis") et pas encore notés par soi-même (`get_friend_recommendations`,
+même gabarit que `get_friends_top_films` de `migrations/015`).
 
 ## Top films
 
