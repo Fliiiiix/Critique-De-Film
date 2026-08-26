@@ -705,7 +705,39 @@ page ou le couloir Old Boy déjà en place) ; le pulse étoile/sauvegarde est
 au contraire piloté en direct par le clic — il reste actif quel que soit ce
 réglage, comme l'arc final d'Odyssée.
 
+## Mode hors ligne, lecture seule (v1.6)
+
+L'app reste consultable sans réseau (métro, avion, zone blanche...) :
+catalogue, watchlist, journal et statistiques restent visibles avec les
+dernières données synchronisées, un bandeau **"Hors ligne"** en haut de
+page précise depuis quand. Volontairement lecture seule (décision
+confirmée) : noter, modifier ou ajouter un film, ou toucher à la watchlist,
+reste bloqué avec un message clair tant que le réseau n'est pas revenu —
+pas de file d'attente à synchroniser, pas de gestion de conflits. Les
+fonctionnalités sociales (amis, groupes, propositions...) ne sont pas
+couvertes : elles supposent du réseau par nature et échouent proprement
+avec le message d'erreur habituel si la connexion manque, comme avant
+cette version. Dès que le réseau revient (évènement `online` du
+navigateur), l'app retente automatiquement et sort seule du mode hors
+ligne — pas besoin de recharger la page à la main.
+
+Techniquement, deux mécanismes complémentaires (`js/offline.js`) :
+1. Un **service worker** (`sw.js`) qui met en cache l'app shell (HTML/CSS/
+   JS) au fil des visites en ligne (stratégie "réseau, puis repli sur le
+   cache", pas de préchargement à liste à maintenir à la main — chaque
+   `?v=N` est une URL différente, donc se cache tout seul) : sans lui, le
+   navigateur ne pourrait même pas charger la page hors ligne, peu importe
+   les données déjà en cache.
+2. Un **cache `localStorage`** des dernières listes chargées avec succès
+   (films/watchlist/viewings), par compte — `loadFilms()`/`loadViewings()`/
+   `loadWatchlist()` s'y replient quand la requête Supabase échoue, plutôt
+   que de vider la liste et donner l'impression que tout a disparu.
+
 ## Prochaines étapes possibles
 
 - D'autres happenings (voir la section ci-dessus pour ceux déjà en place)
-- Cache local (offline-first) pour continuer à consulter/noter sans réseau
+- Hors ligne en lecture/écriture (noter un film sans réseau, synchronisé au
+  retour) — nécessiterait une file d'attente locale, des ids temporaires
+  pour un film créé hors ligne et une gestion des conflits ; volontairement
+  laissé de côté pour l'instant au profit de la version lecture seule
+  ci-dessus, plus simple et plus fiable pour un usage perso.

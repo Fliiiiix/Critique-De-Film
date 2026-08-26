@@ -1077,6 +1077,18 @@ input[type="range"]::-moz-range-thumb{
   margin-bottom:12px;
 }
 .digest-banner .wl-list{margin-bottom:14px;}
+/* Mode hors ligne (js/offline.js) : même gabarit que .digest-banner
+   (bandeau plein-largeur hors des pages à bascule) mais accent --danger
+   plutôt qu'ambre — c'est un état dégradé à signaler, pas une bonne
+   nouvelle à consulter. */
+.offline-banner{
+  background:var(--surface);
+  border:1px solid var(--danger);
+  border-radius:4px;
+  padding:14px 32px;
+  margin:16px auto;
+  font-size:14px;
+}
 .stats-section-title{
   font-family:'Fraunces', serif;
   font-style:italic;

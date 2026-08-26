@@ -19,6 +19,17 @@ async function loadWatchlist(){
     .select('*')
     .order('added', { ascending: false });
   if(error){
+    // Repli hors ligne (js/offline.js) : contrairement à loadFilms()/
+    // loadViewings() (appelées au démarrage, avant même que l'utilisateur
+    // choisisse une page), celle-ci n'est appelée qu'en ouvrant #/watchlist
+    // — donc la seule à avoir une chance de détecter le hors ligne si
+    // l'utilisateur y arrive par un lien direct sans passer par l'accueil.
+    const cached = loadOfflineCache('watchlist');
+    if(cached){
+      watchlist = cached.data;
+      enterOfflineMode(cached.savedAt);
+      return;
+    }
     showToast('Erreur de chargement de la watchlist');
     console.error(error);
     watchlist = [];
@@ -35,6 +46,7 @@ async function loadWatchlist(){
     originalTitle: row.original_title || null,
     added: row.added
   }));
+  saveOfflineCache('watchlist', watchlist);
 }
 
 function renderWatchlist(){
@@ -74,6 +86,7 @@ async function openWatchlist(){
 }
 
 async function handleAddToWatchlist(){
+  if(blockIfOffline()) return; // js/offline.js — lecture seule hors ligne
   const title = document.getElementById('wlTitleInput').value.trim();
   if(!title){
     showToast('Ajoute un titre avant d\'enregistrer');
@@ -111,6 +124,7 @@ async function handleAddToWatchlist(){
 }
 
 async function handleRemoveFromWatchlist(id){
+  if(blockIfOffline()) return; // js/offline.js — lecture seule hors ligne
   const { error } = await supabaseClient.from('watchlist').delete().eq('id', id);
   if(error){
     showToast('Erreur de suppression — réessaie');

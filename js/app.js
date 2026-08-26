@@ -76,12 +76,25 @@ async function loadFilms(){
     .eq('user_id', currentUser.id)
     .order('added', { ascending: false });
   if(error){
+    // Repli hors ligne (js/offline.js) : dernier catalogue chargé avec
+    // succès plutôt qu'un catalogue vide qui donnerait l'impression que
+    // tout a disparu. Ce chemin fait aussi office de "source de vérité"
+    // pour isOfflineMode — voir le listener 'online' dans offline.js, qui
+    // retente cette même fonction pour en sortir.
+    const cached = loadOfflineCache('films');
+    if(cached){
+      films = cached.data;
+      enterOfflineMode(cached.savedAt);
+      return;
+    }
     showToast('Erreur de chargement — réessaie');
     console.error(error);
     films = [];
     return;
   }
   films = data.map(rowToFilm);
+  saveOfflineCache('films', films);
+  exitOfflineMode();
 }
 
 function showToast(msg){
@@ -203,6 +216,7 @@ function render(){
     }
     row.querySelector('.star-btn').addEventListener('click', async (e) => {
       e.stopPropagation();
+      if(blockIfOffline()) return; // js/offline.js — lecture seule hors ligne
       const newFav = !f.fav;
       const { error } = await supabaseClient.from('films').update({ fav: newFav }).eq('id', f.id).eq('user_id', currentUser.id);
       if(error){
@@ -319,6 +333,7 @@ function updateLiveScore(){
 }
 
 function openModal(id){
+  if(blockIfOffline()) return; // js/offline.js — lecture seule hors ligne
   editingId = id || null;
   // Repart d'une conversion watchlist propre à chaque ouverture — seule
   // startRatingFromWatchlist() (js/watchlist.js) la positionne ensuite.

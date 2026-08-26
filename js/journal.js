@@ -11,6 +11,14 @@ async function loadViewings(){
     .select('*')
     .order('watched_at', { ascending: false });
   if(error){
+    // Repli hors ligne (js/offline.js) : mêmes principes que loadFilms()
+    // dans js/app.js — pas de toast ici, celui de loadFilms() (appelée
+    // juste avant depuis showApp()) suffit à prévenir l'utilisateur.
+    const cached = loadOfflineCache('viewings');
+    if(cached){
+      viewings = cached.data;
+      return;
+    }
     showToast('Erreur de chargement du journal');
     console.error(error);
     viewings = [];
@@ -22,6 +30,7 @@ async function loadViewings(){
     watchedAt: row.watched_at,
     note: row.note || null
   }));
+  saveOfflineCache('viewings', viewings);
 }
 
 // Insère un visionnage — utilisé à la création d'un film (premier
