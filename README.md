@@ -762,6 +762,28 @@ contraste de couleurs, lui, était déjà large sur tout le thème sombre) :
   spécifiquement (`input[type="range"]{outline:none;}` l'emportait
   silencieusement sur la règle générique de focus) — corrigé.
 
+## Export vers Letterboxd (v1.6)
+
+Bouton **⬇ Exporter vers Letterboxd (CSV)** (menu "⋯" à côté d'Exporter/
+Importer JSON) : génère un fichier CSV au format officiel d'import de
+Letterboxd (`letterboxd.com/about/importing-data`), à importer sur leur
+site en une minute. Pas de synchronisation automatique : Letterboxd
+n'ouvre pas son API en écriture à un projet perso comme celui-ci (accès
+uniquement sur demande à `api@letterboxd.com`, en pratique réservé à des
+partenaires approuvés) — l'export CSV manuel est la seule voie officielle
+et fiable disponible sans ça.
+
+Colonnes : `Title`, `Year`, `tmdbID` (même identifiant que celui déjà
+stocké via la recherche TMDB — évite toute ambiguïté de titre à
+l'import), `WatchedDate` (date du visionnage le plus récent si le film a
+été revu, sinon date d'ajout au catalogue), `Rating` (0.5 à 5.0 par pas de
+0.5, la même échelle que l'app), `Review`. `Tags` volontairement exclu :
+documenté comme ignoré par l'import Letterboxd (contrairement à leur
+export, qui lui l'inclut). Un film = une seule ligne, pas une par
+revisionnage — l'app ne garde qu'une note par film, pas une par
+visionnage, copier la même note sur plusieurs entrées de journal aurait
+été plus trompeur qu'utile.
+
 ## Prochaines étapes possibles
 
 - D'autres happenings (voir la section ci-dessus pour ceux déjà en place)

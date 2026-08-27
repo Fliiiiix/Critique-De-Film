@@ -580,6 +580,79 @@ function importFilms(file){
   reader.readAsText(file);
 }
 
+// --- Export vers Letterboxd (CSV) ---
+// Letterboxd n'ouvre pas son API en écriture à un projet perso comme
+// celui-ci (accès sur demande à api@letterboxd.com, réservé en pratique à
+// des partenaires approuvés) — pas de vraie synchro automatique possible.
+// En revanche, leur import CSV est un vrai flux officiel et documenté
+// (letterboxd.com/about/importing-data) : ce fichier, une fois généré,
+// s'importe à la main sur leur site en ~1 minute. Colonnes retenues,
+// celles dont le comportement à l'import est confirmé : Title, Year,
+// tmdbID (le même identifiant que celui déjà stocké via la recherche
+// TMDB — évite toute ambiguïté de titre), WatchedDate (YYYY-MM-DD),
+// Rating (0.5 à 5.0 par pas de 0.5, exactement l'échelle déjà utilisée
+// ici), Review. Tags n'est PAS inclus : documenté comme ignoré côté
+// import (contrairement à l'export, qui lui l'inclut).
+//
+// Un film → une seule ligne (pas une par revisionnage) : l'app ne stocke
+// qu'une note par film, pas une par visionnage (voir js/journal.js) — Un
+// import Letterboxd pourrait donc au mieux copier la même note sur chaque
+// entrée de journal, un résultat plus trompeur qu'utile. WatchedDate
+// prend la date du visionnage le PLUS RÉCENT (le plus proche de l'avis
+// actuel, si le film a été revu) ; à défaut de tout visionnage enregistré
+// (import JSON ancien, film ajouté avant le suivi des visionnages), repli
+// sur `added`, la date d'ajout au catalogue.
+function csvEscape(value){
+  const s = String(value ?? '');
+  // Toujours entre guillemets : plus simple et plus sûr que de ne les
+  // ajouter qu'en présence d'une virgule/d'un guillemet/d'un retour à la
+  // ligne — un titre ou un commentaire peut contenir n'importe lequel des
+  // trois, doubler les guillemets internes suffit dans tous les cas.
+  return `"${s.replace(/"/g, '""')}"`;
+}
+
+function latestWatchedDateFor(filmId, fallbackAddedMs){
+  const filmViewings = viewings.filter(v => v.filmId === filmId);
+  const ms = filmViewings.length > 0
+    ? Math.max(...filmViewings.map(v => v.watchedAt))
+    : fallbackAddedMs;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+function exportFilmsToLetterboxd(){
+  if(films.length === 0){
+    showToast('Aucun film à exporter');
+    return;
+  }
+  const header = ['Title', 'Year', 'tmdbID', 'WatchedDate', 'Rating', 'Review'];
+  const rows = films.map(f => [
+    f.title,
+    f.releaseYear || '',
+    f.tmdbId || '',
+    latestWatchedDateFor(f.id, f.added),
+    getDisplayNote(f) ?? '',
+    f.review || ''
+  ].map(csvEscape).join(','));
+  const csv = [header.join(','), ...rows].join('\r\n');
+
+  // Limite Letterboxd de 1 Mo par fichier (voir leur page d'aide à
+  // l'import) — un catalogue perso reste très en dessous en pratique,
+  // pas de découpage en plusieurs fichiers nécessaire ici.
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `critique-films-letterboxd-${dateStr}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('CSV téléchargé — à importer sur letterboxd.com/import');
+}
+
+document.getElementById('exportLetterboxdBtn').addEventListener('click', exportFilmsToLetterboxd);
+
 document.getElementById('manualToggle').addEventListener('change', updateManualVisibility);
 document.getElementById('manualScoreSlider').addEventListener('input', (e) => {
   document.getElementById('manualScoreVal').textContent = parseFloat(e.target.value).toFixed(2);

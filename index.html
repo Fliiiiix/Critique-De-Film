@@ -13,7 +13,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=20">
+<link rel="stylesheet" href="css/style.css?v=21">
 </head>
 <body>
 
@@ -114,6 +114,11 @@
         <div class="dropdown-menu" id="moreMenu">
           <button id="exportBtn">⬇ Exporter (JSON)</button>
           <button id="importBtn">⬆ Importer (JSON)</button>
+          <!-- Letterboxd n'ouvre pas son API à un projet perso comme celui-ci
+               (accès sur demande, réservé aux partenaires) — export CSV au
+               format officiel d'import plutôt qu'une synchro automatique,
+               voir exportFilmsToLetterboxd() dans js/app.js. -->
+          <button id="exportLetterboxdBtn">🎬 Exporter vers Letterboxd (CSV)</button>
         </div>
       </div>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
@@ -627,53 +632,53 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=20"></script>
-<script src="js/tmdbConfig.js?v=20"></script>
-<script src="js/data.js?v=20"></script>
-<script src="js/happenings.js?v=20"></script>
+<script src="js/supabaseConfig.js?v=21"></script>
+<script src="js/tmdbConfig.js?v=21"></script>
+<script src="js/data.js?v=21"></script>
+<script src="js/happenings.js?v=21"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=20"></script>
+<script src="js/ui.js?v=21"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=20"></script>
-<script src="js/app.js?v=20"></script>
-<script src="js/tmdb.js?v=20"></script>
-<script src="js/stats.js?v=20"></script>
-<script src="js/achievements.js?v=20"></script>
-<script src="js/journal.js?v=20"></script>
-<script src="js/profile.js?v=20"></script>
+<script src="js/offline.js?v=21"></script>
+<script src="js/app.js?v=21"></script>
+<script src="js/tmdb.js?v=21"></script>
+<script src="js/stats.js?v=21"></script>
+<script src="js/achievements.js?v=21"></script>
+<script src="js/journal.js?v=21"></script>
+<script src="js/profile.js?v=21"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=20"></script>
-<script src="js/router.js?v=20"></script>
-<script src="js/publicProfile.js?v=20"></script>
-<script src="js/top.js?v=20"></script>
-<script src="js/friends.js?v=20"></script>
+<script src="js/admin.js?v=21"></script>
+<script src="js/router.js?v=21"></script>
+<script src="js/publicProfile.js?v=21"></script>
+<script src="js/top.js?v=21"></script>
+<script src="js/friends.js?v=21"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=20"></script>
-<script src="js/watchlist.js?v=20"></script>
-<script src="js/groups.js?v=20"></script>
-<script src="js/proposals.js?v=20"></script>
+<script src="js/activity.js?v=21"></script>
+<script src="js/watchlist.js?v=21"></script>
+<script src="js/groups.js?v=21"></script>
+<script src="js/proposals.js?v=21"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=20"></script>
+<script src="js/invites.js?v=21"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=20"></script>
-<script src="js/auth.js?v=20"></script>
+<script src="js/activityState.js?v=21"></script>
+<script src="js/auth.js?v=21"></script>
 </body>
 </html>
