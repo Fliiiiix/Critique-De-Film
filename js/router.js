@@ -37,6 +37,15 @@ function showOnlyPage(id){
   PAGE_IDS.forEach(pid => {
     document.getElementById(pid).style.display = (pid === id) ? '' : 'none';
   });
+  // Bouton flottant "+ Ajouter" (mobile, <600px) : n'a de sens que sur le
+  // catalogue. Sans ce garde-fou il flotte par-dessus TOUTE page en
+  // dessous de 600px (watchlist, amis, groupes, et même l'écran de
+  // connexion — bug constaté sur mobile, .fab n'était scopé qu'à la media
+  // query, jamais à la page active). Chaîne vide (pas 'none') sur le
+  // catalogue : rend la main à la media query CSS plutôt que de la
+  // court-circuiter avec un style inline fixe.
+  const fab = document.getElementById('fabAddBtn');
+  if(fab) fab.style.display = (id === 'appContainer') ? '' : 'none';
 }
 
 function goHome(){ location.hash = ''; }

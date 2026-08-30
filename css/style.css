@@ -716,45 +716,70 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   line-height:1.6;
 }
 
-/* --- Vitrine de connexion (v2.0.2) --- */
-/* #authContainer occupe tout l'espace visible sous l'entête (pas juste sa
-   propre hauteur de contenu) pour que .auth-hero puisse se centrer
-   verticalement dedans — évite le grand vide noir en bas de page constaté
-   en v2.0 sur les écrans plus hauts que le contenu. 100dvh plutôt que
-   100vh : sur mobile, vh compte la barre d'adresse même quand elle est
-   cachée, dvh s'ajuste à l'espace réellement visible. --header-h est une
-   estimation (l'entête n'a pas de hauteur fixe) : min-height seulement,
-   donc si l'entête est en fait plus haut sur un écran donné le contenu
-   pousse normalement au lieu de se faire couper. */
-#authContainer{
-  --header-h:96px;
-  min-height:calc(100dvh - var(--header-h));
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  overflow:hidden;
+/* --- Vitrine de connexion (v2.0.3) --- */
+/* Émoji posé à côté d'un texte en police restreinte (Space Mono n'a pas
+   de glyphes émoji couleur) : sans ça, certains navigateurs font retomber
+   l'émoji sur un rendu monochrome/cassé plutôt que de router
+   automatiquement vers la police système. Un <span> à part avec sa propre
+   pile de polices force le bon rendu, indépendamment de la police du
+   texte autour. Utilisé partout où un émoji voisine du texte en Space
+   Mono ou pourrait hériter d'une police non garantie. */
+.ico{
+  font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Segoe UI Symbol',sans-serif;
+  font-variant-emoji:emoji;
+  font-style:normal;
 }
-/* Halo d'ambiance propre à cet écran, en plus du fond de page général —
-   deux taches plus grandes et plus saturées puisque rien d'autre (pas de
-   cartes en grille) ne remplit l'espace ici. */
+/* #authContainer ne force plus de hauteur calculée (calc(100dvh - ...) —
+   fragile : l'entête n'a pas de hauteur fixe, sur certains écrans ça
+   laissait un vide en trop ou pas assez). À la place : du padding généreux
+   et un contenu volontairement plus riche (texture + vitrine produit
+   visible à toutes les tailles, pas juste sur desktop) pour que l'écran
+   ne dépende d'aucun calcul de viewport pour ne pas paraître vide.
+   overflow-x:hidden : les cartes de la vitrine ci-dessous débordent
+   légèrement de leur boîte à cause de leur légère rotation — sans ça, ce
+   débordement purement décoratif pourrait forcer un défilement horizontal
+   sur un écran étroit. */
+#authContainer{
+  position:relative;
+  padding:48px 0 72px;
+  overflow-x:hidden;
+}
+/* Texture plein écran (grille de points) + halo de couleur — position
+   fixed et non absolute : couvre tout le viewport quelle que soit la
+   hauteur réelle du contenu, sans dépendre d'un calcul de hauteur. Un
+   pur pattern CSS (pas de coordonnées à recalculer) : par construction
+   correct à n'importe quelle taille d'écran, y compris mobile — c'est
+   ce qui manquait le plus (mobile ressortait toujours vide, la vitrine
+   à coordonnées absolues d'avant y était masquée). */
+.auth-pattern{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+  opacity:0.5;
+  background-image:radial-gradient(var(--line) 1px, transparent 1px);
+  background-size:26px 26px;
+  -webkit-mask-image:radial-gradient(120% 70% at 50% 0%, black 0%, transparent 85%);
+  mask-image:radial-gradient(120% 70% at 50% 0%, black 0%, transparent 85%);
+}
 #authContainer::before{
   content:'';
-  position:absolute;
+  position:fixed;
   inset:0;
   z-index:-1;
+  pointer-events:none;
   background:
-    radial-gradient(620px 420px at 12% 20%, var(--violet-wash), transparent 65%),
-    radial-gradient(560px 380px at 90% 75%, var(--gold-wash), transparent 60%);
+    radial-gradient(620px 420px at 12% 10%, var(--violet-wash), transparent 65%),
+    radial-gradient(560px 380px at 90% 55%, var(--gold-wash), transparent 60%);
 }
 .auth-hero{
   display:flex;
   flex-wrap:wrap;
   align-items:center;
   justify-content:center;
-  gap:48px;
+  gap:40px;
   max-width:1180px;
-  margin:40px auto;
+  margin:0 auto;
   padding:0 16px;
 }
 .auth-pitch{flex:1 1 380px; min-width:0; max-width:480px;}
@@ -786,6 +811,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin-bottom:28px;
 }
 .auth-tags li{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
   font-family:'Space Mono', monospace;
   font-size:11.5px;
   font-weight:600;
@@ -796,6 +824,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border-radius:999px;
   padding:6px 12px;
 }
+.auth-tags li .ico{font-size:13px;}
 .auth-features{list-style:none; display:flex; flex-direction:column; gap:16px;}
 .auth-features li{display:flex; align-items:flex-start; gap:14px;}
 .auth-feature-icon{
@@ -823,43 +852,57 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 /* Aperçu produit : 3 cartes façon .film-row en éventail, chacune avec un
    vrai .counter/.rate-* (mêmes classes que le catalogue — rendu
    identique, pas une réinvention) pour rendre "grille à 7 critères"
-   concret au lieu d'une simple promesse en texte. Purement décoratif
-   (aria-hidden côté HTML) : posters et titres en aplats génériques
-   puisqu'aucun appel TMDB n'a de sens avant connexion. */
+   concret au lieu d'une simple promesse en texte. Chevauchement obtenu
+   par le flux normal (marges négatives), PAS par des coordonnées
+   absolues top/left calées à la main : ça reste correct à n'importe
+   quelle largeur au lieu de déborder ou de se chevaucher n'importe
+   comment selon l'écran — le vrai problème de la version précédente.
+   Purement décoratif (aria-hidden côté HTML) : posters/titres en aplats
+   génériques puisqu'aucun appel TMDB n'a de sens avant connexion. Visible
+   à toutes les tailles (voir media queries pour le rétrécissement, pas
+   la disparition — l'ancienne version la masquait sous 760px, ce qui
+   laissait le mobile particulièrement vide). */
 .auth-showcase{
-  position:relative;
-  flex:1 1 260px;
-  max-width:300px;
-  height:280px;
   display:flex;
-  align-items:center;
   justify-content:center;
+  width:100%;
+  padding:22px 0 6px;
 }
 .auth-mock-card{
-  position:absolute;
-  width:194px;
+  flex:none;
+  width:160px;
+  /* -30px et pas plus : au-delà, la carte suivante recouvre le cadran
+     (tout à droite de la carte précédente) au lieu de juste son affiche —
+     exactement le bug constaté à la vérification avec -58px, qui rendait
+     un des trois cadrans invisible selon la carte. */
+  margin-left:-30px;
   display:flex;
   align-items:center;
-  gap:10px;
+  gap:9px;
   background:linear-gradient(165deg, var(--surface) 0%, var(--surface-2) 200%);
   border:1px solid var(--line);
   border-radius:14px;
-  padding:10px;
+  padding:9px;
   box-shadow:0 24px 44px -16px rgba(0,0,0,0.6);
 }
-.auth-mock-card .film-poster{width:44px; height:64px; font-size:17px;}
+.auth-mock-card:first-child{margin-left:0;}
+.auth-mock-card .film-poster{width:40px; height:58px; font-size:16px;}
 .auth-mock-lines{flex:1; min-width:0;}
 .auth-mock-line{
-  height:8px;
+  height:7px;
   border-radius:3px;
   background:var(--line);
-  margin-bottom:7px;
+  margin-bottom:6px;
 }
 .auth-mock-line.short{width:38%; background:var(--line-soft);}
-.auth-mock-card .counter{width:38px; height:38px; font-size:12px; flex:none;}
-.auth-mock-1{top:6px; left:0; transform:rotate(-8deg); z-index:1;}
-.auth-mock-2{top:70px; left:56px; transform:rotate(4deg); z-index:3;}
-.auth-mock-3{top:34px; left:14px; transform:rotate(-2deg); z-index:2;}
+.auth-mock-card .counter{width:34px; height:34px; font-size:11px; flex:none;}
+/* z-index croissant de gauche à droite (pas 1/3/2) : chaque carte suivante
+   chevauche la précédente PAR-DESSUS, comme un vrai éventail de cartes —
+   l'ordre inverse laissait la carte du milieu passer devant la 3e et en
+   masquer presque tout le contenu (bug constaté à la vérification). */
+.auth-mock-1{transform:rotate(-7deg); z-index:1;}
+.auth-mock-2{transform:rotate(4deg) translateY(-10px); z-index:2;}
+.auth-mock-3{transform:rotate(-2deg) translateY(4px); z-index:3;}
 .auth-hero .auth-card{width:380px; flex:none; position:relative;}
 .auth-card-mark{
   width:44px; height:44px;
@@ -2037,14 +2080,21 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   .toolbar-search{width:100%; min-width:0;}
   .toolbar-actions{width:100%; justify-content:space-between;}
 
-  /* Vitrine de connexion : les deux colonnes (largeur fixe de 380px pour
-     la carte + le texte à côté) ne tiennent plus côte à côte — empilées,
-     carte en premier pour que le geste "se connecter" reste immédiat sur
-     mobile plutôt que de faire défiler tout l'argumentaire avant. */
-  #authContainer{min-height:0; padding:32px 0;}
-  .auth-hero{flex-direction:column-reverse; gap:32px; margin:0 auto;}
+  /* Vitrine de connexion : les colonnes (largeur fixe de 380px pour la
+     carte + le texte à côté) ne tiennent plus côte à côte — empilées,
+     carte en premier (ordre DOM pitch/showcase/card + column-reverse)
+     pour que le geste "se connecter" reste immédiat sur mobile, suivi
+     d'un aperçu du produit puis de l'argumentaire complet. La vitrine
+     reste visible (juste rétrécie) plutôt que masquée : la version
+     précédente la cachait sous 760px, ce qui laissait justement le mobile
+     — l'écran le plus consulté — sans aucun élément visuel. */
+  #authContainer{padding:32px 0;}
+  .auth-hero{flex-direction:column-reverse; gap:28px; margin:0 auto;}
   .auth-hero .auth-card{width:100%; max-width:420px;}
-  .auth-showcase{display:none;}
+  .auth-mock-card{width:132px; margin-left:-22px;}
+  .auth-mock-card .film-poster{width:32px; height:46px; font-size:13px;}
+  .auth-mock-card .counter{width:28px; height:28px; font-size:9.5px;}
+  .auth-mock-line{height:6px; margin-bottom:5px;}
 }
 
 @media (max-width:600px){
