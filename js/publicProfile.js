@@ -16,7 +16,7 @@ function publicProfileFilmRowHtml(f){
         <div class="film-title">${escapeHtml(f.title)}${f.fav ? ' <span title="Favori">★</span>' : ''}</div>
         <div class="film-sub">${f.release_year || ''}</div>
       </div>
-      <div class="counter">${f.note !== null && f.note !== undefined ? Number(f.note).toFixed(1) : '—'}</div>
+      <div class="counter ${noteColorClass(f.note)}">${f.note !== null && f.note !== undefined ? Number(f.note).toFixed(1) : '—'}</div>
     </div>
   `;
 }

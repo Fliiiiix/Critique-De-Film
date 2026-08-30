@@ -187,8 +187,12 @@ function openJournal(){
   openOverlay('journalOverlay');
 }
 
+// Rouvre la modale profil (pas juste closeOverlay simple) : Journal n'est
+// accessible QUE depuis "Mon activité" dans le profil (voir #journalBtn,
+// index.html) — en ressortir doit ramener là où on était, pas sortir
+// entièrement du profil.
 function closeJournal(){
-  closeOverlay('journalOverlay');
+  closeOverlay('journalOverlay', () => openProfileModal());
 }
 
 document.getElementById('journalBtn').addEventListener('click', openJournal);

@@ -137,8 +137,12 @@ function openStats(){
   openOverlay('statsOverlay');
 }
 
+// Rouvre la modale profil (pas juste closeOverlay simple) : Statistiques
+// n'est accessible QUE depuis "Mon activité" dans le profil (voir
+// #statsBtn, index.html) — en ressortir doit ramener là où on était, pas
+// sortir entièrement du profil comme si on abandonnait toute la modale.
 function closeStats(){
-  closeOverlay('statsOverlay');
+  closeOverlay('statsOverlay', () => openProfileModal());
 }
 
 document.getElementById('statsBtn').addEventListener('click', openStats);

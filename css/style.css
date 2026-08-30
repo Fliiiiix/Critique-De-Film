@@ -26,8 +26,11 @@
   --violet:#8c7cff;
   --violet-dim:#5b4fb0;
   --violet-wash:rgba(140,124,255,0.12);
-  /* Or : réservé STRICTEMENT à la note/le cadran — jamais utilisé pour un
-     bouton, un état actif ou autre chose que "voici une note". */
+  /* Or : accent des données/notes en général (stats, succès...). Le cadran
+     lui-même (.counter) ne s'en sert que pour son palier "moyen" — voir le
+     barème rouge/jaune/vert juste plus bas, retenu à la place d'une
+     couleur unique après retour utilisateur (le rouge/jaune/vert dit
+     immédiatement "bon ou pas", une seule teinte dorée ne disait rien). */
   --gold:#e7b24c;
   --gold-dim:#8a6a2e;
   --gold-wash:rgba(231,178,76,0.1);
@@ -37,10 +40,26 @@
   --teal:#6fa39f;
   --coral:#ff6b57;
   --coral-dim:#8a3f34;
+  /* Barème du cadran (.counter, noteColorClass() dans js/ui.js) : rouge
+     <2.5, or 2.5-3.99 (réutilise --gold ci-dessus), vert >=4. */
+  --green:#6ad18b;
+  --green-dim:#3f7a52;
+  --green-wash:rgba(106,209,139,0.1);
 }
 *{box-sizing:border-box; margin:0; padding:0;}
+/* Fond de page : le violet du header seul ne suffisait pas (retour
+   utilisateur v2.0 — "le fond reste plat/vide dès qu'on scrolle") — deux
+   grandes taches très douces, fixées à l'écran plutôt qu'au document, pour
+   garder une vraie atmosphère quelle que soit la longueur de la page
+   plutôt qu'un dégradé qui ne couvrirait que le haut. Discret exprès (le
+   cadran reste la seule vraie signature) : jamais assez marqué pour gêner
+   la lecture d'une liste par-dessus. */
 body{
-  background:var(--ink);
+  background:
+    radial-gradient(900px 560px at 88% 0%, rgba(140,124,255,0.09), transparent 60%),
+    radial-gradient(760px 480px at 6% 60%, rgba(231,178,76,0.05), transparent 55%),
+    var(--ink);
+  background-attachment:fixed;
   color:var(--text);
   font-family:'Instrument Sans', sans-serif;
   min-height:100vh;
@@ -453,7 +472,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   grid-template-areas:"poster main star counter";
   align-items:center;
   column-gap:16px;
-  background:var(--surface);
+  background:linear-gradient(160deg, var(--surface) 0%, var(--surface-2) 220%);
   border:1px solid var(--line);
   border-radius:12px;
   padding:14px 16px;
@@ -539,33 +558,41 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* --- Le cadran : signature visuelle de Kinet --- */
-/* Remplace l'ancien rectangle plat .counter — un badge circulaire cerclé
-   d'or, toujours au même endroit qu'une note apparaît (catalogue, stats,
-   recommandations...). Pas un anneau de progression proportionnel à la
-   note (ça demanderait de faire passer la valeur en style inline depuis
-   chaque site d'appel JS, contre l'objectif "CSS seule" de cette refonte)
-   — juste une forme délibérée, cohérente, qui ne se confond jamais avec un
-   bouton ou une donnée quelconque. */
+/* Remplace l'ancien rectangle plat .counter — un badge circulaire, toujours
+   au même endroit qu'une note apparaît (catalogue, amis, groupes, top,
+   profil public...). Couleur par BARÈME plutôt que par origine de la note
+   (manuel ou grille — c'est déjà signalé par .manual-badge à côté du
+   titre, indépendamment de ceci) : rouge en dessous de 2.5, or entre 2.5
+   et 4, vert à partir de 4 — voir noteColorClass() dans js/ui.js, appelée
+   à chaque site qui construit un .counter. Pas un anneau de progression
+   proportionnel (ça demanderait de faire passer la valeur en style inline
+   depuis chaque site d'appel JS) — juste une forme délibérée, cerclée,
+   qui ne se confond jamais avec un bouton ou une donnée quelconque. */
 .counter{
   grid-area:counter;
   font-family:'Space Mono', monospace;
   font-size:15px;
   font-weight:700;
-  color:var(--gold);
+  color:var(--text-muted);
   background:var(--surface-2);
-  border:2px solid var(--gold-dim);
+  border:2px solid var(--line);
   border-radius:50%;
   width:46px; height:46px;
   display:flex; align-items:center; justify-content:center;
   flex:none;
   font-variant-numeric:tabular-nums;
 }
+.counter.rate-low{color:var(--coral); border-color:var(--coral-dim); background:rgba(255,107,87,0.08);}
+.counter.rate-mid{color:var(--gold); border-color:var(--gold-dim); background:var(--gold-wash);}
+.counter.rate-high{color:var(--green); border-color:var(--green-dim); background:var(--green-wash);}
 .counter.pulse{animation:savePulse .5s ease-out;}
 @keyframes savePulse{
   0%{box-shadow:0 0 0 0 rgba(231,178,76,0.55);}
   100%{box-shadow:0 0 0 8px rgba(231,178,76,0);}
 }
 
+/* "Manuel" reste signalé UNIQUEMENT ici (petit texte à côté du titre) —
+   plus sur la couleur du cadran, désormais réservée au barème de note. */
 .manual-badge{
   display:inline-block;
   font-family:'Space Mono', monospace;
@@ -579,10 +606,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin-left:8px;
   vertical-align:middle;
   font-weight:600;
-}
-.counter.manual{
-  color:var(--teal);
-  border-color:var(--teal);
 }
 
 /* État de chargement (index.html, #filmList) : 5 lignes statiques le temps
@@ -659,14 +682,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .happening-badge:hover{filter:none; transform:scale(1.15);}
 
+/* .auth-card sert à deux endroits : l'écran de connexion (dans
+   .auth-hero, en colonne à côté de la vitrine ci-dessous) ET l'écran de
+   maintenance (#maintenanceContainer, seul, centré) — la mise en boîte
+   (fond/bordure/coins) reste commune, le centrage/largeur est spécifique
+   à chaque contexte pour ne pas forcer le même gabarit aux deux. */
 .auth-card{
-  max-width:380px;
-  margin:60px auto;
-  background:var(--surface);
+  background:linear-gradient(165deg, var(--surface) 0%, var(--surface-2) 200%);
   border:1px solid var(--line);
   border-radius:14px;
   padding:28px;
 }
+#maintenanceContainer .auth-card{max-width:420px; margin:60px auto;}
 .auth-card h2{
   font-family:'Bricolage Grotesque', sans-serif;
   font-weight:700;
@@ -688,6 +715,90 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   color:var(--teal);
   line-height:1.6;
 }
+
+/* --- Vitrine de connexion (v2.0) --- */
+.auth-hero{
+  display:flex;
+  align-items:center;
+  gap:64px;
+  max-width:980px;
+  margin:56px auto;
+  padding:0 16px;
+}
+.auth-pitch{flex:1.15; min-width:0; position:relative;}
+.auth-pitch .eyebrow{margin-bottom:10px;}
+.auth-headline{
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:800;
+  font-size:34px;
+  letter-spacing:-0.02em;
+  line-height:1.15;
+  text-wrap:balance;
+  margin-bottom:14px;
+}
+.auth-pitch-sub{
+  color:var(--text-muted);
+  font-size:15px;
+  line-height:1.6;
+  max-width:44ch;
+  margin-bottom:32px;
+}
+.auth-features{list-style:none; display:flex; flex-direction:column; gap:18px;}
+.auth-features li{display:flex; align-items:flex-start; gap:14px;}
+.auth-feature-icon{
+  flex:none;
+  width:38px; height:38px;
+  border-radius:10px;
+  background:var(--violet-wash);
+  border:1px solid var(--violet-dim);
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px;
+}
+.auth-features b{
+  display:block;
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:600;
+  font-size:14.5px;
+  margin-bottom:2px;
+}
+.auth-features span{
+  display:block;
+  font-size:13px;
+  color:var(--text-muted);
+  line-height:1.5;
+}
+/* Collage abstrait façon affiches empilées — aplats de couleur (pas de
+   vraies affiches : cet écran s'affiche avant toute connexion, donc avant
+   tout appel TMDB), posé derrière le texte plutôt qu'à côté pour ne jamais
+   entrer en concurrence avec la lecture. */
+.auth-pitch-collage{
+  position:absolute;
+  top:-40px; right:-20px;
+  width:190px; height:230px;
+  z-index:-1;
+  opacity:0.5;
+}
+.auth-pitch-collage span{
+  position:absolute;
+  width:108px; height:156px;
+  border-radius:12px;
+}
+.auth-pitch-collage span:nth-child(1){
+  top:10px; left:0;
+  background:linear-gradient(155deg, var(--violet-dim), var(--surface));
+  transform:rotate(-9deg);
+}
+.auth-pitch-collage span:nth-child(2){
+  top:30px; left:48px;
+  background:linear-gradient(155deg, var(--gold-dim), var(--surface));
+  transform:rotate(6deg);
+}
+.auth-pitch-collage span:nth-child(3){
+  top:0; left:24px;
+  background:linear-gradient(155deg, var(--green-dim), var(--surface));
+  transform:rotate(-1deg);
+}
+.auth-hero .auth-card{width:380px; flex:none;}
 
 .empty-state{
   text-align:center;
@@ -715,7 +826,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .overlay.closing{display:flex; animation:overlayOut .15s ease-in forwards;}
 .overlay.closing .modal{animation:modalOut .15s ease-in forwards;}
 .modal{
-  background:var(--surface);
+  background:linear-gradient(160deg, var(--surface) 0%, var(--surface-2) 220%);
   border:1px solid var(--line);
   border-radius:16px;
   width:100%;
@@ -1076,7 +1187,7 @@ input[type="range"]::-moz-range-thumb{
   margin-bottom:28px;
 }
 .stat-tile{
-  background:var(--ink);
+  background:linear-gradient(160deg, var(--ink) 0%, var(--surface) 220%);
   border:1px solid var(--line);
   border-radius:10px;
   padding:14px 12px;
@@ -1211,7 +1322,7 @@ input[type="range"]::-moz-range-thumb{
   display:flex;
   align-items:center;
   gap:12px;
-  background:var(--ink);
+  background:linear-gradient(160deg, var(--ink) 0%, var(--surface) 220%);
   border:1px solid var(--line);
   border-radius:10px;
   padding:12px 14px;
@@ -1295,7 +1406,7 @@ input[type="range"]::-moz-range-thumb{
   gap:10px;
 }
 .ach-tier-card{
-  background:var(--ink);
+  background:linear-gradient(160deg, var(--ink) 0%, var(--surface) 220%);
   border:1px solid var(--line);
   border-radius:10px;
   padding:14px;
@@ -1326,7 +1437,7 @@ input[type="range"]::-moz-range-thumb{
   gap:10px;
 }
 .ach-hidden-card{
-  background:var(--ink);
+  background:linear-gradient(160deg, var(--ink) 0%, var(--surface) 220%);
   border:1px solid var(--line);
   border-radius:10px;
   padding:14px 12px;
@@ -1380,7 +1491,7 @@ input[type="range"]::-moz-range-thumb{
   display:flex;
   align-items:center;
   gap:14px;
-  background:var(--surface);
+  background:linear-gradient(160deg, var(--surface) 0%, var(--surface-2) 220%);
   border:1px solid var(--line);
   border-radius:12px;
   padding:12px 14px;
@@ -1721,60 +1832,74 @@ input[type="range"]::-moz-range-thumb{
 }
 
 /* ============================================================
-   Mode GRILLE (cartes à affiche) — js/ui.js, setViewMode('grid').
-   S'applique à #filmList (catalogue) ainsi qu'à #wlList/#topList
-   (watchlist/top, qui réutilisent .wl-row) : même bascule, même
-   préférence partagée. C'est l'état PAR DÉFAUT (pas de sélecteur
-   data-view-mode="grid" nécessaire) — le mode liste ci-dessous est
-   l'exception qui doit s'écrire explicitement.
+   Mode GRILLE / Mode LISTE — js/ui.js, setViewMode('grid'|'list').
+   Réécrit après retour utilisateur (v2.0.1) : la première version rendait
+   le mode grille "par défaut" (sélecteurs nus #filmList/.film-row) et le
+   mode liste comme une exception qui devait réinitialiser chaque
+   propriété une à une (grid-area compris) — source du bug "le mode liste
+   ne prend que la gauche de la page" (une réinitialisation manquante
+   laissait des enfants avec une grid-area qui n'existait plus dans le
+   nouveau grid-template-areas). Les deux modes sont maintenant écrits de
+   façon SYMÉTRIQUE, chacun sous son propre sélecteur body[data-view-mode],
+   sans rien qui doive être "annulé" par l'autre — document.body a TOUJOURS
+   l'attribut posé dès le chargement (setViewMode(getViewMode()) dans
+   js/ui.js), jamais l'état "aucun mode choisi" qui aurait justifié un
+   mode implicite par défaut. Les deux réutilisent le même DOM généré par
+   render()/renderWatchlist()/renderTop() (poster, .film-main/.wl-main,
+   .star-btn ou .wl-actions, .counter) — aucune fonction de rendu n'a
+   besoin de savoir dans quel mode elle dessine.
    ============================================================ */
-#filmList, #wlList, #topList{
+body[data-view-mode="grid"] #filmList,
+body[data-view-mode="grid"] #wlList,
+body[data-view-mode="grid"] #topList{
   display:grid;
   grid-template-columns:repeat(auto-fill, minmax(158px, 1fr));
   gap:16px;
   align-items:start;
 }
-#filmList .film-row{
+body[data-view-mode="grid"] #filmList .film-row{
+  display:grid;
   grid-template-columns:1fr;
-  grid-template-areas:
-    "poster"
-    "main"
-    "footer";
+  grid-template-areas:"poster" "main" "footer";
   row-gap:10px;
-  margin-bottom:0;
   padding:12px;
 }
-#filmList .film-poster, #filmList .film-poster-placeholder{
+body[data-view-mode="grid"] #filmList .film-poster,
+body[data-view-mode="grid"] #filmList .film-poster-placeholder{
+  grid-area:poster;
   width:100%; height:auto; aspect-ratio:2/3;
   border-radius:8px;
 }
-#filmList .star-btn{grid-area:footer; justify-self:start;}
-#filmList .counter{grid-area:footer; justify-self:end;}
-#filmList .film-row .star-btn, #filmList .film-row .counter{align-self:center;}
-/* .star-btn et .counter partagent la zone "footer" (grid-area identique)
-   plutôt que d'ajouter une 4e zone : justify-self les place chacun à une
-   extrémité de la même ligne, comme deux enfants d'une rangée flex, sans
-   changer le DOM ni les zones définies plus haut pour le mode liste. */
-#filmList .film-row.skeleton{grid-template-areas:"poster" "main" "footer";}
-#filmList .skeleton-poster{width:100%; aspect-ratio:2/3; height:auto;}
+body[data-view-mode="grid"] #filmList .film-main{grid-area:main;}
+/* .star-btn et .counter partagent la même zone "footer" plutôt qu'une 4e
+   zone dédiée : justify-self les place chacun à une extrémité de la même
+   ligne, comme deux enfants d'une rangée flex, sans changer le DOM. */
+body[data-view-mode="grid"] #filmList .star-btn{grid-area:footer; justify-self:start; align-self:center;}
+body[data-view-mode="grid"] #filmList .counter{grid-area:footer; justify-self:end; align-self:center;}
+body[data-view-mode="grid"] #filmList .film-row.skeleton{grid-template-areas:"poster" "main" "footer";}
+body[data-view-mode="grid"] #filmList .skeleton-poster{width:100%; aspect-ratio:2/3; height:auto;}
 
-#wlList .wl-row, #topList .wl-row{
+body[data-view-mode="grid"] #wlList .wl-row,
+body[data-view-mode="grid"] #topList .wl-row{
+  display:flex;
   flex-direction:column;
   align-items:stretch;
-  margin-bottom:0;
   padding:12px;
 }
-#wlList .film-poster, #topList .film-poster,
-#wlList .film-poster-placeholder, #topList .film-poster-placeholder{
+body[data-view-mode="grid"] #wlList .film-poster,
+body[data-view-mode="grid"] #topList .film-poster,
+body[data-view-mode="grid"] #wlList .film-poster-placeholder,
+body[data-view-mode="grid"] #topList .film-poster-placeholder{
   width:100%; height:auto; aspect-ratio:2/3;
   border-radius:8px;
 }
-#wlList .wl-actions{margin-top:2px;}
-#wlList .wl-actions .btn{flex:1;}
-/* Rang du top 3 (js/top.js, .top-row) : en ligne il précède l'affiche,
-   en grille il devient un badge posé sur son coin plutôt qu'une ligne à
-   part qui casserait la carte. */
-#topList .top-rank{
+body[data-view-mode="grid"] #wlList .wl-actions{margin-top:2px;}
+body[data-view-mode="grid"] #wlList .wl-actions .btn{flex:1;}
+/* Rang du top 3 (js/top.js, .top-row) : en carte il devient un badge posé
+   sur le coin de l'affiche plutôt qu'une ligne à part qui casserait la
+   carte — voir le mode liste plus bas pour son traitement en ligne. */
+body[data-view-mode="grid"] #topList .top-row{position:relative;}
+body[data-view-mode="grid"] #topList .top-rank{
   position:absolute;
   top:8px; left:8px;
   width:24px; height:24px;
@@ -1784,58 +1909,49 @@ input[type="range"]::-moz-range-thumb{
   font-size:12px;
   z-index:1;
 }
-#topList .top-row:nth-child(-n+3) .top-rank{background:rgba(231,178,76,0.18);}
-#topList .counter{align-self:flex-end;}
+body[data-view-mode="grid"] #topList .top-row:nth-child(-n+3) .top-rank{background:rgba(231,178,76,0.22);}
+body[data-view-mode="grid"] #topList .counter{align-self:flex-end;}
 
-/* ============================================================
-   Mode LISTE — activé explicitement (data-view-mode posé sur <body> par
-   js/ui.js). Restaure la disposition en ligne d'origine.
-   ============================================================ */
+/* Mode LISTE : une bannière pleine largeur par film plutôt qu'une ligne
+   fine — une seule colonne (jamais de grille multi-colonnes, donc jamais
+   le bug "prend seulement la gauche de la page"), affiche un peu plus
+   grande qu'avant (64×96) pour rester dans l'esprit "affiche visible" de
+   toute l'app, dégradé de fond pour donner du relief à la bannière. */
 body[data-view-mode="list"] #filmList,
 body[data-view-mode="list"] #wlList,
 body[data-view-mode="list"] #topList{
   display:flex;
   flex-direction:column;
-  gap:0;
+  gap:10px;
 }
-body[data-view-mode="list"] #filmList .film-row{
-  grid-template-columns:auto 1fr auto auto;
-  grid-template-areas:"poster main star counter";
-  row-gap:0;
-  margin-bottom:8px;
-}
-body[data-view-mode="list"] #filmList .film-poster,
-body[data-view-mode="list"] #filmList .film-poster-placeholder{
-  width:52px; height:78px; aspect-ratio:auto;
-}
-/* Sans ce reset, .star-btn/.counter garderaient grid-area:footer (posé par
-   la règle #filmList .star-btn/.counter plus haut, plus spécifique qu'un
-   simple .star-btn et donc valable dans les deux modes) — une zone qui
-   n'existe plus dans le grid-template-areas "poster main star counter"
-   ci-dessus, les faisant sortir du flux normal de la grille. */
-body[data-view-mode="list"] #filmList .star-btn{grid-area:star; justify-self:auto;}
-body[data-view-mode="list"] #filmList .counter{grid-area:counter; justify-self:auto;}
+body[data-view-mode="list"] #filmList .film-row,
 body[data-view-mode="list"] #wlList .wl-row,
 body[data-view-mode="list"] #topList .wl-row{
+  display:flex;
   flex-direction:row;
   align-items:center;
-  margin-bottom:8px;
+  gap:18px;
+  padding:14px 20px;
+  min-height:96px;
+  background:linear-gradient(120deg, var(--surface) 0%, var(--surface-2) 130%);
 }
+body[data-view-mode="list"] #filmList .film-poster,
+body[data-view-mode="list"] #filmList .film-poster-placeholder,
 body[data-view-mode="list"] #wlList .film-poster,
 body[data-view-mode="list"] #topList .film-poster,
 body[data-view-mode="list"] #wlList .film-poster-placeholder,
 body[data-view-mode="list"] #topList .film-poster-placeholder{
-  width:52px; height:78px; aspect-ratio:auto;
+  width:64px; height:96px; flex:none;
+  border-radius:8px;
 }
-body[data-view-mode="list"] #wlList .wl-actions{margin-top:0;}
+body[data-view-mode="list"] #filmList .film-title,
+body[data-view-mode="list"] #wlList .wl-title,
+body[data-view-mode="list"] #topList .wl-title{
+  font-size:17px;
+}
+body[data-view-mode="list"] #wlList .wl-actions{flex:none;}
 body[data-view-mode="list"] #wlList .wl-actions .btn{flex:none;}
-body[data-view-mode="list"] #topList .top-rank{
-  position:static;
-  width:22px; height:auto;
-  background:none;
-  border-radius:0;
-}
-body[data-view-mode="list"] #topList .top-row:nth-child(-n+3) .top-rank{background:none;}
+body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
 
 /* Tablette : la barre d'outils passe en deux rangées pleine largeur avant
    que les libellés des boutons ne disparaissent (voir 600px ci-dessous). */
@@ -1843,6 +1959,14 @@ body[data-view-mode="list"] #topList .top-row:nth-child(-n+3) .top-rank{backgrou
   .toolbar{flex-direction:column; align-items:stretch;}
   .toolbar-search{width:100%; min-width:0;}
   .toolbar-actions{width:100%; justify-content:space-between;}
+
+  /* Vitrine de connexion : les deux colonnes (largeur fixe de 380px pour
+     la carte + le texte à côté) ne tiennent plus côte à côte — empilées,
+     carte en premier pour que le geste "se connecter" reste immédiat sur
+     mobile plutôt que de faire défiler tout l'argumentaire avant. */
+  .auth-hero{flex-direction:column-reverse; gap:36px; margin:32px auto;}
+  .auth-hero .auth-card{width:100%; max-width:420px;}
+  .auth-pitch-collage{display:none;}
 }
 
 @media (max-width:600px){
@@ -1855,7 +1979,21 @@ body[data-view-mode="list"] #topList .top-row:nth-child(-n+3) .top-rank{backgrou
   /* Grille plus serrée sur mobile : 2 colonnes plutôt que la largeur
      minimale de 158px, qui laisserait une seule colonne trop large sur un
      téléphone étroit. */
-  #filmList, #wlList, #topList{grid-template-columns:repeat(2, 1fr); gap:12px;}
+  body[data-view-mode="grid"] #filmList,
+  body[data-view-mode="grid"] #wlList,
+  body[data-view-mode="grid"] #topList{grid-template-columns:repeat(2, 1fr); gap:12px;}
+  /* Bannière plus compacte sur mobile — affiche resserrée pour laisser de
+     la place au texte sans forcer le retour à la ligne (qui casserait la
+     bannière plutôt que de simplement la rétrécir). */
+  body[data-view-mode="list"] #filmList .film-row,
+  body[data-view-mode="list"] #wlList .wl-row,
+  body[data-view-mode="list"] #topList .wl-row{padding:10px 14px; gap:12px; min-height:76px;}
+  body[data-view-mode="list"] #filmList .film-poster,
+  body[data-view-mode="list"] #filmList .film-poster-placeholder,
+  body[data-view-mode="list"] #wlList .film-poster,
+  body[data-view-mode="list"] #topList .film-poster,
+  body[data-view-mode="list"] #wlList .film-poster-placeholder,
+  body[data-view-mode="list"] #topList .film-poster-placeholder{width:46px; height:68px;}
 
   /* Recherche/tri en pleine largeur, "+ Ajouter" quitte la barre pour le
      bouton flottant (.fab). */
@@ -1867,9 +2005,7 @@ body[data-view-mode="list"] #topList .top-row:nth-child(-n+3) .top-rank{backgrou
   .overlay{padding:20px 12px;}
   .modal{padding:20px;}
   .ach-tier-grid, .ach-hidden-grid{grid-template-columns:1fr 1fr;}
-  body[data-view-mode="list"] #wlList .wl-row,
-  body[data-view-mode="list"] #topList .wl-row{flex-wrap:wrap;}
-  body[data-view-mode="list"] #wlList .wl-actions{width:100%; justify-content:flex-end; margin-top:10px;}
+  body[data-view-mode="grid"] #wlList .wl-actions{width:100%;}
   .journal-row{flex-wrap:wrap;}
   .journal-date{margin-left:auto;}
 
@@ -1887,5 +2023,7 @@ body[data-view-mode="list"] #topList .top-row:nth-child(-n+3) .top-rank{backgrou
   .stat-tiles{grid-template-columns:1fr 1fr;}
   /* Même une carte reste trop large à 2 par rangée sous 380px : mieux vaut
      une seule colonne, plus lisible, qu'une affiche écrasée. */
-  #filmList, #wlList, #topList{grid-template-columns:1fr;}
+  body[data-view-mode="grid"] #filmList,
+  body[data-view-mode="grid"] #wlList,
+  body[data-view-mode="grid"] #topList{grid-template-columns:1fr;}
 }

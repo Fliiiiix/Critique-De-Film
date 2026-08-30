@@ -357,8 +357,12 @@ async function openAdminModal(){
   openOverlay('adminOverlay');
 }
 
+// Rouvre la modale profil (pas juste closeOverlay simple) : Admin n'est
+// accessible QUE depuis "Mon activité" dans le profil (voir #adminBtn,
+// index.html) — en ressortir doit ramener là où on était, pas sortir
+// entièrement du profil.
 function closeAdminModal(){
-  closeOverlay('adminOverlay');
+  closeOverlay('adminOverlay', () => openProfileModal());
 }
 
 document.querySelectorAll('#adminTabs .avatar-source-tab').forEach(btn => {

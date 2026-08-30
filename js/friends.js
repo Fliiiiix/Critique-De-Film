@@ -332,7 +332,7 @@ function renderFriendRecommendations(films){
             <div class="wl-title">${escapeHtml(f.title)}${f.release_year ? ` <span class="wl-year">(${f.release_year})</span>` : ''}</div>
             <div class="wl-note">${f.rating_count} note${f.rating_count > 1 ? 's' : ''} dans ton cercle</div>
           </div>
-          <div class="counter">${Number(f.avg_note).toFixed(1)}</div>
+          <div class="counter ${noteColorClass(Number(f.avg_note))}">${Number(f.avg_note).toFixed(1)}</div>
         </div>
       `).join('');
 }
@@ -425,7 +425,7 @@ async function openFriendProfile(userId){
                 <div class="film-title">${escapeHtml(f.title)}</div>
                 <div class="film-sub">${f.releaseYear || ''}</div>
               </div>
-              <div class="counter ${f.manualNote != null ? 'manual' : ''}">${note !== null ? note.toFixed(1) : '—'}</div>
+              <div class="counter ${noteColorClass(note)}">${note !== null ? note.toFixed(1) : '—'}</div>
             </div>
           `;
         }).join('');

@@ -167,3 +167,18 @@ document.addEventListener('click', (e) => {
   const btn = e.target.closest('[data-view-btn]');
   if(btn) setViewMode(btn.dataset.viewBtn);
 });
+
+// --- Barème couleur du cadran (.counter) ---
+// Retenté v2.0 : la première version distinguait manuel/grille par
+// couleur (or vs teal), ce qui ne voulait rien dire pour quelqu'un qui
+// regarde juste la note — le barème demandé porte sur la VALEUR, pas sur
+// la façon dont elle a été calculée (déjà signalée par .manual-badge, à
+// côté du titre, indépendamment de ceci). Seuils : <2.5 rouge, 2.5-3.99
+// jaune/or, >=4 vert — appelée à chaque endroit qui construit un
+// `.counter` (js/app.js, friends.js, groups.js, publicProfile.js, top.js).
+function noteColorClass(note){
+  if(note === null || note === undefined || isNaN(note)) return '';
+  if(note < 2.5) return 'rate-low';
+  if(note < 4) return 'rate-mid';
+  return 'rate-high';
+}

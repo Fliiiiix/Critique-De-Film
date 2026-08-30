@@ -44,7 +44,7 @@ function renderTopFilms(){
         <div class="wl-title">${escapeHtml(f.title)}${f.release_year ? ` <span class="wl-year">(${f.release_year})</span>` : ''}</div>
         <div class="wl-note">${f.rating_count} note${f.rating_count > 1 ? 's' : ''}</div>
       </div>
-      <div class="counter">${Number(f.avg_note).toFixed(1)}</div>
+      <div class="counter ${noteColorClass(Number(f.avg_note))}">${Number(f.avg_note).toFixed(1)}</div>
     </div>
   `).join('');
 }
