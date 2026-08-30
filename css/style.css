@@ -716,21 +716,53 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   line-height:1.6;
 }
 
-/* --- Vitrine de connexion (v2.0) --- */
-.auth-hero{
+/* --- Vitrine de connexion (v2.0.2) --- */
+/* #authContainer occupe tout l'espace visible sous l'entête (pas juste sa
+   propre hauteur de contenu) pour que .auth-hero puisse se centrer
+   verticalement dedans — évite le grand vide noir en bas de page constaté
+   en v2.0 sur les écrans plus hauts que le contenu. 100dvh plutôt que
+   100vh : sur mobile, vh compte la barre d'adresse même quand elle est
+   cachée, dvh s'ajuste à l'espace réellement visible. --header-h est une
+   estimation (l'entête n'a pas de hauteur fixe) : min-height seulement,
+   donc si l'entête est en fait plus haut sur un écran donné le contenu
+   pousse normalement au lieu de se faire couper. */
+#authContainer{
+  --header-h:96px;
+  min-height:calc(100dvh - var(--header-h));
   display:flex;
   align-items:center;
-  gap:64px;
-  max-width:980px;
-  margin:56px auto;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+}
+/* Halo d'ambiance propre à cet écran, en plus du fond de page général —
+   deux taches plus grandes et plus saturées puisque rien d'autre (pas de
+   cartes en grille) ne remplit l'espace ici. */
+#authContainer::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:
+    radial-gradient(620px 420px at 12% 20%, var(--violet-wash), transparent 65%),
+    radial-gradient(560px 380px at 90% 75%, var(--gold-wash), transparent 60%);
+}
+.auth-hero{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+  gap:48px;
+  max-width:1180px;
+  margin:40px auto;
   padding:0 16px;
 }
-.auth-pitch{flex:1.15; min-width:0; position:relative;}
+.auth-pitch{flex:1 1 380px; min-width:0; max-width:480px;}
 .auth-pitch .eyebrow{margin-bottom:10px;}
 .auth-headline{
   font-family:'Bricolage Grotesque', sans-serif;
   font-weight:800;
-  font-size:34px;
+  font-size:36px;
   letter-spacing:-0.02em;
   line-height:1.15;
   text-wrap:balance;
@@ -741,9 +773,30 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-size:15px;
   line-height:1.6;
   max-width:44ch;
-  margin-bottom:32px;
+  margin-bottom:20px;
 }
-.auth-features{list-style:none; display:flex; flex-direction:column; gap:18px;}
+/* Rangée de tags scannable en un coup d'œil, avant même la liste détaillée
+   juste en dessous — même vocabulaire visuel que .manual-badge (pilule,
+   Space Mono, bordure fine) pour rester cohérent avec le reste de l'app. */
+.auth-tags{
+  list-style:none;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:28px;
+}
+.auth-tags li{
+  font-family:'Space Mono', monospace;
+  font-size:11.5px;
+  font-weight:600;
+  letter-spacing:0.02em;
+  color:var(--text-muted);
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:6px 12px;
+}
+.auth-features{list-style:none; display:flex; flex-direction:column; gap:16px;}
 .auth-features li{display:flex; align-items:flex-start; gap:14px;}
 .auth-feature-icon{
   flex:none;
@@ -767,38 +820,62 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   color:var(--text-muted);
   line-height:1.5;
 }
-/* Collage abstrait façon affiches empilées — aplats de couleur (pas de
-   vraies affiches : cet écran s'affiche avant toute connexion, donc avant
-   tout appel TMDB), posé derrière le texte plutôt qu'à côté pour ne jamais
-   entrer en concurrence avec la lecture. */
-.auth-pitch-collage{
-  position:absolute;
-  top:-40px; right:-20px;
-  width:190px; height:230px;
-  z-index:-1;
-  opacity:0.5;
+/* Aperçu produit : 3 cartes façon .film-row en éventail, chacune avec un
+   vrai .counter/.rate-* (mêmes classes que le catalogue — rendu
+   identique, pas une réinvention) pour rendre "grille à 7 critères"
+   concret au lieu d'une simple promesse en texte. Purement décoratif
+   (aria-hidden côté HTML) : posters et titres en aplats génériques
+   puisqu'aucun appel TMDB n'a de sens avant connexion. */
+.auth-showcase{
+  position:relative;
+  flex:1 1 260px;
+  max-width:300px;
+  height:280px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-.auth-pitch-collage span{
+.auth-mock-card{
   position:absolute;
-  width:108px; height:156px;
+  width:194px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:linear-gradient(165deg, var(--surface) 0%, var(--surface-2) 200%);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px;
+  box-shadow:0 24px 44px -16px rgba(0,0,0,0.6);
+}
+.auth-mock-card .film-poster{width:44px; height:64px; font-size:17px;}
+.auth-mock-lines{flex:1; min-width:0;}
+.auth-mock-line{
+  height:8px;
+  border-radius:3px;
+  background:var(--line);
+  margin-bottom:7px;
+}
+.auth-mock-line.short{width:38%; background:var(--line-soft);}
+.auth-mock-card .counter{width:38px; height:38px; font-size:12px; flex:none;}
+.auth-mock-1{top:6px; left:0; transform:rotate(-8deg); z-index:1;}
+.auth-mock-2{top:70px; left:56px; transform:rotate(4deg); z-index:3;}
+.auth-mock-3{top:34px; left:14px; transform:rotate(-2deg); z-index:2;}
+.auth-hero .auth-card{width:380px; flex:none; position:relative;}
+.auth-card-mark{
+  width:44px; height:44px;
   border-radius:12px;
+  background:var(--violet-wash);
+  border:1px solid var(--violet-dim);
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px;
+  margin-bottom:16px;
 }
-.auth-pitch-collage span:nth-child(1){
-  top:10px; left:0;
-  background:linear-gradient(155deg, var(--violet-dim), var(--surface));
-  transform:rotate(-9deg);
+.auth-card-foot{
+  margin-top:16px;
+  font-size:11.5px;
+  color:var(--text-muted);
+  text-align:center;
 }
-.auth-pitch-collage span:nth-child(2){
-  top:30px; left:48px;
-  background:linear-gradient(155deg, var(--gold-dim), var(--surface));
-  transform:rotate(6deg);
-}
-.auth-pitch-collage span:nth-child(3){
-  top:0; left:24px;
-  background:linear-gradient(155deg, var(--green-dim), var(--surface));
-  transform:rotate(-1deg);
-}
-.auth-hero .auth-card{width:380px; flex:none;}
 
 .empty-state{
   text-align:center;
@@ -1964,9 +2041,10 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
      la carte + le texte à côté) ne tiennent plus côte à côte — empilées,
      carte en premier pour que le geste "se connecter" reste immédiat sur
      mobile plutôt que de faire défiler tout l'argumentaire avant. */
-  .auth-hero{flex-direction:column-reverse; gap:36px; margin:32px auto;}
+  #authContainer{min-height:0; padding:32px 0;}
+  .auth-hero{flex-direction:column-reverse; gap:32px; margin:0 auto;}
   .auth-hero .auth-card{width:100%; max-width:420px;}
-  .auth-pitch-collage{display:none;}
+  .auth-showcase{display:none;}
 }
 
 @media (max-width:600px){

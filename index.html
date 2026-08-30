@@ -13,7 +13,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=24">
+<link rel="stylesheet" href="css/style.css?v=25">
 </head>
 <body>
 
@@ -68,28 +68,57 @@
   </div>
 </div>
 
-<!-- Écran de connexion (lien magique par email) — v2.0 : avant juste une
+<!-- Écran de connexion (lien magique par email) — v2.0.2 : avant juste une
      boîte email, retour utilisateur "il faut donner envie de se
-     connecter". Deux colonnes (vitrine + formulaire), empilées en une
-     seule sur mobile (voir la media query 760px) ; #authEmail/#authSendBtn/
-     #authStatus gardent exactement leurs ids, js/auth.js n'a rien à
-     changer. -->
+     connecter" répété deux fois (v2.0 insuffisant) — vraie page d'accueil
+     produit maintenant : texte + tags de valeur + aperçu concret de
+     l'interface (.auth-showcase, décoratif, aucune vraie donnée avant
+     connexion) + carte de connexion, centrée dans tout l'espace visible
+     plutôt que collée en haut avec un grand vide dessous. Empilé en une
+     seule colonne sur mobile, carte en premier (voir la media query
+     760px) ; #authEmail/#authSendBtn/#authStatus gardent exactement leurs
+     ids, js/auth.js n'a rien à changer. -->
 <div class="container" id="authContainer" style="display:none;">
   <div class="auth-hero">
     <div class="auth-pitch">
-      <div class="auth-pitch-collage" aria-hidden="true">
-        <span></span><span></span><span></span>
-      </div>
       <div class="eyebrow">Bienvenue sur Kinet</div>
       <h2 class="auth-headline">Ta grille, tes films, tes séries.</h2>
       <p class="auth-pitch-sub">Pas une étoile unique : une vraie grille à 7 critères, pensée pour juger avec ta propre tête plutôt qu'avec les avis lus ailleurs.</p>
+      <ul class="auth-tags" aria-hidden="true">
+        <li>🎯 7 critères</li>
+        <li>📺 Films &amp; séries</li>
+        <li>🗓️ Prochaines sorties</li>
+        <li>👥 Amis &amp; groupes</li>
+      </ul>
       <ul class="auth-features">
         <li><span class="auth-feature-icon">🎯</span><div><b>Grille à 7 critères</b><span>Scénario, mise en scène, jeu d'acteur… une vraie note réfléchie, pas juste une étoile.</span></div></li>
         <li><span class="auth-feature-icon">📊</span><div><b>Stats, succès, journal</b><span>Ton activité de cinéphile suivie dans le temps, à ton rythme.</span></div></li>
         <li><span class="auth-feature-icon">👥</span><div><b>Amis &amp; groupes</b><span>Compare tes goûts, propose des films à plusieurs, vote pour la prochaine séance.</span></div></li>
       </ul>
     </div>
+    <!-- Aperçu produit : 3 cartes façon catalogue, empilées en éventail,
+         posters/titres en aplats génériques (pas de vraie donnée avant
+         connexion) mais le cadran réutilise .counter/.rate-* tel quel —
+         même rendu que dans le vrai catalogue, pas une invention. -->
+    <div class="auth-showcase" aria-hidden="true">
+      <div class="auth-mock-card auth-mock-1">
+        <div class="film-poster film-poster-placeholder">🎬</div>
+        <div class="auth-mock-lines"><div class="auth-mock-line" style="width:78%;"></div><div class="auth-mock-line short"></div></div>
+        <div class="counter rate-mid">3.5</div>
+      </div>
+      <div class="auth-mock-card auth-mock-2">
+        <div class="film-poster film-poster-placeholder">📺</div>
+        <div class="auth-mock-lines"><div class="auth-mock-line" style="width:62%;"></div><div class="auth-mock-line short"></div></div>
+        <div class="counter rate-high">4.5</div>
+      </div>
+      <div class="auth-mock-card auth-mock-3">
+        <div class="film-poster film-poster-placeholder">🎬</div>
+        <div class="auth-mock-lines"><div class="auth-mock-line" style="width:85%;"></div><div class="auth-mock-line short"></div></div>
+        <div class="counter rate-low">2.0</div>
+      </div>
+    </div>
     <div class="auth-card">
+      <div class="auth-card-mark">🎬</div>
       <h2>Connexion</h2>
       <p class="auth-intro">Entre ton email : tu recevras un lien de connexion, sans mot de passe.</p>
       <div class="field">
@@ -98,6 +127,7 @@
       </div>
       <button class="btn" id="authSendBtn">Envoyer le lien magique</button>
       <div class="auth-status" id="authStatus"></div>
+      <p class="auth-card-foot">Sans mot de passe, sans pub, juste ton catalogue.</p>
     </div>
   </div>
 </div>
@@ -661,53 +691,53 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=24"></script>
-<script src="js/tmdbConfig.js?v=24"></script>
-<script src="js/data.js?v=24"></script>
-<script src="js/happenings.js?v=24"></script>
+<script src="js/supabaseConfig.js?v=25"></script>
+<script src="js/tmdbConfig.js?v=25"></script>
+<script src="js/data.js?v=25"></script>
+<script src="js/happenings.js?v=25"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=24"></script>
+<script src="js/ui.js?v=25"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=24"></script>
-<script src="js/app.js?v=24"></script>
-<script src="js/tmdb.js?v=24"></script>
-<script src="js/stats.js?v=24"></script>
-<script src="js/achievements.js?v=24"></script>
-<script src="js/journal.js?v=24"></script>
-<script src="js/profile.js?v=24"></script>
+<script src="js/offline.js?v=25"></script>
+<script src="js/app.js?v=25"></script>
+<script src="js/tmdb.js?v=25"></script>
+<script src="js/stats.js?v=25"></script>
+<script src="js/achievements.js?v=25"></script>
+<script src="js/journal.js?v=25"></script>
+<script src="js/profile.js?v=25"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=24"></script>
-<script src="js/router.js?v=24"></script>
-<script src="js/publicProfile.js?v=24"></script>
-<script src="js/top.js?v=24"></script>
-<script src="js/friends.js?v=24"></script>
+<script src="js/admin.js?v=25"></script>
+<script src="js/router.js?v=25"></script>
+<script src="js/publicProfile.js?v=25"></script>
+<script src="js/top.js?v=25"></script>
+<script src="js/friends.js?v=25"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=24"></script>
-<script src="js/watchlist.js?v=24"></script>
-<script src="js/groups.js?v=24"></script>
-<script src="js/proposals.js?v=24"></script>
+<script src="js/activity.js?v=25"></script>
+<script src="js/watchlist.js?v=25"></script>
+<script src="js/groups.js?v=25"></script>
+<script src="js/proposals.js?v=25"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=24"></script>
+<script src="js/invites.js?v=25"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=24"></script>
-<script src="js/auth.js?v=24"></script>
+<script src="js/activityState.js?v=25"></script>
+<script src="js/auth.js?v=25"></script>
 </body>
 </html>
