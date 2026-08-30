@@ -1,4 +1,4 @@
-# Critique de films
+# Kinet
 
 Outil personnel pour noter les films selon une grille de critères fixe, pour éviter
 d'être influencé après coup par les avis lus ailleurs. Remplace l'ancien fichier Excel.
@@ -250,7 +250,7 @@ la prod : upload dans son propre dossier accepté, lecture publique OK
 utilisateur rejetée par la policy RLS. Nécessite
 `supabase/migrations/017_add_avatar_storage.sql`.
 
-Le **titre "Critique de films"** (entête) est lui aussi cliquable — retour à
+Le **titre "Kinet"** (entête) est lui aussi cliquable — retour à
 l'accueil en un clic depuis n'importe quelle page.
 
 ## Statistiques
