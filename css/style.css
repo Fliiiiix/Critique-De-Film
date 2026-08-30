@@ -1,74 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+/* ============================================================
+   KINET — v2.0
+   Refonte visuelle complète ("table rase") : palette violet/or (plus
+   d'ambre unique surchargé pour tout — voir plus bas), Bricolage
+   Grotesque/Instrument Sans/Space Mono, grille d'affiches pour les
+   listes de films/séries (bascule grille/liste, js/ui.js), le
+   "cadran" comme signature de la note (remplace l'ancien rectangle
+   plat .counter). Sprockets/pellicule retirés : motif directement lié
+   à l'ancien thème cinéma que cette version abandonne.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,500&family=Space+Mono:wght@400;700&display=swap');
 
 :root{
-  --bg:#17140f;
-  --surface:#211c16;
-  --surface-2:#2a231b;
-  --amber:#d1a13f;
-  --amber-dim:#8a713a;
-  --teal:#5b8a87;
-  --text:#ede4d3;
-  --text-muted:#948c78;
-  --hairline:#3a3226;
-  --danger:#a3503f;
+  --ink:#0f0e16;
+  --surface:#1b1826;
+  --surface-2:#262032;
+  --surface-3:#302a3d;
+  --line:#342f42;
+  --line-soft:#241f2e;
+  --text:#f2eee6;
+  --text-muted:#9a93a8;
+  /* Violet : tout ce qui est interactif (boutons, liens, focus, actif) —
+     seul rôle qu'a l'ambre unique de l'ancien thème (23 usages différents
+     pour une seule couleur : marque, actif, donnée, action). */
+  --violet:#8c7cff;
+  --violet-dim:#5b4fb0;
+  --violet-wash:rgba(140,124,255,0.12);
+  /* Or : réservé STRICTEMENT à la note/le cadran — jamais utilisé pour un
+     bouton, un état actif ou autre chose que "voici une note". */
+  --gold:#e7b24c;
+  --gold-dim:#8a6a2e;
+  --gold-wash:rgba(231,178,76,0.1);
+  /* Teal de l'ancien thème conservé pour son rôle informationnel étroit
+     (badge manuel/revisionnage, aide, succès) — pas remplacé sans raison,
+     juste retenté légèrement plus froid pour s'accorder au nouveau fond. */
+  --teal:#6fa39f;
+  --coral:#ff6b57;
+  --coral-dim:#8a3f34;
 }
 *{box-sizing:border-box; margin:0; padding:0;}
 body{
-  background:var(--bg);
+  background:var(--ink);
   color:var(--text);
-  font-family:'Inter', sans-serif;
+  font-family:'Instrument Sans', sans-serif;
   min-height:100vh;
   padding:0 0 80px 0;
 }
-.sprockets{
-  display:flex;
-  gap:14px;
-  padding:10px 24px;
-  overflow:hidden;
-}
-.sprockets span{
-  width:10px; height:10px;
-  border-radius:2px;
-  background:var(--surface-2);
-  border:1px solid var(--hairline);
-  flex:none;
-}
-/* Bordure façon pellicule le long des côtés, sur grand écran seulement —
-   comble le vide sans élargir .container (qui resterait confortable à
-   lire). position:fixed : pas besoin de suivre la hauteur réelle de chaque
-   page, juste assez de span pour dépasser n'importe quel écran (voir
-   fillSprockets() dans js/app.js), coupés par overflow:hidden. */
-.sprockets-side{
-  position:fixed;
-  top:150px;
-  bottom:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:14px;
-  padding-top:10px;
-  overflow:hidden;
-  opacity:0.5;
-  pointer-events:none;
-  z-index:1;
-}
-.sprockets-side span{
-  width:10px; height:10px;
-  border-radius:2px;
-  background:var(--surface-2);
-  border:1px solid var(--hairline);
-  flex:none;
-}
-.sprockets-side.left{left:24px;}
-.sprockets-side.right{right:24px;}
-@media (max-width:1200px){
-  .sprockets-side{display:none;}
-}
+
 header{
-  padding:8px 32px 28px;
-  border-bottom:1px solid var(--hairline);
+  padding:36px 32px 26px;
+  border-bottom:1px solid var(--line);
   margin-bottom:32px;
   position:relative;
+  overflow:hidden;
+  /* Seule touche "atmosphère" du nouveau thème — une tache de lumière
+     violette très douce en haut à gauche, jamais un dégradé plein écran :
+     le cadran reste la seule vraie signature, ceci n'est qu'un fond. */
+  background:radial-gradient(560px 240px at 10% -30%, var(--violet-wash), transparent 70%);
 }
 .title-row{
   display:flex;
@@ -80,15 +68,15 @@ header{
   transition:opacity .15s;
 }
 .brand-link:hover{opacity:0.82;}
-.brand-link:focus-visible{outline:2px solid var(--amber-dim); outline-offset:4px; border-radius:2px;}
+.brand-link:focus-visible{outline:2px solid var(--violet-dim); outline-offset:4px; border-radius:2px;}
 .user-bar{
   position:absolute;
-  top:10px;
+  top:14px;
   right:32px;
   display:flex;
   align-items:center;
   gap:12px;
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
   color:var(--text-muted);
 }
@@ -103,36 +91,36 @@ header{
 .header-nav-btn{
   position:relative; /* point du badge .has-unread ci-dessous */
   background:none;
-  border:none;
+  border:1px solid transparent;
   color:var(--text-muted);
-  font-size:18px;
+  font-size:17px;
   line-height:1;
-  padding:8px;
-  border-radius:50%;
+  width:38px; height:38px;
+  border-radius:10px;
   cursor:pointer;
-  transition:background .15s, color .15s;
+  transition:background .15s, color .15s, border-color .15s;
 }
-.header-nav-btn:hover{background:var(--surface-2); color:var(--text);}
+.header-nav-btn:hover{background:var(--surface-2); border-color:var(--line); color:var(--text);}
 /* Badge "non lu" (js/activityState.js) : un seul point, sur 👥, qui couvre
    Amis + Groupes (pas d'icône Groupes séparée dans l'entête). */
 .header-nav-btn.has-unread::after{
   content:'';
   position:absolute;
-  top:6px; right:6px;
+  top:5px; right:5px;
   width:8px; height:8px;
   border-radius:50%;
-  background:var(--danger);
-  border:1.5px solid var(--bg);
+  background:var(--coral);
+  border:1.5px solid var(--ink);
 }
 /* Photo de profil : bien visible (elle sert aussi de bouton d'accès au
    profil, voir js/profile.js) — plus de bouton "Profil" ni "Déconnexion"
    séparés dans le header (déconnexion déplacée dans la modale profil, voir
    .profile-logout-row plus bas), donc on peut lui laisser plus de place. */
 .user-avatar-btn{
-  width:52px; height:52px;
+  width:44px; height:44px;
   border-radius:50%;
   padding:0; margin:0;
-  border:1px solid var(--hairline);
+  border:1px solid var(--line);
   background:var(--surface-2);
   cursor:pointer;
   flex:none;
@@ -140,39 +128,43 @@ header{
   display:flex; align-items:center; justify-content:center;
   transition:border-color .15s, transform .15s;
 }
-.user-avatar-btn:hover{border-color:var(--amber-dim); transform:scale(1.05);}
-.user-avatar-btn:focus-visible{outline:2px solid var(--amber-dim); outline-offset:2px;}
+.user-avatar-btn:hover{border-color:var(--violet-dim); transform:scale(1.05);}
+.user-avatar-btn:focus-visible{outline:2px solid var(--violet-dim); outline-offset:2px;}
 .user-avatar{
   width:100%; height:100%;
   border-radius:50%;
   object-fit:cover;
 }
-.user-avatar-fallback{font-size:18px; opacity:0.6;}
+.user-avatar-fallback{font-size:16px; opacity:0.6;}
+/* Discret volontairement (v2.0) : le numéro de version reste affiché
+   (l'utilisateur y tient) mais tassé contre le titre plutôt que mis en
+   avant — ce n'est pas une donnée que quelqu'un vient chercher. */
 .version-tag{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:11px;
-  letter-spacing:0.06em;
+  font-family:'Space Mono', monospace;
+  font-size:10px;
+  letter-spacing:0.04em;
   color:var(--text-muted);
-  padding-bottom:6px;
+  opacity:0.55;
+  padding-bottom:8px;
 }
-.version-tag b{color:var(--amber-dim); font-weight:600;}
+.version-tag b{color:var(--text-muted); font-weight:600;}
 .eyebrow{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
-  letter-spacing:0.18em;
-  color:var(--amber-dim);
+  letter-spacing:0.16em;
+  color:var(--violet);
   text-transform:uppercase;
-  margin-bottom:6px;
+  margin-bottom:8px;
 }
 h1{
-  font-family:'Fraunces', serif;
-  font-style:italic;
-  font-weight:500;
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:800;
   font-size:38px;
-  letter-spacing:0.01em;
+  letter-spacing:-0.02em;
+  line-height:1;
 }
 .container{
-  max-width:920px;
+  max-width:1080px;
   margin:0 auto;
   padding:0 32px;
 }
@@ -194,10 +186,9 @@ h1{
   margin-bottom:24px;
 }
 .page-header h2{
-  font-family:'Fraunces', serif;
-  font-style:italic;
-  font-weight:500;
-  font-size:24px;
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:700;
+  font-size:22px;
   flex:1;
   min-width:0;
 }
@@ -229,21 +220,48 @@ h1{
   flex-wrap:wrap;
   gap:12px;
   margin:-14px 0 24px;
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:12px;
   color:var(--text-muted);
 }
-.sort-advanced-row b{color:var(--amber); font-weight:600;}
+.sort-advanced-row b{color:var(--gold); font-weight:600;}
 .sort-advanced-row input[type="range"]{flex:1; min-width:120px; max-width:240px;}
 .sort-dir-toggle{display:flex; gap:4px;}
 .sort-dir-toggle .btn{padding:8px 12px;}
-.sort-dir-toggle .btn.active{border-color:var(--amber); color:var(--amber);}
+.sort-dir-toggle .btn.active{border-color:var(--violet); color:var(--violet);}
 .toolbar-actions{
   display:flex;
   align-items:center;
   gap:10px;
   flex-wrap:wrap;
 }
+
+/* --- Bascule grille / liste (js/ui.js) --- */
+/* Une seule préférence partagée (localStorage) affichée sur chaque page à
+   affiches (catalogue, watchlist, top, séries) — voir js/ui.js pour le
+   pourquoi d'un contrôle répété plutôt qu'un seul global. */
+.view-toggle{
+  display:inline-flex;
+  gap:2px;
+  padding:3px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--surface);
+  flex:none;
+}
+.view-toggle-btn{
+  width:32px; height:28px;
+  border-radius:7px;
+  border:none;
+  background:none;
+  color:var(--text-muted);
+  cursor:pointer;
+  font-size:13px;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s, color .15s;
+}
+.view-toggle-btn:hover{color:var(--text);}
+.view-toggle-btn.is-active{background:var(--violet-wash); color:var(--violet);}
 
 /* Menu "⋯" : Export/Import, actions de gestion des données, moins
    fréquentes que le reste — sorties du flux principal de la barre. */
@@ -257,11 +275,11 @@ h1{
   top:calc(100% + 8px);
   right:0;
   background:var(--surface);
-  border:1px solid var(--hairline);
-  border-radius:5px;
+  border:1px solid var(--line);
+  border-radius:10px;
   padding:6px;
   min-width:190px;
-  box-shadow:0 10px 28px rgba(0,0,0,0.4);
+  box-shadow:0 16px 36px rgba(0,0,0,0.45);
   z-index:60;
   animation:menuIn .12s ease-out;
 }
@@ -270,15 +288,15 @@ h1{
   background:none;
   border:none;
   color:var(--text);
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:12.5px;
   text-align:left;
   padding:9px 10px;
-  border-radius:3px;
+  border-radius:6px;
   cursor:pointer;
   white-space:nowrap;
 }
-.dropdown-menu button:hover{background:var(--surface-2); color:var(--amber);}
+.dropdown-menu button:hover{background:var(--surface-2); color:var(--violet);}
 @keyframes menuIn{from{opacity:0; transform:translateY(-4px);} to{opacity:1; transform:translateY(0);}}
 
 /* Bouton flottant "+ Ajouter", visible seulement en dessous de 600px (voir
@@ -293,14 +311,14 @@ h1{
   width:56px;
   height:56px;
   border-radius:50%;
-  background:var(--amber);
-  color:#17140f;
+  background:var(--violet);
+  color:var(--ink);
   border:none;
   font-size:28px;
   font-weight:600;
   line-height:1;
   cursor:pointer;
-  box-shadow:0 6px 20px rgba(0,0,0,0.45);
+  box-shadow:0 10px 28px rgba(140,124,255,0.35);
   z-index:40;
   transition:transform .15s ease;
 }
@@ -308,80 +326,80 @@ h1{
 .fab:active{transform:scale(0.92);}
 input[type="text"], input[type="number"], select, textarea{
   background:var(--surface);
-  border:1px solid var(--hairline);
+  border:1px solid var(--line);
   color:var(--text);
-  font-family:'Inter', sans-serif;
+  font-family:'Instrument Sans', sans-serif;
   font-size:14px;
   padding:10px 12px;
-  border-radius:3px;
+  border-radius:8px;
   outline:none;
 }
 input[type="text"]{flex:1; min-width:180px;}
-input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus{border-color:var(--amber-dim);}
-textarea{width:100%; resize:vertical; line-height:1.5; font-family:'Inter', sans-serif;}
+input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus{border-color:var(--violet-dim);}
+textarea{width:100%; resize:vertical; line-height:1.5; font-family:'Instrument Sans', sans-serif;}
 select{cursor:pointer;}
 /* Upload d'avatar (js/profile.js) — ::file-selector-button plutôt que
    .btn.secondary directement (pas de classe possible dessus), même langage
-   visuel : transparent, filet, ambre au survol. */
-input[type="file"]{font-family:'Inter', sans-serif; font-size:13px; color:var(--text-muted);}
+   visuel : transparent, filet, violet au survol. */
+input[type="file"]{font-family:'Instrument Sans', sans-serif; font-size:13px; color:var(--text-muted);}
 input[type="file"]::file-selector-button{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
   letter-spacing:0.06em;
   text-transform:uppercase;
   background:transparent;
   color:var(--text-muted);
-  border:1px solid var(--hairline);
-  border-radius:3px;
+  border:1px solid var(--line);
+  border-radius:7px;
   padding:8px 12px;
   margin-right:10px;
   cursor:pointer;
   transition:border-color .15s, color .15s;
 }
-input[type="file"]::file-selector-button:hover{color:var(--text); border-color:var(--amber-dim);}
+input[type="file"]::file-selector-button:hover{color:var(--text); border-color:var(--violet-dim);}
 .avatar-upload-status{font-size:12px; color:var(--text-muted); margin-top:6px; min-height:1em;}
-.avatar-upload-status.error{color:var(--danger);}
+.avatar-upload-status.error{color:var(--coral);}
 .btn{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:12px;
-  letter-spacing:0.06em;
-  text-transform:uppercase;
-  background:var(--amber);
-  color:#17140f;
+  font-family:'Instrument Sans', sans-serif;
+  font-size:13px;
+  letter-spacing:0.01em;
+  background:var(--violet);
+  color:var(--ink);
   border:none;
   padding:11px 18px;
-  border-radius:3px;
+  border-radius:9px;
   cursor:pointer;
   font-weight:600;
   white-space:nowrap;
-  transition:opacity .15s, transform .1s;
+  transition:background .15s, transform .1s;
 }
-.btn:hover{opacity:0.85;}
+.btn:hover{background:#a297ff;}
 .btn:active{transform:scale(0.96);}
 .btn:disabled{opacity:0.35; cursor:default; transform:none;}
 .btn.secondary{
   background:transparent;
   color:var(--text-muted);
-  border:1px solid var(--hairline);
+  border:1px solid var(--line);
 }
-.btn.secondary:hover{color:var(--text); border-color:var(--amber-dim);}
-.btn.danger{background:var(--danger); color:#f4e9e4;}
+.btn.secondary:hover{color:var(--text); border-color:var(--violet-dim);}
+.btn.danger{background:transparent; color:var(--coral); border:1px solid var(--coral-dim);}
+.btn.danger:hover{background:rgba(255,107,87,0.1); border-color:var(--coral);}
 
 /* Focus clavier cohérent avec le thème, à la place de l'anneau bleu par défaut. */
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
-  outline:2px solid var(--amber-dim);
+  outline:2px solid var(--violet-dim);
   outline-offset:2px;
 }
 
 /* Scrollbar discrète, assortie au thème (Chrome/Edge + Firefox). */
-*{scrollbar-width:thin; scrollbar-color:var(--hairline) transparent;}
+*{scrollbar-width:thin; scrollbar-color:var(--line) transparent;}
 ::-webkit-scrollbar{width:10px; height:10px;}
 ::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:var(--hairline); border-radius:5px; border:2px solid var(--bg);}
-::-webkit-scrollbar-thumb:hover{background:var(--amber-dim);}
+::-webkit-scrollbar-thumb{background:var(--line); border-radius:5px; border:2px solid var(--ink);}
+::-webkit-scrollbar-thumb:hover{background:var(--violet-dim);}
 
 .count-line{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:12px;
   color:var(--text-muted);
   margin-bottom:18px;
@@ -391,7 +409,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   width:36px; height:36px;
   border-radius:50%;
   object-fit:cover;
-  border:1px solid var(--hairline);
+  border:1px solid var(--line);
   flex:none;
 }
 .friend-avatar-placeholder{
@@ -405,7 +423,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 /* Catalogue d'un ami : même carte que les films perso mais non cliquable
    (lecture seule) — pas de curseur pointeur ni d'effet de survol interactif. */
 .friend-film-row{cursor:default;}
-.friend-film-row:hover{border-color:var(--hairline); transform:none; box-shadow:none;}
+.friend-film-row:hover{border-color:var(--line); transform:none; box-shadow:none;}
 
 .pagination{
   display:flex;
@@ -415,57 +433,60 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin-top:24px;
 }
 .pagination-label{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:12px;
   color:var(--text-muted);
 }
 
+/* ============================================================
+   Lignes de film (catalogue) — mode LISTE par défaut, mode GRILLE
+   (cartes à affiche) activable via la bascule ci-dessus. Les deux modes
+   réutilisent EXACTEMENT le même DOM généré par render() (js/app.js) —
+   .holes/poster/.film-main/.star-btn/.counter, toujours dans cet ordre —
+   seule la disposition CSS (grid-template-areas) change entre les deux,
+   aucune fonction de rendu n'a besoin de le savoir.
+   ============================================================ */
+#filmList{display:flex; flex-direction:column;}
 .film-row{
-  display:flex;
+  display:grid;
+  grid-template-columns:auto 1fr auto auto;
+  grid-template-areas:"poster main star counter";
   align-items:center;
-  gap:16px;
+  column-gap:16px;
   background:var(--surface);
-  border:1px solid var(--hairline);
-  border-radius:4px;
+  border:1px solid var(--line);
+  border-radius:12px;
   padding:14px 16px;
   margin-bottom:8px;
   cursor:pointer;
   transition:border-color .15s, transform .12s, box-shadow .12s;
   position:relative;
 }
-.film-row:hover{border-color:var(--amber-dim); transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,0.25);}
+.film-row:hover{border-color:var(--violet-dim); transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,0.35);}
 .film-row:active{transform:translateY(0); box-shadow:none;}
-.film-row .holes{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  flex:none;
-}
-.film-row .holes span{
-  width:6px;height:6px;
-  border-radius:50%;
-  background:var(--bg);
-  border:1px solid var(--hairline);
-}
-/* Taille volontairement généreuse (v1.6) : l'affiche est le seul élément
-   vraiment "cinéma" d'une ligne de liste, le reste (titre, badges, note)
-   est du texte — un des rares endroits où prendre un vrai risque visuel
-   sans perturber la lecture en liste. Classe partagée par toutes les
-   listes de films de l'app (catalogue, watchlist, tops, recommandations,
-   catalogue d'un ami) : un seul changement les fait toutes bénéficier de
-   la même présence. */
+/* Perforations façon pellicule à l'intérieur de chaque ligne : motif de
+   l'ancien thème cinéma, retiré en v2.0 (voir aussi les .sprockets des
+   bords, supprimées d'index.html/js/app.js). Élément gardé dans le DOM
+   généré par render() (skeleton de chargement inclus) — juste masqué. */
+.film-row .holes{display:none;}
+/* Taille volontairement généreuse : l'affiche est le seul élément vraiment
+   "cinéma" d'une ligne de liste, le reste (titre, badges, note) est du
+   texte. Classe partagée par toutes les listes de films de l'app
+   (catalogue, watchlist, tops, recommandations, catalogue d'un ami) : un
+   seul changement les fait toutes bénéficier de la même présence. */
 .film-poster{
+  grid-area:poster;
   width:52px; height:78px;
   object-fit:cover;
-  border-radius:3px;
-  border:1px solid var(--hairline);
+  border-radius:8px;
+  border:1px solid var(--line);
   flex:none;
 }
 .film-poster-placeholder{
   display:flex;
   align-items:center;
   justify-content:center;
-  background:var(--bg);
+  background:var(--ink);
   font-size:22px;
   opacity:0.5;
 }
@@ -476,52 +497,39 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   vertical-align:middle;
   opacity:0.75;
 }
-.film-main{flex:1; min-width:0;}
+.film-main{grid-area:main; min-width:0;}
 .film-title{
-  font-family:'Fraunces', serif;
-  font-weight:500;
-  font-size:17px;
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:600;
+  font-size:16px;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
 }
 .film-sub{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
   color:var(--text-muted);
   margin-top:3px;
   letter-spacing:0.03em;
 }
-.counter{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:18px;
-  font-weight:600;
-  color:var(--amber);
-  background:#0f0d09;
-  border:1px solid var(--hairline);
-  border-radius:3px;
-  padding:5px 10px;
-  min-width:56px;
-  text-align:center;
-  flex:none;
-  font-variant-numeric:tabular-nums;
-}
 .star-btn{
+  grid-area:star;
   flex:none;
   background:none;
   border:none;
   font-size:20px;
   cursor:pointer;
-  color:var(--hairline);
+  color:var(--line);
   line-height:1;
   padding:4px;
   transition:transform .15s ease, color .15s;
 }
 .star-btn:hover{transform:scale(1.15);}
-.star-btn.active{color:var(--amber);}
+.star-btn.active{color:var(--gold);}
 /* Micro-interactions (js/ui.js, pulseElement()) : retour visuel direct au
    clic étoile/sauvegarde — pas d'exception prefers-reduced-motion ici,
-   contrairement à overlayOut/modalOut plus haut : ce n'est pas une
+   contrairement à overlayOut/modalOut plus loin : ce n'est pas une
    animation autonome, elle EST le geste (même règle que l'arc d'Odyssée). */
 .star-btn.pulse{animation:starPulse .3s ease-out;}
 @keyframes starPulse{
@@ -529,21 +537,44 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   40%{transform:scale(1.35);}
   100%{transform:scale(1);}
 }
+
+/* --- Le cadran : signature visuelle de Kinet --- */
+/* Remplace l'ancien rectangle plat .counter — un badge circulaire cerclé
+   d'or, toujours au même endroit qu'une note apparaît (catalogue, stats,
+   recommandations...). Pas un anneau de progression proportionnel à la
+   note (ça demanderait de faire passer la valeur en style inline depuis
+   chaque site d'appel JS, contre l'objectif "CSS seule" de cette refonte)
+   — juste une forme délibérée, cohérente, qui ne se confond jamais avec un
+   bouton ou une donnée quelconque. */
+.counter{
+  grid-area:counter;
+  font-family:'Space Mono', monospace;
+  font-size:15px;
+  font-weight:700;
+  color:var(--gold);
+  background:var(--surface-2);
+  border:2px solid var(--gold-dim);
+  border-radius:50%;
+  width:46px; height:46px;
+  display:flex; align-items:center; justify-content:center;
+  flex:none;
+  font-variant-numeric:tabular-nums;
+}
 .counter.pulse{animation:savePulse .5s ease-out;}
 @keyframes savePulse{
-  0%{box-shadow:0 0 0 0 rgba(209,161,63,0.55);}
-  100%{box-shadow:0 0 0 8px rgba(209,161,63,0);}
+  0%{box-shadow:0 0 0 0 rgba(231,178,76,0.55);}
+  100%{box-shadow:0 0 0 8px rgba(231,178,76,0);}
 }
 
 .manual-badge{
   display:inline-block;
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:9px;
   letter-spacing:0.08em;
   text-transform:uppercase;
   color:var(--teal);
   border:1px solid var(--teal);
-  border-radius:2px;
+  border-radius:4px;
   padding:2px 5px;
   margin-left:8px;
   vertical-align:middle;
@@ -560,16 +591,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    l'exception prefers-reduced-motion (contrairement à starPulse/savePulse
    ci-dessus, pilotées en direct par un clic). */
 .film-row.skeleton{cursor:default;}
-.film-row.skeleton:hover{border-color:var(--hairline); transform:none; box-shadow:none;}
+.film-row.skeleton:hover{border-color:var(--line); transform:none; box-shadow:none;}
 .skeleton-block{
-  background:linear-gradient(90deg, var(--surface-2) 25%, var(--hairline) 50%, var(--surface-2) 75%);
+  background:linear-gradient(90deg, var(--surface-2) 25%, var(--line) 50%, var(--surface-2) 75%);
   background-size:200% 100%;
-  border-radius:3px;
+  border-radius:6px;
   animation:skeletonShimmer 1.4s ease-in-out infinite;
 }
-.skeleton-poster{width:38px; height:56px; flex:none;}
+.skeleton-poster{width:38px; height:56px; flex:none; grid-area:poster;}
 .skeleton-line{height:14px;}
-.skeleton-counter{width:56px; height:30px; flex:none;}
+.skeleton-counter{width:46px; height:46px; border-radius:50%; flex:none; grid-area:counter;}
+.film-row.skeleton .film-main{grid-area:main;}
 @keyframes skeletonShimmer{
   0%{background-position:200% 0;}
   100%{background-position:-200% 0;}
@@ -583,26 +615,26 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    affiché porte une information réelle — podium (top 3) légèrement mis en
    avant, sans médaille ni décor superflu. */
 .top-tabs{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;}
-.top-tabs .btn.active{border-color:var(--amber); color:var(--amber);}
+.top-tabs .btn.active{border-color:var(--violet); color:var(--violet);}
 .top-rank{
-  font-family:'IBM Plex Mono', monospace;
-  font-weight:600;
+  font-family:'Space Mono', monospace;
+  font-weight:700;
   font-size:15px;
   color:var(--text-muted);
   width:22px;
   text-align:center;
   flex:none;
 }
-.top-row:nth-child(-n+3) .top-rank{color:var(--amber); font-size:19px;}
+.top-row:nth-child(-n+3) .top-rank{color:var(--gold); font-size:19px;}
 
 .rewatch-badge{
   display:inline-block;
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:9px;
   letter-spacing:0.04em;
   color:var(--teal);
   border:1px solid var(--teal);
-  border-radius:2px;
+  border-radius:4px;
   padding:2px 5px;
   margin-left:8px;
   vertical-align:middle;
@@ -631,14 +663,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   max-width:380px;
   margin:60px auto;
   background:var(--surface);
-  border:1px solid var(--hairline);
-  border-radius:6px;
+  border:1px solid var(--line);
+  border-radius:14px;
   padding:28px;
 }
 .auth-card h2{
-  font-family:'Fraunces', serif;
-  font-style:italic;
-  font-weight:500;
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:700;
   font-size:22px;
   margin-bottom:10px;
 }
@@ -652,7 +683,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .auth-card .btn{width:100%;}
 .auth-status{
   margin-top:14px;
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:12px;
   color:var(--teal);
   line-height:1.6;
@@ -662,14 +693,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   text-align:center;
   padding:60px 20px;
   color:var(--text-muted);
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:13px;
 }
 
 /* Modal */
 .overlay{
   position:fixed; inset:0;
-  background:rgba(10,9,6,0.72);
+  background:rgba(6,5,10,0.78);
   display:none;
   align-items:flex-start;
   justify-content:center;
@@ -680,13 +711,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .overlay.open{display:flex; animation:overlayIn .15s ease-out;}
 /* Fermeture (js/ui.js, closeOverlay()) : symétrique de .open, garde
    display:flex le temps de l'animation de sortie plutôt que de disparaître
-   d'un coup comme avant cette version. */
+   d'un coup. */
 .overlay.closing{display:flex; animation:overlayOut .15s ease-in forwards;}
 .overlay.closing .modal{animation:modalOut .15s ease-in forwards;}
 .modal{
   background:var(--surface);
-  border:1px solid var(--hairline);
-  border-radius:6px;
+  border:1px solid var(--line);
+  border-radius:16px;
   width:100%;
   max-width:640px;
   padding:28px;
@@ -707,10 +738,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   gap:12px;
 }
 .modal-head h2{
-  font-family:'Fraunces', serif;
-  font-style:italic;
-  font-weight:500;
-  font-size:24px;
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:700;
+  font-size:22px;
 }
 .close-x{
   background:none; border:none; color:var(--text-muted);
@@ -720,7 +750,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .field{margin-bottom:16px;}
 .field label{
   display:block;
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
   letter-spacing:0.08em;
   text-transform:uppercase;
@@ -742,7 +772,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   align-items:center;
   gap:10px;
   padding:6px;
-  border-radius:3px;
+  border-radius:8px;
   cursor:pointer;
   transition:background .1s;
 }
@@ -750,7 +780,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .tmdb-result img{
   width:32px; height:48px;
   object-fit:cover;
-  border-radius:2px;
+  border-radius:5px;
   flex:none;
 }
 .tmdb-poster-placeholder{
@@ -759,14 +789,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   display:flex;
   align-items:center;
   justify-content:center;
-  background:var(--bg);
-  border-radius:2px;
+  background:var(--ink);
+  border-radius:5px;
   font-size:14px;
   opacity:0.5;
 }
 .tmdb-result-title{font-size:13px;}
 .tmdb-result-year{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
   color:var(--text-muted);
   margin-top:2px;
@@ -783,11 +813,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   gap:10px;
   margin-top:10px;
   padding:8px;
-  background:var(--bg);
-  border:1px solid var(--hairline);
-  border-radius:3px;
+  background:var(--ink);
+  border:1px solid var(--line);
+  border-radius:8px;
 }
-.tmdb-selected img{width:32px; height:48px; object-fit:cover; border-radius:2px; flex:none;}
+.tmdb-selected img{width:32px; height:48px; object-fit:cover; border-radius:5px; flex:none;}
 .tmdb-selected-info{flex:1; min-width:0;}
 #tmdbSelectedTitle{font-size:13px;}
 /* Fiche confirmée dans la modale principale (édition/ajout d'un film) :
@@ -795,8 +825,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    qu'une vignette (watchlist/proposition restent des formulaires rapides,
    pas la peine d'y répéter le même traitement). */
 #tmdbSelected{padding:12px; gap:14px;}
-#tmdbSelected img{width:56px; height:84px; border-radius:4px;}
-#tmdbSelectedTitle{font-family:'Fraunces', serif; font-weight:500; font-size:16px;}
+#tmdbSelected img{width:56px; height:84px; border-radius:8px;}
+#tmdbSelectedTitle{font-family:'Bricolage Grotesque', sans-serif; font-weight:600; font-size:16px;}
 
 /* La note manuelle est une échappatoire exceptionnelle (voir le commentaire
    HTML au-dessus de #manualToggle) — séparée par un filet sous la grille
@@ -805,13 +835,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .manual-toggle-block{
   margin-top:20px;
   padding-top:16px;
-  border-top:1px solid var(--hairline);
+  border-top:1px solid var(--line);
 }
 .manual-toggle-label{
   display:flex;
   align-items:center;
   gap:8px;
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:12px;
   letter-spacing:0.03em;
   color:var(--text);
@@ -837,17 +867,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-style:normal;
 }
 .public-profile-link-row span{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   color:var(--teal);
   overflow-wrap:anywhere;
   flex:1;
 }
 
 .criterion{
-  border-top:1px solid var(--hairline);
+  border-top:1px solid var(--line);
   padding:14px 0;
 }
-.criterion:first-of-type{border-top:1px solid var(--hairline); margin-top:8px;}
+.criterion:first-of-type{border-top:1px solid var(--line); margin-top:8px;}
 .crit-head{
   display:flex;
   justify-content:space-between;
@@ -855,15 +885,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   cursor:pointer;
 }
 .crit-label{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:12px;
   letter-spacing:0.05em;
 }
-.crit-label .num{color:var(--amber-dim); margin-right:6px;}
+.crit-label .num{color:var(--violet-dim); margin-right:6px;}
 .crit-val{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:12px;
-  color:var(--amber);
+  color:var(--gold);
   min-width:34px;
   text-align:right;
 }
@@ -885,42 +915,39 @@ input[type="range"]{
   -webkit-appearance:none;
   appearance:none;
   height:3px;
-  background:var(--hairline);
+  background:var(--line);
   border-radius:2px;
   outline:none;
-  /* Vécu en prod le 25/08/2026 : au doigt, un scroll qui passe sur une
-     barre de notation la faisait sauter à la valeur touchée, changeant la
-     note sans le vouloir. touch-action:pan-y dit au navigateur qu'un geste
-     vertical sur cet élément est un scroll de page (jamais un drag de
-     curseur) — seul un geste horizontal (ou un tap) est encore traité comme
-     une interaction avec le slider. Fix standard pour ce conflit slider
-     horizontal / liste qui scrolle verticalement, aucune perte d'usage. */
+  /* Au doigt, un scroll qui passe sur une barre de notation la faisait
+     sauter à la valeur touchée, changeant la note sans le vouloir.
+     touch-action:pan-y dit au navigateur qu'un geste vertical sur cet
+     élément est un scroll de page (jamais un drag de curseur) — seul un
+     geste horizontal (ou un tap) est encore traité comme une interaction
+     avec le slider. */
   touch-action:pan-y;
 }
-/* Sans ce doublon, le focus clavier restait invisible sur les sliders :
+/* Sans ce doublon, le focus clavier resterait invisible sur les sliders :
    input[type="range"]{outline:none;} ci-dessus a la même spécificité que
    la règle générique input:focus-visible plus haut dans ce fichier et,
-   venant après elle dans la feuille, l'emportait silencieusement — un
-   utilisateur au clavier ne voyait alors aucun indicateur en tabulant
-   jusqu'à la note manuelle ou un critère de la grille. */
+   venant après elle dans la feuille, l'emporterait silencieusement. */
 input[type="range"]:focus-visible{
-  outline:2px solid var(--amber-dim);
+  outline:2px solid var(--violet-dim);
   outline-offset:2px;
 }
 input[type="range"]::-webkit-slider-thumb{
   -webkit-appearance:none;
   width:14px;height:14px;
   border-radius:50%;
-  background:var(--amber);
+  background:var(--gold);
   cursor:pointer;
-  border:2px solid #17140f;
+  border:2px solid var(--ink);
 }
 input[type="range"]::-moz-range-thumb{
   width:14px;height:14px;
   border-radius:50%;
-  background:var(--amber);
+  background:var(--gold);
   cursor:pointer;
-  border:2px solid #17140f;
+  border:2px solid var(--ink);
 }
 .avatar-source-tabs{
   display:flex;
@@ -929,23 +956,23 @@ input[type="range"]::-moz-range-thumb{
 }
 .avatar-source-tab{
   flex:1;
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
   letter-spacing:0.03em;
   padding:8px 6px;
-  border:1px solid var(--hairline);
+  border:1px solid var(--line);
   background:transparent;
   color:var(--text-muted);
-  border-radius:4px;
+  border-radius:8px;
   cursor:pointer;
 }
 .avatar-source-tab.active{
-  color:var(--amber);
-  border-color:var(--amber-dim);
-  background:rgba(209,161,63,0.08);
+  color:var(--violet);
+  border-color:var(--violet-dim);
+  background:var(--violet-wash);
 }
 .crit-help-toggle{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
   color:var(--text-muted);
   background:none;
@@ -965,20 +992,20 @@ input[type="range"]::-moz-range-thumb{
   white-space:pre-line;
   margin-top:8px;
   padding:10px 12px;
-  background:var(--bg);
+  background:var(--ink);
   border-left:2px solid var(--teal);
-  border-radius:2px;
+  border-radius:4px;
 }
 .crit-help.open{display:block;}
 .crit-anchors{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11.5px;
   color:var(--teal);
   white-space:pre-line;
   line-height:1.8;
   padding-bottom:10px;
   margin-bottom:10px;
-  border-bottom:1px solid var(--hairline);
+  border-bottom:1px solid var(--line);
 }
 .crit-questions{
   white-space:pre-line;
@@ -991,7 +1018,7 @@ input[type="range"]::-moz-range-thumb{
   align-items:center;
   margin-top:24px;
   padding-top:18px;
-  border-top:1px solid var(--hairline);
+  border-top:1px solid var(--line);
 }
 /* Vues sur mon activité passée (Statistiques/Succès/Journal) : pas des
    actions du quotidien, donc regroupées ici plutôt que mêlées à la toolbar
@@ -999,7 +1026,7 @@ input[type="range"]::-moz-range-thumb{
 .profile-activity-section{
   margin-top:20px;
   padding-top:16px;
-  border-top:1px solid var(--hairline);
+  border-top:1px solid var(--line);
 }
 .profile-activity-links{
   display:flex;
@@ -1009,11 +1036,11 @@ input[type="range"]::-moz-range-thumb{
 }
 .modal-footer .right{display:flex; gap:10px;}
 .live-score{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:13px;
   color:var(--text-muted);
 }
-.live-score b{color:var(--amber); font-size:16px;}
+.live-score b{color:var(--gold); font-size:16px;}
 
 /* Statistiques */
 .stats-modal{max-width:720px;}
@@ -1029,7 +1056,7 @@ input[type="range"]::-moz-range-thumb{
   width:64px; height:64px;
   border-radius:50%;
   object-fit:cover;
-  border:1px solid var(--hairline);
+  border:1px solid var(--line);
   flex:none;
 }
 .public-profile-header .avatar-fallback{
@@ -1038,10 +1065,9 @@ input[type="range"]::-moz-range-thumb{
   font-size:26px;
 }
 .public-profile-header h3{
-  font-family:'Fraunces', serif;
-  font-style:italic;
-  font-weight:500;
-  font-size:22px;
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:700;
+  font-size:20px;
 }
 .stat-tiles{
   display:grid;
@@ -1050,21 +1076,21 @@ input[type="range"]::-moz-range-thumb{
   margin-bottom:28px;
 }
 .stat-tile{
-  background:var(--bg);
-  border:1px solid var(--hairline);
-  border-radius:4px;
+  background:var(--ink);
+  border:1px solid var(--line);
+  border-radius:10px;
   padding:14px 12px;
   text-align:center;
 }
 .stat-value{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Bricolage Grotesque', sans-serif;
   font-size:24px;
-  font-weight:600;
-  color:var(--amber);
+  font-weight:800;
+  color:var(--gold);
   font-variant-numeric:tabular-nums;
 }
 .stat-label{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:10.5px;
   letter-spacing:0.04em;
   color:var(--text-muted);
@@ -1073,50 +1099,50 @@ input[type="range"]::-moz-range-thumb{
 }
 .stats-section{margin-bottom:28px;}
 /* Bandeau "Séance élue" (js/proposals.js, migrations/020) — même famille
-   que .ach-summary (accent ambre) mais en bandeau plein-largeur plutôt
-   qu'un bloc centré, pour rester visible sans dominer la page. */
+   que .ach-summary (accent or) mais en bandeau plein-largeur plutôt qu'un
+   bloc centré, pour rester visible sans dominer la page. */
 .chosen-banner{
-  background:var(--bg);
-  border:1px solid var(--amber-dim);
-  border-radius:4px;
+  background:var(--ink);
+  border:1px solid var(--gold-dim);
+  border-radius:10px;
   padding:12px 16px;
   margin-bottom:20px;
   font-size:14px;
 }
 /* Digest de retour (js/activityState.js) : même famille que .chosen-banner
-   (accent ambre, bandeau plein-largeur) mais vit hors des pages à bascule
+   (accent or, bandeau plein-largeur) mais vit hors des pages à bascule
    (voir index.html) donc porte son propre espacement vertical plutôt que
    de compter sur .page. */
 .digest-banner{
   background:var(--surface);
-  border:1px solid var(--amber-dim);
-  border-radius:4px;
+  border:1px solid var(--gold-dim);
+  border-radius:10px;
   padding:16px 32px;
   margin:16px auto;
 }
 .digest-title{
-  font-family:'Fraunces', serif;
-  font-style:italic;
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:700;
   font-size:16px;
   margin-bottom:12px;
 }
 .digest-banner .wl-list{margin-bottom:14px;}
 /* Mode hors ligne (js/offline.js) : même gabarit que .digest-banner
-   (bandeau plein-largeur hors des pages à bascule) mais accent --danger
-   plutôt qu'ambre — c'est un état dégradé à signaler, pas une bonne
-   nouvelle à consulter. */
+   (bandeau plein-largeur hors des pages à bascule) mais accent --coral
+   plutôt qu'or — c'est un état dégradé à signaler, pas une bonne nouvelle
+   à consulter. */
 .offline-banner{
   background:var(--surface);
-  border:1px solid var(--danger);
-  border-radius:4px;
+  border:1px solid var(--coral-dim);
+  border-radius:10px;
   padding:14px 32px;
   margin:16px auto;
   font-size:14px;
 }
 .stats-section-title{
-  font-family:'Fraunces', serif;
-  font-style:italic;
-  font-size:16px;
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:700;
+  font-size:15px;
   margin-bottom:14px;
 }
 .bar-chart{
@@ -1146,14 +1172,14 @@ input[type="range"]::-moz-range-thumb{
   display:flex;
   align-items:flex-end;
   justify-content:center;
-  background:var(--bg);
-  border-radius:2px 2px 0 0;
+  background:var(--ink);
+  border-radius:3px 3px 0 0;
 }
 .bar-fill{
   width:100%;
   min-height:2px;
-  background:var(--amber);
-  border-radius:2px 2px 0 0;
+  background:var(--gold);
+  border-radius:3px 3px 0 0;
   transition:opacity .1s;
   position:relative;
 }
@@ -1163,13 +1189,13 @@ input[type="range"]::-moz-range-thumb{
   top:-18px;
   left:50%;
   transform:translateX(-50%);
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
-  color:var(--amber);
+  color:var(--gold);
   white-space:nowrap;
 }
 .bar-label{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:9.5px;
   color:var(--text-muted);
   margin-top:6px;
@@ -1185,16 +1211,16 @@ input[type="range"]::-moz-range-thumb{
   display:flex;
   align-items:center;
   gap:12px;
-  background:var(--bg);
-  border:1px solid var(--hairline);
-  border-radius:4px;
+  background:var(--ink);
+  border:1px solid var(--line);
+  border-radius:10px;
   padding:12px 14px;
 }
 .stats-extreme-poster{
   width:42px; height:62px;
   object-fit:cover;
-  border-radius:3px;
-  border:1px solid var(--hairline);
+  border-radius:6px;
+  border:1px solid var(--line);
   flex:none;
 }
 .stats-extreme-poster-placeholder{
@@ -1207,7 +1233,7 @@ input[type="range"]::-moz-range-thumb{
 }
 .stats-extreme-info{min-width:0;}
 .stats-extreme-label{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:10px;
   letter-spacing:0.06em;
   text-transform:uppercase;
@@ -1215,38 +1241,39 @@ input[type="range"]::-moz-range-thumb{
   margin-bottom:6px;
 }
 .stats-extreme-title{
-  font-family:'Fraunces', serif;
-  font-size:15px;
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:600;
+  font-size:14.5px;
   margin-bottom:4px;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
 }
 .stats-extreme-note{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:13px;
-  color:var(--amber);
+  color:var(--gold);
 }
 
 /* Succès */
 .achievements-modal{max-width:760px;}
 .ach-summary{
-  background:var(--bg);
-  border:1px solid var(--hairline);
-  border-radius:4px;
+  background:var(--ink);
+  border:1px solid var(--line);
+  border-radius:10px;
   padding:16px 18px;
   text-align:center;
   margin-bottom:28px;
 }
 .ach-summary-count{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Bricolage Grotesque', sans-serif;
   font-size:26px;
-  font-weight:600;
-  color:var(--amber);
+  font-weight:800;
+  color:var(--gold);
   font-variant-numeric:tabular-nums;
 }
 .ach-summary-label{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:10.5px;
   letter-spacing:0.04em;
   color:var(--text-muted);
@@ -1260,7 +1287,7 @@ input[type="range"]::-moz-range-thumb{
   overflow:hidden;
   margin-top:12px;
 }
-.ach-summary-fill{height:100%; background:var(--amber); border-radius:3px;}
+.ach-summary-fill{height:100%; background:var(--gold); border-radius:3px;}
 
 .ach-tier-grid{
   display:grid;
@@ -1268,14 +1295,14 @@ input[type="range"]::-moz-range-thumb{
   gap:10px;
 }
 .ach-tier-card{
-  background:var(--bg);
-  border:1px solid var(--hairline);
-  border-radius:4px;
+  background:var(--ink);
+  border:1px solid var(--line);
+  border-radius:10px;
   padding:14px;
 }
 .ach-tier-head{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
 .ach-tier-icon{font-size:17px;}
-.ach-tier-label{font-family:'Fraunces', serif; font-size:14.5px;}
+.ach-tier-label{font-family:'Bricolage Grotesque', sans-serif; font-weight:600; font-size:14px;}
 .ach-tier-medals{margin-bottom:10px; font-size:16px; letter-spacing:2px;}
 .ach-medal{filter:grayscale(1) opacity(0.35);}
 .ach-medal.earned{filter:none;}
@@ -1288,7 +1315,7 @@ input[type="range"]::-moz-range-thumb{
 }
 .ach-tier-fill{height:100%; background:var(--teal); border-radius:3px;}
 .ach-tier-progress{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
   color:var(--text-muted);
 }
@@ -1299,9 +1326,9 @@ input[type="range"]::-moz-range-thumb{
   gap:10px;
 }
 .ach-hidden-card{
-  background:var(--bg);
-  border:1px solid var(--hairline);
-  border-radius:4px;
+  background:var(--ink);
+  border:1px solid var(--line);
+  border-radius:10px;
   padding:14px 12px;
   text-align:center;
   display:flex;
@@ -1311,52 +1338,64 @@ input[type="range"]::-moz-range-thumb{
 }
 .ach-hidden-card.locked{opacity:0.55;}
 .ach-hidden-icon{font-size:22px;}
-.ach-hidden-title{font-family:'Fraunces', serif; font-size:13.5px;}
+.ach-hidden-title{font-family:'Bricolage Grotesque', sans-serif; font-weight:600; font-size:13.5px;}
 .ach-hidden-card.locked .ach-hidden-title{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
+  font-weight:400;
   color:var(--text-muted);
   letter-spacing:0.1em;
 }
 .ach-hidden-desc{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:10.5px;
   color:var(--text-muted);
   line-height:1.4;
 }
-.ach-hidden-card.unlocked{border-color:var(--amber-dim);}
+.ach-hidden-card.unlocked{border-color:var(--gold-dim);}
 
 /* --- Interface admin (js/admin.js) : réutilise .wl-row (déjà utilisé pour
    la watchlist/propositions) pour les lignes succès/happenings, plutôt que
    de redéfinir un layout en ligne de plus. */
 .admin-modal{max-width:780px;}
 .admin-row-disabled{opacity:0.5;}
-.admin-tier-input{width:64px; padding:6px 8px; font-family:'IBM Plex Mono', monospace;}
+.admin-tier-input{width:64px; padding:6px 8px; font-family:'Space Mono', monospace;}
 .admin-row .wl-actions{flex-wrap:wrap; justify-content:flex-end; row-gap:6px;}
 .wl-add-form{
-  border-bottom:1px solid var(--hairline);
+  border-bottom:1px solid var(--line);
   padding-bottom:20px;
   margin-bottom:20px;
 }
 .wl-add-form .field:last-of-type{margin-bottom:14px;}
+
+/* ============================================================
+   .wl-row — ligne compacte générique, réutilisée par de nombreuses
+   listes très différentes (amis, membres de groupe, propositions, votes,
+   admin...) : reste une simple rangée horizontale flex. Watchlist/Top
+   (voir #wlList/#topList plus bas) sont les deux seules listes de ce
+   type à affiches qui reçoivent en plus le mode grille de la bascule —
+   les autres (amis, groupes...) n'ont pas de bouton de bascule et
+   n'ont donc jamais à changer de disposition.
+   ============================================================ */
 .wl-row{
   display:flex;
   align-items:center;
   gap:14px;
   background:var(--surface);
-  border:1px solid var(--hairline);
-  border-radius:4px;
+  border:1px solid var(--line);
+  border-radius:12px;
   padding:12px 14px;
   margin-bottom:8px;
+  position:relative;
 }
 .wl-main{flex:1; min-width:0;}
 .wl-title{
-  font-family:'Fraunces', serif;
-  font-weight:500;
-  font-size:15.5px;
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:600;
+  font-size:15px;
 }
 .wl-year{color:var(--text-muted); font-weight:400;}
 .wl-note{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
   color:var(--text-muted);
   margin-top:4px;
@@ -1372,28 +1411,28 @@ input[type="range"]::-moz-range-thumb{
   align-items:center;
   gap:6px;
   flex:none;
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
 }
 .vote-controls{
   display:flex;
   align-items:center;
   gap:8px;
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   margin-bottom:20px;
 }
 .vote-btn{
   background:var(--surface);
-  border:1px solid var(--hairline);
+  border:1px solid var(--line);
   color:var(--text-muted);
-  border-radius:4px;
+  border-radius:8px;
   width:30px;
   height:30px;
   font-size:14px;
   cursor:pointer;
   transition:border-color .15s, color .15s;
 }
-.vote-btn:hover{border-color:var(--amber-dim); color:var(--text);}
-.vote-btn.active{border-color:var(--amber); color:var(--amber);}
+.vote-btn:hover{border-color:var(--violet-dim); color:var(--text);}
+.vote-btn.active{border-color:var(--violet); color:var(--violet);}
 .vote-count{min-width:22px; text-align:center; font-size:13px; color:var(--text);}
 
 .proposal-detail-film{
@@ -1409,15 +1448,15 @@ input[type="range"]::-moz-range-thumb{
   align-items:flex-start;
   gap:10px;
   background:var(--surface);
-  border:1px solid var(--hairline);
-  border-radius:4px;
+  border:1px solid var(--line);
+  border-radius:10px;
   padding:10px 12px;
 }
 .comment-body-wrap{flex:1; min-width:0;}
 .comment-author{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
-  color:var(--amber-dim);
+  color:var(--violet);
   margin-bottom:3px;
 }
 .comment-body{font-size:13.5px; line-height:1.5; word-wrap:break-word;}
@@ -1430,7 +1469,7 @@ input[type="range"]::-moz-range-thumb{
   flex:none;
   padding:2px 4px;
 }
-.comment-delete:hover{color:var(--danger);}
+.comment-delete:hover{color:var(--coral);}
 .comment-input-row{display:flex; gap:8px; align-items:flex-end;}
 .comment-input-row textarea{flex:1;}
 
@@ -1440,11 +1479,11 @@ input[type="range"]::-moz-range-thumb{
   display:flex;
   align-items:center;
   gap:8px;
-  background:var(--bg);
-  border:1px solid var(--hairline);
-  border-radius:3px;
+  background:var(--ink);
+  border:1px solid var(--line);
+  border-radius:7px;
   padding:7px 10px;
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11.5px;
 }
 .viewing-date{color:var(--text); white-space:nowrap;}
@@ -1460,16 +1499,16 @@ input[type="range"]::-moz-range-thumb{
   padding:2px 4px;
   flex:none;
 }
-.viewing-remove:hover{color:var(--danger);}
+.viewing-remove:hover{color:var(--coral);}
 .viewings-add-row{display:flex; gap:8px; flex-wrap:wrap;}
 .viewings-add-row input[type="date"]{
   background:var(--surface);
-  border:1px solid var(--hairline);
+  border:1px solid var(--line);
   color:var(--text);
-  font-family:'Inter', sans-serif;
+  font-family:'Instrument Sans', sans-serif;
   font-size:13px;
   padding:9px 10px;
-  border-radius:3px;
+  border-radius:8px;
   flex:none;
 }
 .viewings-add-row input[type="text"]{flex:1; min-width:140px;}
@@ -1477,11 +1516,11 @@ input[type="range"]::-moz-range-thumb{
 /* Journal chronologique */
 .journal-modal{max-width:640px;}
 .journal-month{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
   letter-spacing:0.08em;
   text-transform:uppercase;
-  color:var(--amber-dim);
+  color:var(--violet);
   margin:20px 0 8px;
 }
 .journal-month:first-child{margin-top:0;}
@@ -1490,22 +1529,22 @@ input[type="range"]::-moz-range-thumb{
   align-items:center;
   gap:14px;
   background:var(--surface);
-  border:1px solid var(--hairline);
-  border-radius:4px;
+  border:1px solid var(--line);
+  border-radius:10px;
   padding:10px 14px;
   margin-bottom:6px;
 }
 .journal-main{flex:1; min-width:0;}
-.journal-title{font-family:'Fraunces', serif; font-size:14.5px;}
+.journal-title{font-family:'Bricolage Grotesque', sans-serif; font-weight:600; font-size:14.5px;}
 .journal-note{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
   color:var(--text-muted);
   margin-top:3px;
   font-style:italic;
 }
 .journal-date{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:11px;
   color:var(--text-muted);
   flex:none;
@@ -1518,11 +1557,11 @@ input[type="range"]::-moz-range-thumb{
   left:50%;
   transform:translateX(-50%) translateY(10px);
   background:var(--surface-2);
-  border:1px solid var(--hairline);
+  border:1px solid var(--line);
   color:var(--text);
   padding:10px 18px;
-  border-radius:4px;
-  font-family:'IBM Plex Mono', monospace;
+  border-radius:10px;
+  font-family:'Space Mono', monospace;
   font-size:12px;
   opacity:0;
   transition:opacity .2s, transform .2s;
@@ -1534,13 +1573,13 @@ input[type="range"]::-moz-range-thumb{
 /* --- Happenings (js/happenings.js) --- */
 
 /* Fight Club : un seul flash, jamais répété (voir la note sur l'épilepsie
-   photosensible dans js/happenings.js). Blanc sur fond très sombre pour
+   photosensible dans js/happenings.js). Clair sur fond très sombre pour
    trancher franchement, contrairement au reste de l'app. */
 .happening-flash{
   position:fixed; inset:0;
   z-index:300;
   display:flex; align-items:center; justify-content:center;
-  background:#f4f1ea;
+  background:var(--text);
   opacity:0;
   pointer-events:none;
   padding:0 24px;
@@ -1548,11 +1587,11 @@ input[type="range"]::-moz-range-thumb{
 }
 .happening-flash.show{opacity:1; transition:opacity .06s ease-out;}
 .happening-flash span{
-  font-family:'IBM Plex Mono', monospace;
+  font-family:'Space Mono', monospace;
   font-size:28px;
-  font-weight:600;
+  font-weight:700;
   letter-spacing:0.1em;
-  color:#17140f;
+  color:var(--ink);
 }
 
 /* Old Boy : le couloir en un seul plan. */
@@ -1560,8 +1599,8 @@ input[type="range"]::-moz-range-thumb{
 .happening-modal .modal-head{text-align:left;}
 .oldboy-corridor{
   overflow:hidden;
-  border:1px solid var(--hairline);
-  border-radius:4px;
+  border:1px solid var(--line);
+  border-radius:10px;
   background:var(--surface-2);
   padding:24px 0;
   margin-top:8px;
@@ -1613,28 +1652,28 @@ input[type="range"]::-moz-range-thumb{
   margin:14px auto 0;
   display:block;
 }
-.odyssey-bow-guide{stroke:var(--hairline); stroke-width:1; stroke-dasharray:3 4;}
+.odyssey-bow-guide{stroke:var(--line); stroke-width:1; stroke-dasharray:3 4;}
 /* Encoche du sommet : repère statique (jamais mis à jour en JS) montrant où
    le bout libre de la corde doit venir s'accrocher — voir updateOdysseyBow()
    dans js/happenings.js. */
 .odyssey-notch{stroke:var(--text-muted); stroke-width:1.5; stroke-dasharray:2 3;}
-.odyssey-bow-path{fill:none; stroke:var(--amber-dim); stroke-width:6; stroke-linecap:round;}
+.odyssey-bow-path{fill:none; stroke:var(--gold-dim); stroke-width:6; stroke-linecap:round;}
 .odyssey-string-path{fill:none; stroke:var(--text-muted); stroke-width:1.5; stroke-linecap:round;}
 /* Bout libre de la corde, porté à la main vers l'encoche — voir le rayon
    qui grandit légèrement à l'accroche (100%) dans updateOdysseyBow(). */
-.odyssey-string-end{fill:var(--amber);}
+.odyssey-string-end{fill:var(--gold);}
 .odyssey-track{
   margin-top:14px;
   height:10px;
   border-radius:6px;
   background:var(--surface-2);
-  border:1px solid var(--hairline);
+  border:1px solid var(--line);
   overflow:hidden;
 }
 .odyssey-fill{
   height:100%;
   width:0%;
-  background:linear-gradient(90deg, var(--amber-dim), var(--amber));
+  background:linear-gradient(90deg, var(--gold-dim), var(--gold));
   transition:width .1s linear;
 }
 .odyssey-bend-btn{
@@ -1656,8 +1695,8 @@ input[type="range"]::-moz-range-thumb{
   display:block;
   width:100%;
   height:auto;
-  border-radius:6px;
-  border:1px solid var(--hairline);
+  border-radius:10px;
+  border:1px solid var(--line);
   margin-top:12px;
   background:var(--surface-2);
 }
@@ -1681,6 +1720,123 @@ input[type="range"]::-moz-range-thumb{
   .oldboy-corridor-track{animation:none; transform:translateX(-140px);}
 }
 
+/* ============================================================
+   Mode GRILLE (cartes à affiche) — js/ui.js, setViewMode('grid').
+   S'applique à #filmList (catalogue) ainsi qu'à #wlList/#topList
+   (watchlist/top, qui réutilisent .wl-row) : même bascule, même
+   préférence partagée. C'est l'état PAR DÉFAUT (pas de sélecteur
+   data-view-mode="grid" nécessaire) — le mode liste ci-dessous est
+   l'exception qui doit s'écrire explicitement.
+   ============================================================ */
+#filmList, #wlList, #topList{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(158px, 1fr));
+  gap:16px;
+  align-items:start;
+}
+#filmList .film-row{
+  grid-template-columns:1fr;
+  grid-template-areas:
+    "poster"
+    "main"
+    "footer";
+  row-gap:10px;
+  margin-bottom:0;
+  padding:12px;
+}
+#filmList .film-poster, #filmList .film-poster-placeholder{
+  width:100%; height:auto; aspect-ratio:2/3;
+  border-radius:8px;
+}
+#filmList .star-btn{grid-area:footer; justify-self:start;}
+#filmList .counter{grid-area:footer; justify-self:end;}
+#filmList .film-row .star-btn, #filmList .film-row .counter{align-self:center;}
+/* .star-btn et .counter partagent la zone "footer" (grid-area identique)
+   plutôt que d'ajouter une 4e zone : justify-self les place chacun à une
+   extrémité de la même ligne, comme deux enfants d'une rangée flex, sans
+   changer le DOM ni les zones définies plus haut pour le mode liste. */
+#filmList .film-row.skeleton{grid-template-areas:"poster" "main" "footer";}
+#filmList .skeleton-poster{width:100%; aspect-ratio:2/3; height:auto;}
+
+#wlList .wl-row, #topList .wl-row{
+  flex-direction:column;
+  align-items:stretch;
+  margin-bottom:0;
+  padding:12px;
+}
+#wlList .film-poster, #topList .film-poster,
+#wlList .film-poster-placeholder, #topList .film-poster-placeholder{
+  width:100%; height:auto; aspect-ratio:2/3;
+  border-radius:8px;
+}
+#wlList .wl-actions{margin-top:2px;}
+#wlList .wl-actions .btn{flex:1;}
+/* Rang du top 3 (js/top.js, .top-row) : en ligne il précède l'affiche,
+   en grille il devient un badge posé sur son coin plutôt qu'une ligne à
+   part qui casserait la carte. */
+#topList .top-rank{
+  position:absolute;
+  top:8px; left:8px;
+  width:24px; height:24px;
+  background:rgba(15,14,22,0.82);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px;
+  z-index:1;
+}
+#topList .top-row:nth-child(-n+3) .top-rank{background:rgba(231,178,76,0.18);}
+#topList .counter{align-self:flex-end;}
+
+/* ============================================================
+   Mode LISTE — activé explicitement (data-view-mode posé sur <body> par
+   js/ui.js). Restaure la disposition en ligne d'origine.
+   ============================================================ */
+body[data-view-mode="list"] #filmList,
+body[data-view-mode="list"] #wlList,
+body[data-view-mode="list"] #topList{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+}
+body[data-view-mode="list"] #filmList .film-row{
+  grid-template-columns:auto 1fr auto auto;
+  grid-template-areas:"poster main star counter";
+  row-gap:0;
+  margin-bottom:8px;
+}
+body[data-view-mode="list"] #filmList .film-poster,
+body[data-view-mode="list"] #filmList .film-poster-placeholder{
+  width:52px; height:78px; aspect-ratio:auto;
+}
+/* Sans ce reset, .star-btn/.counter garderaient grid-area:footer (posé par
+   la règle #filmList .star-btn/.counter plus haut, plus spécifique qu'un
+   simple .star-btn et donc valable dans les deux modes) — une zone qui
+   n'existe plus dans le grid-template-areas "poster main star counter"
+   ci-dessus, les faisant sortir du flux normal de la grille. */
+body[data-view-mode="list"] #filmList .star-btn{grid-area:star; justify-self:auto;}
+body[data-view-mode="list"] #filmList .counter{grid-area:counter; justify-self:auto;}
+body[data-view-mode="list"] #wlList .wl-row,
+body[data-view-mode="list"] #topList .wl-row{
+  flex-direction:row;
+  align-items:center;
+  margin-bottom:8px;
+}
+body[data-view-mode="list"] #wlList .film-poster,
+body[data-view-mode="list"] #topList .film-poster,
+body[data-view-mode="list"] #wlList .film-poster-placeholder,
+body[data-view-mode="list"] #topList .film-poster-placeholder{
+  width:52px; height:78px; aspect-ratio:auto;
+}
+body[data-view-mode="list"] #wlList .wl-actions{margin-top:0;}
+body[data-view-mode="list"] #wlList .wl-actions .btn{flex:none;}
+body[data-view-mode="list"] #topList .top-rank{
+  position:static;
+  width:22px; height:auto;
+  background:none;
+  border-radius:0;
+}
+body[data-view-mode="list"] #topList .top-row:nth-child(-n+3) .top-rank{background:none;}
+
 /* Tablette : la barre d'outils passe en deux rangées pleine largeur avant
    que les libellés des boutons ne disparaissent (voir 600px ci-dessous). */
 @media (max-width:760px){
@@ -1690,15 +1846,16 @@ input[type="range"]::-moz-range-thumb{
 }
 
 @media (max-width:600px){
-  header{padding:8px 18px 20px;}
+  header{padding:26px 18px 20px;}
   .container{padding:0 18px;}
   h1{font-size:28px;}
-  .film-row{padding:12px; gap:12px;}
-  .film-row .holes{display:none;}
-  .film-title{font-size:15px;}
-  .film-poster{width:44px; height:64px;}
   .stats-extremes{grid-template-columns:1fr;}
   .user-bar{position:static; margin-top:10px; flex-wrap:wrap;}
+
+  /* Grille plus serrée sur mobile : 2 colonnes plutôt que la largeur
+     minimale de 158px, qui laisserait une seule colonne trop large sur un
+     téléphone étroit. */
+  #filmList, #wlList, #topList{grid-template-columns:repeat(2, 1fr); gap:12px;}
 
   /* Recherche/tri en pleine largeur, "+ Ajouter" quitte la barre pour le
      bouton flottant (.fab). */
@@ -1710,8 +1867,9 @@ input[type="range"]::-moz-range-thumb{
   .overlay{padding:20px 12px;}
   .modal{padding:20px;}
   .ach-tier-grid, .ach-hidden-grid{grid-template-columns:1fr 1fr;}
-  .wl-row{flex-wrap:wrap;}
-  .wl-actions{width:100%; justify-content:flex-end; margin-top:10px;}
+  body[data-view-mode="list"] #wlList .wl-row,
+  body[data-view-mode="list"] #topList .wl-row{flex-wrap:wrap;}
+  body[data-view-mode="list"] #wlList .wl-actions{width:100%; justify-content:flex-end; margin-top:10px;}
   .journal-row{flex-wrap:wrap;}
   .journal-date{margin-left:auto;}
 
@@ -1727,4 +1885,7 @@ input[type="range"]::-moz-range-thumb{
 @media (max-width:380px){
   .ach-tier-grid, .ach-hidden-grid{grid-template-columns:1fr;}
   .stat-tiles{grid-template-columns:1fr 1fr;}
+  /* Même une carte reste trop large à 2 par rangée sous 380px : mieux vaut
+     une seule colonne, plus lisible, qu'une affiche écrasée. */
+  #filmList, #wlList, #topList{grid-template-columns:1fr;}
 }

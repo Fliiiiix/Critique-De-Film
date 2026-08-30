@@ -105,14 +105,6 @@ function showToast(msg){
   t._timer = setTimeout(()=> t.classList.remove('show'), 2200);
 }
 
-function fillSprockets(id, count){
-  const el = document.getElementById(id);
-  el.innerHTML = '';
-  for(let i=0;i<count;i++){
-    el.appendChild(document.createElement('span'));
-  }
-}
-
 // Options de #sortCriterion, générées depuis CRITERIA (js/data.js) plutôt
 // que dupliquées à la main dans index.html — évite le décalage si un
 // critère est renommé/ajouté un jour.
@@ -125,15 +117,6 @@ function buildSortOptions(){
 // Sens du tri par critère (#sortAdvancedRow) — bouton-bascule plutôt qu'un
 // 2e select, voir setSortDir() plus bas.
 let sortDir = 'desc';
-
-function buildSprockets(){
-  fillSprockets('sprocketsTop', 40);
-  // Colonnes verticales le long des côtés (voir css .sprockets-side) : bien
-  // plus de perforations qu'aucun écran n'en affichera jamais, le surplus
-  // est juste coupé par overflow:hidden plutôt que recalculé à chaque resize.
-  fillSprockets('sprocketsLeft', 60);
-  fillSprockets('sprocketsRight', 60);
-}
 
 function render(){
   const list = document.getElementById('filmList');
@@ -173,7 +156,7 @@ function render(){
   countLine.textContent = `${filtered.length} film${filtered.length>1?'s':''} ${isFiltered ? '(filtré)' : 'au catalogue'}`;
 
   if(filtered.length === 0){
-    list.innerHTML = `<div class="empty-state">Aucun film. Clique sur « + Ajouter un film » pour commencer une nouvelle pellicule.</div>`;
+    list.innerHTML = `<div class="empty-state">Aucun film. Clique sur « + Ajouter un film » pour commencer ton catalogue.</div>`;
     document.getElementById('pagination').innerHTML = '';
     return;
   }

@@ -99,7 +99,6 @@ document.getElementById('authEmail').addEventListener('keydown', (e) => {
 document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
 (async function initAuth(){
-  buildSprockets();
   buildSortOptions();
   // Lien de profil public (#/u/:userId) : doit s'afficher même sans compte,
   // donc avant tout le reste — ni maintenance, ni session Supabase à

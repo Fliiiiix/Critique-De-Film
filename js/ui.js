@@ -125,3 +125,45 @@ function pulseElement(el){
   el.classList.add('pulse');
   el.addEventListener('animationend', () => el.classList.remove('pulse'), { once: true });
 }
+
+// --- Bascule grille / liste (catalogue, watchlist, séries, top) ---
+// Une seule préférence partagée par toutes les listes à affiches plutôt
+// qu'un réglage par page — si quelqu'un préfère scanner en grille ou en
+// liste compacte, c'est vrai partout où il y a des affiches, pas juste sur
+// le catalogue. Stockée en localStorage (préférence d'affichage pure, pas
+// une donnée à synchroniser entre appareils, contrairement à ce que gère
+// js/offline.js). Portée par un attribut sur <body> plutôt qu'une classe
+// par conteneur de liste : chaque page qui a une liste à affiches (voir
+// les sélecteurs body[data-view-mode="list"] #filmList, #wlList, #topList,
+// #seriesList dans css/style.css) réagit sans qu'aucune fonction de rendu
+// n'ait à connaître ce réglage.
+function getViewMode(){
+  return localStorage.getItem('kinetViewMode') === 'list' ? 'list' : 'grid';
+}
+
+function setViewMode(mode){
+  document.body.dataset.viewMode = mode;
+  localStorage.setItem('kinetViewMode', mode);
+  document.querySelectorAll('[data-view-btn]').forEach(btn => {
+    const active = btn.dataset.viewBtn === mode;
+    btn.classList.toggle('is-active', active);
+    btn.setAttribute('aria-pressed', String(active));
+  });
+}
+
+// setViewMode() plutôt qu'une simple lecture : synchronise aussi la classe
+// is-active/aria-pressed des boutons déjà présents dans le HTML statique de
+// chaque page (tous existent dans le DOM dès le chargement, même les pages
+// masquées par display:none — voir js/router.js) avec la préférence
+// mémorisée, pas seulement l'attribut sur <body>.
+setViewMode(getViewMode());
+
+// Délégué au document plutôt qu'un listener par bouton : la bascule
+// apparaît sur plusieurs pages (catalogue, watchlist, top, séries), toutes
+// avec le même markup `[data-view-btn]="grid|list"` — un seul gestionnaire
+// couvre les boutons déjà présents au chargement ET ceux qu'une page ajoute
+// plus tard à son propre rythme.
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-view-btn]');
+  if(btn) setViewMode(btn.dataset.viewBtn);
+});
