@@ -1307,6 +1307,12 @@ input[type="range"]::-moz-range-thumb{
   gap:8px;
   margin-top:10px;
 }
+/* Installation en app (js/pwa.js) — même bloc .profile-activity-section
+   que "Mon activité" juste au-dessus, .wl-note réutilisée telle quelle
+   pour le texte descriptif/les instructions (pas de nouvelle classe pour
+   un simple paragraphe secondaire). */
+#installSectionContent .wl-note{margin-top:0; margin-bottom:10px; max-width:52ch;}
+#installSectionContent .wl-note:last-child{margin-bottom:0;}
 .modal-footer .right{display:flex; gap:10px;}
 .live-score{
   font-family:'Space Mono', monospace;

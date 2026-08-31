@@ -756,6 +756,41 @@ page ou le couloir Old Boy déjà en place) ; le pulse étoile/sauvegarde est
 au contraire piloté en direct par le clic — il reste actif quel que soit ce
 réglage, comme l'arc final d'Odyssée.
 
+## Installation en app (PWA, v2.0.7)
+
+Kinet s'installe comme une vraie application — téléphone (Android/iOS) et
+PC (Chrome/Edge) — sans passer par un store. Aucun `.apk` distinct :
+un PWA installé se comporte comme une app native (fenêtre séparée, icône
+sur le bureau/écran d'accueil, lancement hors du navigateur), ce qui
+couvre la demande sans l'outillage supplémentaire (Capacitor/Cordova)
+qu'un vrai `.apk` exigerait — envisageable plus tard si le besoin devient
+spécifiquement "présent sur le Play Store".
+
+- **`manifest.json`** : nom, icônes (`icons/`, générées depuis l'identité
+  Kinet — fond dégradé violet, "K" en gras), couleurs, `display: standalone`.
+- **Icônes** : `icon-192`/`icon-512` (usage général) + variantes
+  `icon-maskable-*` (zone de sécurité 80%, pour l'icône adaptative
+  d'Android qui peut rogner jusqu'au cercle inscrit) + `apple-touch-icon`
+  (iOS) + `favicon-32`.
+- **`sw.js`**, déjà en place pour le mode hors ligne ci-dessous, sert aussi
+  de service worker requis pour l'installabilité — rien à y changer.
+- **UI d'installation** (`js/pwa.js`) : dans la modale profil (section
+  "Installer Kinet", sous "Mon activité" — pas d'endroit dédié ailleurs sur
+  le site, la modale profil est déjà l'endroit où on gère son rapport à
+  l'app). Contenu entièrement dynamique selon ce que le navigateur permet :
+  - **Chrome/Edge (téléphone ou PC)** : capte l'évènement natif
+    `beforeinstallprompt`, propose un bouton **📲 Installer l'app** qui
+    déclenche le prompt natif du navigateur.
+  - **iOS Safari** : n'a jamais de prompt natif — instructions manuelles
+    (bouton Partager → "Sur l'écran d'accueil").
+  - **Déjà installé** (`display-mode: standalone`) : simple confirmation,
+    pas de bouton.
+  - **Navigateur sans support** (Firefox desktop, etc.) : message générique
+    plutôt qu'un bouton mort.
+- **iOS ne lit pas le manifest** pour le mode standalone : trois balises
+  `apple-mobile-web-app-*` dans `<head>` (index.html) assurent qu'un ajout
+  à l'écran d'accueil s'ouvre bien sans barre d'adresse sur cet OS.
+
 ## Mode hors ligne, lecture seule (v1.6)
 
 L'app reste consultable sans réseau (métro, avion, zone blanche...) :
@@ -838,7 +873,7 @@ visionnage, copier la même note sur plusieurs entrées de journal aurait
   pour un film créé hors ligne et une gestion des conflits ; volontairement
   laissé de côté pour l'instant au profit de la version lecture seule
   ci-dessus, plus simple et plus fiable pour un usage perso.
-- Rendre le site installable comme une vraie app (PWA — `sw.js` existe déjà
-  comme base) sur téléphone et PC sans passer par un store, plus une section
-  de téléchargement sur le site — demandé explicitement, à traiter une fois
-  la refonte v2.0 et Séries/Prochaines sorties confirmées par l'usage.
+- Un vrai `.apk` distribuable (au-delà du PWA installable ci-dessus,
+  section "Installation en app") si le besoin devient spécifiquement
+  "présent sur le Play Store" — demanderait un tout autre outillage
+  (Capacitor/Cordova).

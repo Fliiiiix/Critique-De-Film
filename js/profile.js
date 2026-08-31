@@ -94,6 +94,9 @@ function openProfileModal(){
   updatePublicProfileLinkVisibility();
   // Bouton Admin (js/admin.js) : masqué pour tout le monde sauf ADMIN_EMAIL.
   document.getElementById('adminBtn').style.display = isAdmin() ? '' : 'none';
+  // Installation en app (js/pwa.js) : reconstruit à chaque ouverture — le
+  // prompt natif peut être devenu disponible depuis la dernière fois.
+  updateInstallUI();
   openOverlay('profileOverlay');
 }
 
