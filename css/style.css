@@ -835,6 +835,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border:1px solid var(--violet-dim);
   display:flex; align-items:center; justify-content:center;
   font-size:17px;
+  /* Même bug que .auth-tags avant correction : hérite d'Instrument Sans
+     (body) par défaut, qui n'a pas de glyphes emoji couleur -> rendu
+     monochrome/mal aligné. Repéré ici après coup par l'utilisateur car ce
+     bloc n'utilisait pas encore .ico comme les autres emoji de l'écran
+     de connexion. */
+  font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Segoe UI Symbol',sans-serif;
+  font-variant-emoji:emoji;
 }
 .auth-features b{
   display:block;
