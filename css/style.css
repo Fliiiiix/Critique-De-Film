@@ -168,6 +168,40 @@ header{
   padding-bottom:8px;
 }
 .version-tag b{color:var(--text-muted); font-weight:600;}
+/* Sélecteur principal Films/Séries (v2.0.6) — voir index.html pour le
+   pourquoi. Pleine largeur du header, sous le titre : assez proéminent
+   pour se voir comme LA navigation de l'app, pas une option secondaire. */
+.primary-tabs{
+  display:flex;
+  gap:8px;
+  margin-top:20px;
+  max-width:360px;
+}
+.primary-tab{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:700;
+  font-size:14.5px;
+  color:var(--text-muted);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:11px;
+  padding:11px 16px;
+  cursor:pointer;
+  transition:background .15s, color .15s, border-color .15s, transform .1s;
+}
+.primary-tab:hover{background:var(--surface-2); color:var(--text);}
+.primary-tab:active{transform:scale(0.98);}
+.primary-tab[aria-selected="true"]{
+  color:var(--ink);
+  background:var(--violet);
+  border-color:var(--violet);
+}
+.primary-tab[aria-selected="true"]:hover{background:var(--violet);}
 .eyebrow{
   font-family:'Space Mono', monospace;
   font-size:11px;

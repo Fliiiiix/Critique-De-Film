@@ -8,6 +8,7 @@ function showMaintenanceScreen(message){
   document.getElementById('authContainer').style.display = 'none';
   showOnlyPage(null); // masque appContainer + les pages Groupes (js/router.js)
   document.getElementById('userBar').style.display = 'none';
+  document.getElementById('primaryTabs').style.display = 'none';
   if(message) document.getElementById('maintenanceMessage').textContent = message;
   document.getElementById('maintenanceContainer').style.display = '';
 }
@@ -31,12 +32,14 @@ function showAuthScreen(){
   document.getElementById('authContainer').style.display = '';
   showOnlyPage(null); // masque appContainer + les pages Groupes (js/router.js)
   document.getElementById('userBar').style.display = 'none';
+  document.getElementById('primaryTabs').style.display = 'none';
   if(location.hash) location.hash = ''; // pas de page Groupes fantôme à la prochaine connexion
 }
 
 async function showApp(){
   document.getElementById('authContainer').style.display = 'none';
   document.getElementById('userBar').style.display = '';
+  document.getElementById('primaryTabs').style.display = '';
   await loadOrCreateProfile();
   // Écarts admin (seuils/succès/happenings modifiés, voir js/admin.js) : ne
   // concernent que le compte propriétaire, chargés avant render() pour que

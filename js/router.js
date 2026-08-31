@@ -53,6 +53,21 @@ function showOnlyPage(id){
   if(fab) fab.style.display = (id === 'appContainer') ? '' : 'none';
 }
 
+// Sélecteur principal Films/Séries (v2.0.6, #primaryTabs dans le header) :
+// reflète la route active à chaque rendu — actif seulement sur les deux
+// vraies "sections" de contenu (catalogue films / séries suivies), aucun
+// des deux en surbrillance sur les pages utilitaires (Watchlist, Amis,
+// Top...) plutôt que de garder artificiellement le dernier onglet visité
+// actif alors qu'on n'y est plus.
+function updatePrimaryTabs(routeName){
+  const filmsActive = routeName === 'home';
+  const seriesActive = routeName === 'seriesList' || routeName === 'seriesDetail';
+  document.getElementById('primaryTabFilms').setAttribute('aria-selected', String(filmsActive));
+  document.getElementById('primaryTabSeries').setAttribute('aria-selected', String(seriesActive));
+}
+document.getElementById('primaryTabFilms').addEventListener('click', goHome);
+document.getElementById('primaryTabSeries').addEventListener('click', goToSeries);
+
 function goHome(){ location.hash = ''; }
 function goToGroups(){ location.hash = '#/groupes'; }
 function goToGroup(groupId){ location.hash = `#/groupes/${groupId}`; }
@@ -115,6 +130,7 @@ async function renderRoute(){
     return;
   }
   if(!currentUser) return;
+  updatePrimaryTabs(route.name);
   if(route.name === 'home'){
     showOnlyPage('appContainer');
   }else if(route.name === 'watchlist'){

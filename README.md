@@ -342,9 +342,13 @@ Chaque chose a sa place plutôt que d'aligner tous les boutons en vrac au même
 niveau (v1.5) :
 
 - **Entête** : le titre (retour accueil en un clic) à gauche ; à droite, les
-  pages assez fréquentes pour mériter un accès direct — 🎞️ À voir, 📺 Séries,
-  🗓️ Prochainement, 👥 Amis (qui contient Groupes) et 🏅 Top films — puis la
-  photo de profil + pseudo (ouvre la modale profil).
+  pages assez fréquentes pour mériter un accès direct — 🎞️ À voir, 🗓️
+  Prochainement, 👥 Amis (qui contient Groupes) et 🏅 Top films — puis la
+  photo de profil + pseudo (ouvre la modale profil). Sous le titre, le
+  sélecteur **🎬 Films / 📺 Séries** (v2.0.6) : les deux vraies sections de
+  contenu de l'app, mises en avant séparément des pages utilitaires
+  ci-dessus plutôt qu'une icône parmi d'autres — retour utilisateur direct
+  après le lancement de Séries.
 - **Modale profil** : identité (pseudo/avatar), section "Mon activité" (vues
   sur le catalogue passé — Statistiques/Succès/Journal, pas des actions du
   quotidien), déconnexion (sur la même ligne qu'Annuler/Enregistrer, pas

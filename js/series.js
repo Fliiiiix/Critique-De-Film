@@ -286,7 +286,8 @@ async function handleAddShow(){
   showToast('Série suivie');
 }
 
-document.getElementById('seriesBtn').addEventListener('click', goToSeries);
+// Plus de #seriesBtn dans l'entête depuis v2.0.6 — l'accès à Séries se
+// fait via #primaryTabSeries (js/router.js), qui a son propre listener.
 document.getElementById('seriesPageBack').addEventListener('click', goHome);
 document.getElementById('seriesAddBtn').addEventListener('click', handleAddShow);
 document.getElementById('seriesTitleInput').addEventListener('input', () => {
