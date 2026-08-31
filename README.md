@@ -294,15 +294,57 @@ conseillé…). Deux actions par item :
 
 Nécessite `supabase/migrations/006_add_watchlist.sql`.
 
+## Séries (v2.0.5)
+
+L'icône **📺** dans l'entête mène à `#/series`, une page à part entière
+comme Watchlist — section volontairement séparée du catalogue films (table
+`tv_shows`, pas `films` : deux sections distinctes, pas de fusion). Suivi à
+l'**épisode près**, pas juste un statut par saison :
+
+- **Ajouter une série** exige une fiche TMDB choisie dans les résultats de
+  recherche (contrairement à la watchlist, où un titre libre suffit) : c'est
+  elle qui fournit la liste des saisons/épisodes sur laquelle repose tout le
+  suivi — sans elle, rien à cocher.
+- **Détail d'une série** (`#/series/:id`) : affiche/synopsis/statut TMDB
+  (`En diffusion`/`Terminée`/…, rafraîchi à chaque ouverture — une série
+  encore en cours peut avoir gagné une saison depuis), une note manuelle sur
+  5 + un commentaire libre (pas la grille à 7 critères des films — une série
+  qui s'étale sur plusieurs saisons ne s'y prête pas), et un accordéon d'une
+  saison par ligne.
+- **Chaque saison**, dépliée à la demande (les épisodes d'une saison ne sont
+  chargés depuis TMDB qu'à sa première ouverture, jamais toutes en même
+  temps) : une case à cocher par épisode, plus **Tout marquer vu** / **Tout
+  marquer non vu** pour la saison entière.
+- **Retirer une série** supprime aussi tous ses épisodes cochés (suppression
+  en cascade côté base).
+
+Nécessite `supabase/migrations/024_add_tv_shows.sql`.
+
+## Prochaines sorties (v2.0.5)
+
+L'icône **🗓️** dans l'entête mène à `#/prochainement` — un agrégateur de ce
+que tu suis déjà, pas une découverte de nouveautés non ajoutées :
+
+- **Bientôt** : les films de la watchlist ayant une date de sortie future
+  connue, et le prochain épisode à venir de chaque série suivie encore en
+  activité — les deux triés ensemble par date la plus proche.
+- **Séries terminées** : les séries suivies dont TMDB indique qu'elles ne
+  produiront plus jamais de nouvelle saison (`Terminée`/`Annulée`) —
+  affichées ici avec un badge clair plutôt que simplement omises, pour
+  savoir sans ambiguïté qu'aucune suite n'est à attendre.
+
+Nécessite `supabase/migrations/024_add_tv_shows.sql` et
+`supabase/migrations/025_add_watchlist_release_date.sql`.
+
 ## Interface responsive
 
 Chaque chose a sa place plutôt que d'aligner tous les boutons en vrac au même
 niveau (v1.5) :
 
 - **Entête** : le titre (retour accueil en un clic) à gauche ; à droite, les
-  pages assez fréquentes pour mériter un accès direct — 🎞️ À voir, 👥 Amis
-  (qui contient Groupes) et 🏅 Top films — puis la photo de profil + pseudo
-  (ouvre la modale profil).
+  pages assez fréquentes pour mériter un accès direct — 🎞️ À voir, 📺 Séries,
+  🗓️ Prochainement, 👥 Amis (qui contient Groupes) et 🏅 Top films — puis la
+  photo de profil + pseudo (ouvre la modale profil).
 - **Modale profil** : identité (pseudo/avatar), section "Mon activité" (vues
   sur le catalogue passé — Statistiques/Succès/Journal, pas des actions du
   quotidien), déconnexion (sur la même ligne qu'Annuler/Enregistrer, pas
@@ -792,3 +834,7 @@ visionnage, copier la même note sur plusieurs entrées de journal aurait
   pour un film créé hors ligne et une gestion des conflits ; volontairement
   laissé de côté pour l'instant au profit de la version lecture seule
   ci-dessus, plus simple et plus fiable pour un usage perso.
+- Rendre le site installable comme une vraie app (PWA — `sw.js` existe déjà
+  comme base) sur téléphone et PC sans passer par un store, plus une section
+  de téléchargement sur le site — demandé explicitement, à traiter une fois
+  la refonte v2.0 et Séries/Prochaines sorties confirmées par l'usage.

@@ -8,8 +8,14 @@
 let tmdbSelected = null; // { tmdb_id, poster_url, overview, release_year, title, original_title }
 let tmdbSearchTimer = null;
 
-async function searchTmdb(query){
-  const url = `https://api.themoviedb.org/3/search/movie?language=fr-FR&query=${encodeURIComponent(query)}`;
+// Point d'entrée générique films/séries — /search/movie et /search/tv ne
+// renvoient pas les mêmes noms de champs (title/release_date côté films,
+// name/first_air_date côté séries) : on normalise ici une bonne fois vers
+// la même forme déjà utilisée partout dans l'app plutôt que de dupliquer
+// le mapping à chaque site d'appel. searchTmdb(query) (films, ci-dessous)
+// et searchTmdbTv(query) (js/series.js) ne sont que des raccourcis dessus.
+async function searchTmdbGeneric(query, mediaType){
+  const url = `https://api.themoviedb.org/3/search/${mediaType}?language=fr-FR&query=${encodeURIComponent(query)}`;
   const res = await fetch(url, {
     headers: {
       'Authorization': `Bearer ${TMDB_API_KEY}`,
@@ -20,7 +26,57 @@ async function searchTmdb(query){
     throw new Error(res.status === 401 ? 'Clé TMDB invalide ou non configurée (voir js/tmdbConfig.js)' : `Erreur TMDB (${res.status})`);
   }
   const data = await res.json();
-  return (data.results || []).slice(0, 6);
+  return (data.results || []).slice(0, 6).map(r => {
+    const title = mediaType === 'tv' ? r.name : r.title;
+    const originalTitle = mediaType === 'tv' ? r.original_name : r.original_title;
+    const dateStr = mediaType === 'tv' ? r.first_air_date : r.release_date;
+    return {
+      id: r.id,
+      title,
+      original_title: originalTitle && originalTitle !== title ? originalTitle : null,
+      release_date: dateStr || null,
+      release_year: dateStr ? parseInt(dateStr.slice(0, 4), 10) : null,
+      poster_path: r.poster_path || null,
+      overview: r.overview || null
+    };
+  });
+}
+
+async function searchTmdb(query){
+  return searchTmdbGeneric(query, 'movie');
+}
+
+// Wrapper symétrique à searchTmdb(), pour les séries (js/series.js).
+async function searchTmdbTv(query){
+  return searchTmdbGeneric(query, 'tv');
+}
+
+// Détail d'une série — statut TMDB, saisons, prochain/dernier épisode.
+// Jamais stocké tel quel côté Supabase au-delà de l'instantané pris à
+// l'ajout (voir js/series.js) : toujours rappelé en direct pour rester à
+// jour sur une série encore en diffusion.
+// https://developer.themoviedb.org/reference/tv-series-details
+async function fetchTvDetails(tmdbId){
+  const url = `https://api.themoviedb.org/3/tv/${tmdbId}?language=fr-FR`;
+  const res = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${TMDB_API_KEY}`, 'Accept': 'application/json' }
+  });
+  if(!res.ok) throw new Error(`Erreur TMDB (${res.status})`);
+  return res.json();
+}
+
+// Épisodes d'une saison précise — appelé seulement à l'expansion de cette
+// saison dans l'UI (js/series.js), jamais pour toutes les saisons d'un
+// coup : une série avec beaucoup de saisons ne doit pas déclencher une
+// rafale d'appels réseau à l'ouverture du détail.
+// https://developer.themoviedb.org/reference/tv-season-details
+async function fetchTvSeason(tmdbId, seasonNumber){
+  const url = `https://api.themoviedb.org/3/tv/${tmdbId}/season/${seasonNumber}?language=fr-FR`;
+  const res = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${TMDB_API_KEY}`, 'Accept': 'application/json' }
+  });
+  if(!res.ok) throw new Error(`Erreur TMDB (${res.status})`);
+  return res.json();
 }
 
 function renderTmdbResults(results){

@@ -43,6 +43,11 @@ async function loadWatchlist(){
     posterUrl: row.poster_url || null,
     overview: row.overview || null,
     releaseYear: row.release_year || null,
+    // Date de sortie complète (migrations/025), utilisée par la section
+    // Prochaines sorties (js/upcoming.js) pour trier par proximité réelle
+    // — null pour les entrées ajoutées avant cette colonne, ou sans fiche
+    // TMDB : ignorées par cette section plutôt que de fausser le tri.
+    releaseDate: row.release_date || null,
     originalTitle: row.original_title || null,
     added: row.added
   }));
@@ -94,8 +99,8 @@ async function handleAddToWatchlist(){
   }
   const note = document.getElementById('wlNoteInput').value.trim() || null;
   const tmdbFields = wlTmdbSelected
-    ? { tmdb_id: wlTmdbSelected.tmdb_id, poster_url: wlTmdbSelected.poster_url, overview: wlTmdbSelected.overview, release_year: wlTmdbSelected.release_year, original_title: wlTmdbSelected.original_title }
-    : { tmdb_id: null, poster_url: null, overview: null, release_year: null, original_title: null };
+    ? { tmdb_id: wlTmdbSelected.tmdb_id, poster_url: wlTmdbSelected.poster_url, overview: wlTmdbSelected.overview, release_year: wlTmdbSelected.release_year, release_date: wlTmdbSelected.release_date, original_title: wlTmdbSelected.original_title }
+    : { tmdb_id: null, poster_url: null, overview: null, release_year: null, release_date: null, original_title: null };
 
   const { data, error } = await supabaseClient
     .from('watchlist')
@@ -112,6 +117,7 @@ async function handleAddToWatchlist(){
     id: data.id, title, note,
     tmdbId: tmdbFields.tmdb_id, posterUrl: tmdbFields.poster_url,
     overview: tmdbFields.overview, releaseYear: tmdbFields.release_year,
+    releaseDate: tmdbFields.release_date,
     originalTitle: tmdbFields.original_title,
     added: data.added
   });
@@ -191,6 +197,8 @@ function selectWlTmdbResult(r){
     poster_url: r.poster_path ? TMDB_IMG_BASE + r.poster_path : null,
     overview: r.overview || null,
     release_year: r.release_date ? parseInt(r.release_date.slice(0, 4), 10) : null,
+    // Date complète (migrations/025) — voir js/upcoming.js.
+    release_date: r.release_date || null,
     title: r.title,
     original_title: r.original_title && r.original_title !== r.title ? r.original_title : null
   };

@@ -1,11 +1,15 @@
 // --- Routeur minimaliste (hash-based) ---
 // Groupes contenait membres + ajout d'amis + propositions + votes +
 // discussion, empilé sur 3 niveaux de modal (Groupes > détail groupe >
-// détail proposition) — trop pour ce format. Watchlist et Amis ont suivi le
-// même traitement (contenu trop riche, ou destination assez fréquente pour
-// mériter une URL propre plutôt qu'être noyée dans une popup) :
+// détail proposition) — trop pour ce format. Watchlist, Amis et Séries ont
+// suivi le même traitement (contenu trop riche, ou destination assez
+// fréquente pour mériter une URL propre plutôt qu'être noyée dans une
+// popup) :
 //   (pas de hash)                           -> catalogue (#appContainer)
 //   #/watchlist                             -> liste "à voir"
+//   #/series                                -> séries suivies
+//   #/series/:showId                        -> détail d'une série (saisons/épisodes)
+//   #/prochainement                         -> films/séries à venir
 //   #/amis                                  -> amis (demandes, liste) + accès Groupes
 //   #/top                                   -> top films (tout le monde / mes amis)
 //   #/groupes                               -> liste des groupes
@@ -19,9 +23,10 @@
 //
 // Pas de framework : hashchange + un switch sur les segments suffisent pour
 // ces écrans. Les fonctions de chargement/rendu (loadGroups, openGroupDetail,
-// openProposalDetail, openWatchlist, openFriends...) restent dans
-// js/groups.js, js/proposals.js, js/watchlist.js et js/friends.js — ce
-// fichier ne fait que décider laquelle appeler.
+// openProposalDetail, openWatchlist, openFriends, openSeries,
+// openShowDetail, openUpcoming...) restent dans js/groups.js,
+// js/proposals.js, js/watchlist.js, js/friends.js, js/series.js et
+// js/upcoming.js — ce fichier ne fait que décider laquelle appeler.
 //
 // #/u/:userId (js/publicProfile.js) est à part : seule page accessible SANS
 // connexion (lien à partager) — voir le if(route.name === 'publicProfile')
@@ -29,7 +34,7 @@
 // le reste, et js/auth.js → initAuth() qui la laisse passer avant même de
 // vérifier la session Supabase.
 
-const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage', 'amisPage', 'topPage', 'publicProfilePage', 'invitePage'];
+const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage', 'seriesPage', 'seriesDetailPage', 'upcomingPage', 'amisPage', 'topPage', 'publicProfilePage', 'invitePage'];
 
 // null cache tout (utile pour l'écran de connexion / maintenance, qui gère
 // sa propre visibilité par ailleurs).
@@ -53,6 +58,9 @@ function goToGroups(){ location.hash = '#/groupes'; }
 function goToGroup(groupId){ location.hash = `#/groupes/${groupId}`; }
 function goToProposal(groupId, proposalId){ location.hash = `#/groupes/${groupId}/propositions/${proposalId}`; }
 function goToWatchlist(){ location.hash = '#/watchlist'; }
+function goToSeries(){ location.hash = '#/series'; }
+function goToSeriesDetail(showId){ location.hash = `#/series/${showId}`; }
+function goToUpcoming(){ location.hash = '#/prochainement'; }
 function goToAmis(){ location.hash = '#/amis'; }
 function goToTop(){ location.hash = '#/top'; }
 function goToPublicProfile(userId){ location.hash = `#/u/${userId}`; }
@@ -61,6 +69,13 @@ function parseRoute(){
   const hash = location.hash.replace(/^#\/?/, '');
   const parts = hash.split('/').filter(Boolean);
   if(parts[0] === 'watchlist' && parts.length === 1) return { name: 'watchlist' };
+  if(parts[0] === 'series' && parts.length === 1) return { name: 'seriesList' };
+  if(parts[0] === 'series' && parts.length === 2){
+    const showId = parseInt(parts[1], 10);
+    if(Number.isFinite(showId)) return { name: 'seriesDetail', showId };
+    return { name: 'home' };
+  }
+  if(parts[0] === 'prochainement' && parts.length === 1) return { name: 'upcoming' };
   if(parts[0] === 'amis' && parts.length === 1) return { name: 'amis' };
   if(parts[0] === 'top' && parts.length === 1) return { name: 'top' };
   if(parts[0] === 'u' && parts.length === 2) return { name: 'publicProfile', userId: parts[1] };
@@ -105,6 +120,15 @@ async function renderRoute(){
   }else if(route.name === 'watchlist'){
     showOnlyPage('watchlistPage');
     await openWatchlist();
+  }else if(route.name === 'seriesList'){
+    showOnlyPage('seriesPage');
+    await openSeries();
+  }else if(route.name === 'seriesDetail'){
+    showOnlyPage('seriesDetailPage');
+    await openShowDetail(route.showId);
+  }else if(route.name === 'upcoming'){
+    showOnlyPage('upcomingPage');
+    await openUpcoming();
   }else if(route.name === 'amis'){
     showOnlyPage('amisPage');
     await openFriends();

@@ -99,10 +99,11 @@ header{
   font-size:11px;
   color:var(--text-muted);
 }
-/* Nav de l'entête : les deux pages assez fréquentes pour mériter un accès
-   direct depuis n'importe où (À voir, Amis — qui contient Groupes, voir
-   index.html). Icônes seules, sans cadre, pour rester discrètes à côté du
-   titre plutôt que de reformer une rangée de boutons. */
+/* Nav de l'entête : les pages assez fréquentes pour mériter un accès
+   direct depuis n'importe où (À voir, Séries, Prochainement, Amis — qui
+   contient Groupes, voir index.html). Icônes seules, sans cadre, pour
+   rester discrètes à côté du titre plutôt que de reformer une rangée de
+   boutons. */
 .header-nav{
   display:flex;
   gap:2px;
@@ -1978,6 +1979,7 @@ input[type="range"]::-moz-range-thumb{
    ============================================================ */
 body[data-view-mode="grid"] #filmList,
 body[data-view-mode="grid"] #wlList,
+body[data-view-mode="grid"] #seriesList,
 body[data-view-mode="grid"] #topList{
   display:grid;
   grid-template-columns:repeat(auto-fill, minmax(158px, 1fr));
@@ -2007,6 +2009,7 @@ body[data-view-mode="grid"] #filmList .film-row.skeleton{grid-template-areas:"po
 body[data-view-mode="grid"] #filmList .skeleton-poster{width:100%; aspect-ratio:2/3; height:auto;}
 
 body[data-view-mode="grid"] #wlList .wl-row,
+body[data-view-mode="grid"] #seriesList .wl-row,
 body[data-view-mode="grid"] #topList .wl-row{
   display:flex;
   flex-direction:column;
@@ -2014,14 +2017,18 @@ body[data-view-mode="grid"] #topList .wl-row{
   padding:12px;
 }
 body[data-view-mode="grid"] #wlList .film-poster,
+body[data-view-mode="grid"] #seriesList .film-poster,
 body[data-view-mode="grid"] #topList .film-poster,
 body[data-view-mode="grid"] #wlList .film-poster-placeholder,
+body[data-view-mode="grid"] #seriesList .film-poster-placeholder,
 body[data-view-mode="grid"] #topList .film-poster-placeholder{
   width:100%; height:auto; aspect-ratio:2/3;
   border-radius:8px;
 }
-body[data-view-mode="grid"] #wlList .wl-actions{margin-top:2px;}
-body[data-view-mode="grid"] #wlList .wl-actions .btn{flex:1;}
+body[data-view-mode="grid"] #wlList .wl-actions,
+body[data-view-mode="grid"] #seriesList .wl-actions{margin-top:2px;}
+body[data-view-mode="grid"] #wlList .wl-actions .btn,
+body[data-view-mode="grid"] #seriesList .wl-actions .btn{flex:1;}
 /* Rang du top 3 (js/top.js, .top-row) : en carte il devient un badge posé
    sur le coin de l'affiche plutôt qu'une ligne à part qui casserait la
    carte — voir le mode liste plus bas pour son traitement en ligne. */
@@ -2046,6 +2053,7 @@ body[data-view-mode="grid"] #topList .counter{align-self:flex-end;}
    toute l'app, dégradé de fond pour donner du relief à la bannière. */
 body[data-view-mode="list"] #filmList,
 body[data-view-mode="list"] #wlList,
+body[data-view-mode="list"] #seriesList,
 body[data-view-mode="list"] #topList{
   display:flex;
   flex-direction:column;
@@ -2053,6 +2061,7 @@ body[data-view-mode="list"] #topList{
 }
 body[data-view-mode="list"] #filmList .film-row,
 body[data-view-mode="list"] #wlList .wl-row,
+body[data-view-mode="list"] #seriesList .wl-row,
 body[data-view-mode="list"] #topList .wl-row{
   display:flex;
   flex-direction:row;
@@ -2065,20 +2074,140 @@ body[data-view-mode="list"] #topList .wl-row{
 body[data-view-mode="list"] #filmList .film-poster,
 body[data-view-mode="list"] #filmList .film-poster-placeholder,
 body[data-view-mode="list"] #wlList .film-poster,
+body[data-view-mode="list"] #seriesList .film-poster,
 body[data-view-mode="list"] #topList .film-poster,
 body[data-view-mode="list"] #wlList .film-poster-placeholder,
+body[data-view-mode="list"] #seriesList .film-poster-placeholder,
 body[data-view-mode="list"] #topList .film-poster-placeholder{
   width:64px; height:96px; flex:none;
   border-radius:8px;
 }
 body[data-view-mode="list"] #filmList .film-title,
 body[data-view-mode="list"] #wlList .wl-title,
+body[data-view-mode="list"] #seriesList .wl-title,
 body[data-view-mode="list"] #topList .wl-title{
   font-size:17px;
 }
-body[data-view-mode="list"] #wlList .wl-actions{flex:none;}
-body[data-view-mode="list"] #wlList .wl-actions .btn{flex:none;}
+body[data-view-mode="list"] #wlList .wl-actions,
+body[data-view-mode="list"] #seriesList .wl-actions{flex:none;}
+body[data-view-mode="list"] #wlList .wl-actions .btn,
+body[data-view-mode="list"] #seriesList .wl-actions .btn{flex:none;}
 body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
+
+/* --- Détail d'une série (#/series/:id, js/series.js) --- */
+.series-hero{
+  display:flex;
+  gap:20px;
+  margin-bottom:28px;
+}
+.series-hero-poster{
+  width:130px; height:195px;
+  flex:none;
+  border-radius:10px;
+  object-fit:cover;
+  border:1px solid var(--line);
+  font-size:40px;
+}
+.series-hero-info{flex:1; min-width:0; padding-top:2px;}
+.series-hero-meta{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  margin-bottom:12px;
+}
+.series-hero-meta .wl-year{
+  font-family:'Space Mono', monospace;
+  font-size:13px;
+  color:var(--text-muted);
+}
+/* Statut TMDB, coloré comme .rate-* mais avec un vocabulaire différent :
+   ici il ne s'agit pas d'un barème de qualité, juste de savoir si la
+   série reviendra ou non — vert (en cours) / gris (terminée), jamais de
+   rouge (ça suggérerait un jugement de valeur qui n'a pas lieu d'être). */
+.status-badge{
+  display:inline-block;
+  font-family:'Space Mono', monospace;
+  font-size:10.5px;
+  font-weight:600;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  border-radius:999px;
+  padding:4px 10px;
+}
+.status-badge.ongoing{color:var(--green); background:var(--green-wash); border:1px solid var(--green-dim);}
+.status-badge.ended{color:var(--text-muted); background:var(--surface-2); border:1px solid var(--line);}
+
+/* --- Accordéon de saisons (#seriesSeasonsList) --- */
+.season-block{
+  border:1px solid var(--line);
+  border-radius:10px;
+  margin-bottom:10px;
+  overflow:hidden;
+}
+.season-header{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:var(--surface);
+  border:none;
+  color:var(--text);
+  padding:14px 16px;
+  cursor:pointer;
+  text-align:left;
+  font-family:'Instrument Sans', sans-serif;
+}
+.season-header:hover{background:var(--surface-2);}
+.season-name{font-weight:600; font-size:14.5px;}
+.season-progress{
+  margin-left:auto;
+  font-family:'Space Mono', monospace;
+  font-size:12px;
+  color:var(--text-muted);
+}
+.season-caret{
+  flex:none;
+  color:var(--text-muted);
+  transition:transform .15s;
+}
+.season-block.open .season-caret{transform:rotate(180deg);}
+.season-episodes{display:none; padding:4px 16px 14px;}
+.season-block.open .season-episodes{display:block;}
+.season-episodes-actions{
+  display:flex;
+  gap:8px;
+  margin:8px 0 12px;
+}
+.episode-row{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:8px 0;
+  border-top:1px solid var(--line-soft);
+  cursor:pointer;
+}
+.episode-row:first-of-type{border-top:none;}
+.episode-row input[type="checkbox"]{
+  margin-top:3px;
+  width:16px; height:16px;
+  accent-color:var(--violet);
+  flex:none;
+}
+.episode-num{
+  font-family:'Space Mono', monospace;
+  font-size:11.5px;
+  color:var(--text-muted);
+  flex:none;
+  width:34px;
+}
+.episode-title{flex:1; min-width:0; font-size:13.5px;}
+.episode-air{
+  font-family:'Space Mono', monospace;
+  font-size:11px;
+  color:var(--text-muted);
+  flex:none;
+}
 
 /* Tablette : la barre d'outils passe en deux rangées pleine largeur avant
    que les libellés des boutons ne disparaissent (voir 600px ci-dessous). */
@@ -2116,18 +2245,22 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
      téléphone étroit. */
   body[data-view-mode="grid"] #filmList,
   body[data-view-mode="grid"] #wlList,
+  body[data-view-mode="grid"] #seriesList,
   body[data-view-mode="grid"] #topList{grid-template-columns:repeat(2, 1fr); gap:12px;}
   /* Bannière plus compacte sur mobile — affiche resserrée pour laisser de
      la place au texte sans forcer le retour à la ligne (qui casserait la
      bannière plutôt que de simplement la rétrécir). */
   body[data-view-mode="list"] #filmList .film-row,
   body[data-view-mode="list"] #wlList .wl-row,
+  body[data-view-mode="list"] #seriesList .wl-row,
   body[data-view-mode="list"] #topList .wl-row{padding:10px 14px; gap:12px; min-height:76px;}
   body[data-view-mode="list"] #filmList .film-poster,
   body[data-view-mode="list"] #filmList .film-poster-placeholder,
   body[data-view-mode="list"] #wlList .film-poster,
+  body[data-view-mode="list"] #seriesList .film-poster,
   body[data-view-mode="list"] #topList .film-poster,
   body[data-view-mode="list"] #wlList .film-poster-placeholder,
+  body[data-view-mode="list"] #seriesList .film-poster-placeholder,
   body[data-view-mode="list"] #topList .film-poster-placeholder{width:46px; height:68px;}
 
   /* Recherche/tri en pleine largeur, "+ Ajouter" quitte la barre pour le
@@ -2140,7 +2273,8 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   .overlay{padding:20px 12px;}
   .modal{padding:20px;}
   .ach-tier-grid, .ach-hidden-grid{grid-template-columns:1fr 1fr;}
-  body[data-view-mode="grid"] #wlList .wl-actions{width:100%;}
+  body[data-view-mode="grid"] #wlList .wl-actions,
+  body[data-view-mode="grid"] #seriesList .wl-actions{width:100%;}
   .journal-row{flex-wrap:wrap;}
   .journal-date{margin-left:auto;}
 
@@ -2160,5 +2294,6 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
      une seule colonne, plus lisible, qu'une affiche écrasée. */
   body[data-view-mode="grid"] #filmList,
   body[data-view-mode="grid"] #wlList,
+  body[data-view-mode="grid"] #seriesList,
   body[data-view-mode="grid"] #topList{grid-template-columns:1fr;}
 }

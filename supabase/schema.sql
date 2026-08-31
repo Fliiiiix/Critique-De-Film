@@ -89,6 +89,9 @@ create table public.watchlist (
   overview text,
   release_year integer,
   original_title text,
+  -- Date de sortie complète (pas juste l'année), voir migrations/025 —
+  -- utilisée par la section Prochaines sorties (js/upcoming.js).
+  release_date date,
   added bigint not null,
   created_at timestamptz not null default now()
 );
@@ -109,6 +112,73 @@ create policy "Users can update own watchlist"
 
 create policy "Users can delete own watchlist"
   on public.watchlist for delete
+  using (auth.uid() = user_id);
+
+-- Séries suivies, section à part du catalogue films, voir migrations/024.
+create table public.tv_shows (
+  id bigint generated always as identity primary key,
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  tmdb_id integer not null,
+  title text not null,
+  poster_url text,
+  overview text,
+  first_air_year integer,
+  status text,
+  number_of_seasons integer,
+  number_of_episodes integer,
+  in_production boolean,
+  manual_note numeric,
+  review text,
+  added bigint not null,
+  created_at timestamptz not null default now(),
+  unique (user_id, tmdb_id)
+);
+
+alter table public.tv_shows enable row level security;
+
+create policy "Users can view own tv shows"
+  on public.tv_shows for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own tv shows"
+  on public.tv_shows for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own tv shows"
+  on public.tv_shows for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own tv shows"
+  on public.tv_shows for delete
+  using (auth.uid() = user_id);
+
+-- Épisodes vus, une ligne par épisode — voir migrations/024.
+create table public.tv_episodes_watched (
+  id bigint generated always as identity primary key,
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  tv_show_id bigint not null references public.tv_shows(id) on delete cascade,
+  season_number integer not null,
+  episode_number integer not null,
+  watched_at bigint not null,
+  unique (user_id, tv_show_id, season_number, episode_number)
+);
+
+alter table public.tv_episodes_watched enable row level security;
+
+create policy "Users can view own watched episodes"
+  on public.tv_episodes_watched for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own watched episodes"
+  on public.tv_episodes_watched for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own watched episodes"
+  on public.tv_episodes_watched for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own watched episodes"
+  on public.tv_episodes_watched for delete
   using (auth.uid() = user_id);
 
 -- Journal des visionnages (revisionnages), voir migrations/007.
