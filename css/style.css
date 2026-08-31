@@ -54,10 +54,19 @@
    plutôt qu'un dégradé qui ne couvrirait que le haut. Discret exprès (le
    cadran reste la seule vraie signature) : jamais assez marqué pour gêner
    la lecture d'une liste par-dessus. */
+/* Grille de points (v2.0.8) : jusqu'ici réservée à l'écran de connexion
+   (.auth-pattern) — étendue à TOUTE l'app en toile de fond commune, très
+   discrète (0.04 d'opacité, sous les deux taches de lumière), pour que
+   l'identité posée sur l'écran de connexion se retrouve partout plutôt
+   que de s'arrêter à la porte. .auth-pattern reste par-dessus pour son
+   halo plus marqué propre à cet écran (voir plus bas) — pas de doublon
+   visuel gênant, elle vient juste renforcer ce que le corps de page fait
+   déjà partout. */
 body{
   background:
     radial-gradient(900px 560px at 88% 0%, rgba(140,124,255,0.09), transparent 60%),
     radial-gradient(760px 480px at 6% 60%, rgba(231,178,76,0.05), transparent 55%),
+    radial-gradient(rgba(242,238,230,0.04) 1px, transparent 1px) 0 0/26px 26px,
     var(--ink);
   background-attachment:fixed;
   color:var(--text);
@@ -83,11 +92,31 @@ header{
   gap:10px;
 }
 .brand-link{
+  display:flex;
+  align-items:center;
+  gap:11px;
   cursor:pointer;
   transition:opacity .15s;
 }
 .brand-link:hover{opacity:0.82;}
 .brand-link:focus-visible{outline:2px solid var(--violet-dim); outline-offset:4px; border-radius:2px;}
+/* Logo (v2.0.8) : un cadran, pas une lettre — reprend directement le
+   composant .counter (badge circulaire coloré par barème), déjà désigné
+   comme "signature visuelle de Kinet" ailleurs dans ce fichier, plutôt
+   qu'un monogramme sans lien avec ce que l'app fait vraiment. L'arc violet
+   ne fait jamais le tour complet (~72%) : Kinet n'est jamais "fini", on y
+   ajoute toujours un film ou une série. */
+.brand-mark{width:34px; height:34px; flex:none;}
+.brand-mark-track{fill:none; stroke:var(--line); stroke-width:3.5;}
+.brand-mark-arc{
+  fill:none;
+  stroke:var(--violet);
+  stroke-width:3.5;
+  stroke-linecap:round;
+  stroke-dasharray:72 101;
+  transform:rotate(-90deg);
+  transform-origin:20px 20px;
+}
 .user-bar{
   position:absolute;
   top:14px;
@@ -543,6 +572,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background:var(--ink);
   font-size:22px;
   opacity:0.5;
+  /* Filet de sécurité générique (voir .auth-feature-icon) : le format
+     rectangle (pas carré) laisse plus de marge ici, mais un débordement
+     n'a de toute façon jamais rien à apporter visuellement. */
+  overflow:hidden;
 }
 .review-badge{
   display:inline-block;
@@ -869,12 +902,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background:var(--violet-wash);
   border:1px solid var(--violet-dim);
   display:flex; align-items:center; justify-content:center;
-  font-size:17px;
-  /* Même bug que .auth-tags avant correction : hérite d'Instrument Sans
-     (body) par défaut, qui n'a pas de glyphes emoji couleur -> rendu
-     monochrome/mal aligné. Repéré ici après coup par l'utilisateur car ce
-     bloc n'utilisait pas encore .ico comme les autres emoji de l'écran
-     de connexion. */
+  /* Un glyphe emoji couleur ne suit pas la même boîte qu'un caractère
+     texte au même font-size — Segoe UI Emoji/Apple Color Emoji rendent
+     nettement plus grand que leur taille nominale, débordait visiblement
+     du cadre à 17px (constaté par l'utilisateur, à répétition). Réduit à
+     14px ET overflow:hidden en filet de sécurité : quelle que soit la
+     police emoji réellement utilisée par le navigateur/OS du visiteur,
+     rien ne peut plus déborder du cadre défini, même si ses métriques
+     diffèrent de celles testées ici. Même paire de règles appliquée à
+     .auth-card-mark juste en dessous, exposée au même risque. */
+  font-size:14px;
+  overflow:hidden;
   font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Segoe UI Symbol',sans-serif;
   font-variant-emoji:emoji;
 }
@@ -952,7 +990,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background:var(--violet-wash);
   border:1px solid var(--violet-dim);
   display:flex; align-items:center; justify-content:center;
-  font-size:20px;
+  /* Même correctif que .auth-feature-icon juste au-dessus (même bug de
+     débordement d'emoji couleur) : taille réduite + overflow:hidden. */
+  font-size:17px;
+  overflow:hidden;
   margin-bottom:16px;
 }
 .auth-card-foot{
@@ -1418,6 +1459,45 @@ input[type="range"]::-moz-range-thumb{
   margin:16px auto;
   font-size:14px;
 }
+/* Bandeau d'installation (js/pwa.js) — même gabarit que .digest-banner/
+   .offline-banner (bandeau plein-largeur hors des pages à bascule) mais
+   accent --violet : positif/marque, pas un avertissement (coral) ni une
+   info neutre (gold). */
+.install-banner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+  background:linear-gradient(120deg, var(--violet-wash) 0%, var(--surface) 65%);
+  border:1px solid var(--violet-dim);
+  border-radius:10px;
+  padding:14px 20px;
+  margin:16px auto;
+}
+.install-banner-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
+.install-banner-text b{
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:700;
+  font-size:14.5px;
+}
+.install-banner-text span{
+  font-size:12.5px;
+  color:var(--text-muted);
+}
+.install-banner-actions{display:flex; align-items:center; gap:10px; flex:none;}
+.install-banner-dismiss{
+  background:none;
+  border:none;
+  color:var(--text-muted);
+  font-size:16px;
+  line-height:1;
+  padding:6px;
+  cursor:pointer;
+  border-radius:6px;
+  transition:background .15s, color .15s;
+}
+.install-banner-dismiss:hover{background:var(--surface-2); color:var(--text);}
 .stats-section-title{
   font-family:'Bricolage Grotesque', sans-serif;
   font-weight:700;

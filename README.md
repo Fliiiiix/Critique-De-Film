@@ -756,7 +756,7 @@ page ou le couloir Old Boy déjà en place) ; le pulse étoile/sauvegarde est
 au contraire piloté en direct par le clic — il reste actif quel que soit ce
 réglage, comme l'arc final d'Odyssée.
 
-## Installation en app (PWA, v2.0.7)
+## Installation en app (PWA, v2.0.7, bandeau v2.0.8)
 
 Kinet s'installe comme une vraie application — téléphone (Android/iOS) et
 PC (Chrome/Edge) — sans passer par un store. Aucun `.apk` distinct :
@@ -774,10 +774,16 @@ spécifiquement "présent sur le Play Store".
   (iOS) + `favicon-32`.
 - **`sw.js`**, déjà en place pour le mode hors ligne ci-dessous, sert aussi
   de service worker requis pour l'installabilité — rien à y changer.
+- **Bandeau d'installation** (`#installBanner`, v2.0.8) : la section dans
+  la modale profil (ci-dessous) était jugée pas assez visible — ce bandeau
+  pleine largeur, hors des conteneurs auth/app, se voit tout de suite,
+  **y compris sur l'écran de connexion avant tout compte**. Fermeture
+  mémorisée le temps de la session (`sessionStorage`) seulement — reparaît
+  à la prochaine vraie visite plutôt que de disparaître pour de bon.
 - **UI d'installation** (`js/pwa.js`) : dans la modale profil (section
-  "Installer Kinet", sous "Mon activité" — pas d'endroit dédié ailleurs sur
-  le site, la modale profil est déjà l'endroit où on gère son rapport à
-  l'app). Contenu entièrement dynamique selon ce que le navigateur permet :
+  "Installer Kinet", sous "Mon activité" — sert de référence permanente
+  une fois qu'on sait où la trouver, en complément du bandeau). Contenu
+  entièrement dynamique selon ce que le navigateur permet :
   - **Chrome/Edge (téléphone ou PC)** : capte l'évènement natif
     `beforeinstallprompt`, propose un bouton **📲 Installer l'app** qui
     déclenche le prompt natif du navigateur.
@@ -790,6 +796,19 @@ spécifiquement "présent sur le Play Store".
 - **iOS ne lit pas le manifest** pour le mode standalone : trois balises
   `apple-mobile-web-app-*` dans `<head>` (index.html) assurent qu'un ajout
   à l'écran d'accueil s'ouvre bien sans barre d'adresse sur cet OS.
+
+**Limite connue — le lien du mail de connexion sur PC** : une fois Kinet
+installée sur PC, cliquer le lien reçu par email (connexion par lien
+magique) ouvre le navigateur classique et pas la fenêtre de l'app
+installée. Ce n'est pas un réglage que le site peut forcer lui-même :
+c'est Chrome/Edge qui décide, par installation, d'ouvrir ou non les liens
+d'un site dans son app installée ("Link Capturing"), un réglage propre à
+chaque appareil. `manifest.json` inclut déjà `id` et `launch_handler`
+(les deux éléments côté site qui aident ce mécanisme à reconnaître Kinet
+correctement) ; pour l'activer réellement, ouvrir `chrome://apps` (ou
+`edge://apps`), clic droit sur Kinet → **Paramètres de l'app** → activer
+**"Ouvrir les liens pris en charge dans l'app"**. Une fois ce réglage
+activé, le lien du mail devrait ouvrir directement la fenêtre installée.
 
 ## Mode hors ligne, lecture seule (v1.6)
 

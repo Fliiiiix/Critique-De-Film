@@ -1,14 +1,13 @@
-// --- Installation en app (PWA, v2.0.7) ---
+// --- Installation en app (PWA, v2.0.7 puis v2.0.8) ---
 // Kinet est installable comme une vraie application — téléphone (Android/
 // iOS) et PC (Chrome/Edge) — sans passer par un store, en s'appuyant sur
 // le manifest (manifest.json) et le service worker déjà enregistré pour le
-// mode hors ligne (sw.js, voir js/offline.js). Ce fichier ne fait que
-// piloter l'UI d'installation dans la modale profil (#installSection,
-// index.html) : capter l'évènement natif quand le navigateur le propose
-// (Chrome/Edge, téléphone comme PC), et donner des instructions manuelles
-// là où ce prompt n'existe pas (Safari iOS n'a jamais de
-// beforeinstallprompt — seul le geste "Partager → Sur l'écran d'accueil"
-// permet d'installer).
+// mode hors ligne (sw.js, voir js/offline.js). Deux surfaces pilotées
+// d'ici : #installSection (modale profil, référence permanente une fois
+// qu'on sait où la trouver) et #installBanner (v2.0.8, bandeau pleine
+// largeur hors des conteneurs auth/app — visible immédiatement, y compris
+// sur l'écran de connexion avant tout compte, demande explicite après
+// que la section modale seule ait été jugée pas assez visible).
 
 let deferredInstallPrompt = null;
 
@@ -37,11 +36,13 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
   updateInstallUI();
+  updateInstallBanner();
 });
 
 window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
   updateInstallUI();
+  updateInstallBanner();
   showToast('Kinet installé 🎉');
 });
 
@@ -53,6 +54,7 @@ async function handleInstallClick(){
   // redonne pas un identique tant que rien n'a changé côté app/navigateur.
   deferredInstallPrompt = null;
   updateInstallUI();
+  updateInstallBanner();
 }
 
 // Appelée à l'ouverture de la modale profil (js/profile.js) et par les
@@ -88,3 +90,63 @@ function updateInstallUI(){
   // apparaître) — un message générique plutôt qu'un bouton mort.
   el.innerHTML = `<div class="wl-note">Ton navigateur ne propose pas encore l'installation ici — essaie avec Chrome ou Edge (téléphone ou PC), ou reviens dans quelques instants.</div>`;
 }
+
+// --- Bandeau d'installation (#installBanner, v2.0.8) ---
+// Pleine largeur, hors des conteneurs auth/app (voir index.html) : rendu
+// prioritaire par rapport à #installSection ci-dessus, qu'on ne trouve
+// qu'en ouvrant la modale profil — celui-ci se voit tout de suite, y
+// compris sur l'écran de connexion avant d'avoir un compte. Ne s'affiche
+// QUE quand une installation a effectivement un sens ici (pas déjà
+// installée, prompt natif dispo OU iOS avec ses instructions manuelles) —
+// jamais de bouton mort. Fermeture mémorisée le temps de la session
+// (sessionStorage, pas localStorage) : assez pour ne pas harceler une
+// fois fermé, mais réapparaît à la prochaine vraie visite plutôt que de
+// disparaître pour de bon sur un clic accidentel — cohérent avec la
+// demande explicite d'une installation "très visible".
+const INSTALL_BANNER_DISMISS_KEY = 'kinetInstallBannerDismissed';
+
+function updateInstallBanner(){
+  const banner = document.getElementById('installBanner');
+  if(!banner) return;
+
+  if(isStandaloneDisplay() || sessionStorage.getItem(INSTALL_BANNER_DISMISS_KEY) === '1'){
+    banner.style.display = 'none';
+    return;
+  }
+
+  const subEl = document.getElementById('installBannerSub');
+  const btn = document.getElementById('installBannerBtn');
+
+  if(deferredInstallPrompt){
+    subEl.textContent = 'Comme une vraie app, en un geste — téléphone ou PC.';
+    btn.style.display = '';
+    banner.style.display = '';
+    return;
+  }
+
+  if(isIOSDevice()){
+    subEl.textContent = "Bouton Partager de Safari, puis \"Sur l'écran d'accueil\".";
+    btn.style.display = 'none';
+    banner.style.display = '';
+    return;
+  }
+
+  // Ni prompt natif ni iOS : rien de concret à proposer ici (voir
+  // updateInstallUI() ci-dessus pour le même raisonnement) — le bandeau
+  // reste masqué plutôt que d'afficher un message sans action possible,
+  // contrairement à #installSection qui elle reste toujours consultable
+  // depuis la modale profil.
+  banner.style.display = 'none';
+}
+
+document.getElementById('installBannerBtn').addEventListener('click', handleInstallClick);
+document.getElementById('installBannerDismiss').addEventListener('click', () => {
+  sessionStorage.setItem(INSTALL_BANNER_DISMISS_KEY, '1');
+  updateInstallBanner();
+});
+
+// Premier calcul au chargement : iOS n'a pas d'évènement à attendre
+// (isIOSDevice() est vrai ou faux dès le départ), donc sans cet appel le
+// bandeau resterait masqué indéfiniment sur iPhone/iPad tant qu'aucun
+// beforeinstallprompt ne se déclenche — ce qui n'arrive jamais là-bas.
+updateInstallBanner();
