@@ -49,7 +49,7 @@ python3 -m http.server 8000
 # puis ouvrir http://localhost:8000
 ```
 
-En ligne : https://fliiiiix.github.io/Critique-De-Film/ (GitHub Pages, déployé
+En ligne : https://fliiiiix.github.io/Kinet/ (GitHub Pages, déployé
 depuis la branche `main`).
 
 ### Mode maintenance
@@ -77,7 +77,7 @@ grâce aux règles RLS définies dans `supabase/schema.sql`.
 1. Créer un projet sur [supabase.com](https://supabase.com)
 2. Dans **SQL Editor**, exécuter le contenu de `supabase/schema.sql`
 3. Dans **Authentication → URL Configuration**, mettre l'URL du site déployé
-   (ex. `https://fliiiiix.github.io/Critique-De-Film/`) en *Site URL* et en
+   (ex. `https://fliiiiix.github.io/Kinet/`) en *Site URL* et en
    *Redirect URL* — sinon le lien magique renvoie vers la mauvaise adresse
 4. Dans **Project Settings → API**, copier *Project URL* et clé *anon public*
    dans `js/supabaseConfig.js`

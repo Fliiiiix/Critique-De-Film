@@ -11,7 +11,7 @@
 // requête réseau en plus pour ça — même raisonnement que le lazy-load
 // déjà en place ailleurs dans l'app (offline, TMDB...).
 
-const SHARE_URL = 'https://fliiiiix.github.io/Critique-De-Film/';
+const SHARE_URL = 'https://fliiiiix.github.io/Kinet/';
 let qrLibraryPromise = null;
 
 function loadQrLibrary(){
