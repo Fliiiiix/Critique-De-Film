@@ -28,7 +28,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=35">
+<link rel="stylesheet" href="css/style.css?v=36">
 </head>
 <body>
 
@@ -134,28 +134,16 @@
   </div>
 </div>
 
-<!-- Écran de connexion (lien magique par email) — v2.0.10 : refonte de
-     fond, pas un nouveau correctif CSS par-dessus les précédents. Deux
-     retours utilisateur distincts à l'origine :
-     1) Les 3 icônes de .auth-features (et plus largement chaque emoji de
-        cet écran — tags, .auth-card-mark, cartes de la vitrine) restaient
-        signalées comme "cassées" malgré 2 correctifs CSS (couleur puis
-        taille/overflow, v2.0.3-v2.0.8). Un emoji couleur dépend
-        entièrement de la police système du visiteur, hors de contrôle
-        CSS — v2.0.9 avait déjà réglé les 3 icônes de .auth-features en
-        SVG (stroke=currentColor, rend identiquement partout) ; ce tour-ci
-        étend le même traitement à TOUS les emojis de cet écran plutôt que
-        de continuer à en garder ici ou là.
-     2) "trop vertical" : sur un écran large, .auth-showcase forçait un
-        retour à la ligne pleine largeur (ancien width:100% en flex) qui
-        empilait texte → vitrine → carte en une seule colonne centrée,
-        sans profiter de la largeur disponible. Restructuré en grille 2
-        colonnes (texte à gauche, vitrine+carte dans .auth-side à droite,
-        voir style.css) — mobile inchangé, toujours empilé carte en
-        premier (voir media query 760px : .auth-hero ET .auth-side ont
-        chacun leur propre column-reverse, pour reconstituer le même
-        ordre visuel carte→vitrine→texte qu'avant avec seulement 2
-        enfants directs dans .auth-hero au lieu de 3).
+<!-- Écran de connexion (lien magique par email) — v2.0.11 : plus d'icône
+     du tout sur cet écran (SVG compris, v2.0.10) — malgré le passage aux
+     SVG, la présence même d'une icône dans un badge carré restait jugée
+     ratée. Remplacé par du pur typo/couleur déjà dans l'identité Kinet :
+     numéros en Space Mono (comme .version-tag/.auth-tags) pour
+     .auth-features, dégradés aux couleurs de notation (--gold/--green/
+     --coral, comme .counter.rate-*) pour les posters de la vitrine —
+     aucune icône, aucun risque de rendu cassé, cohérent avec le reste de
+     l'app plutôt qu'un élément décoratif ajouté. Layout 2 colonnes
+     (v2.0.10, voir .auth-side/.auth-hero dans style.css) inchangé.
      #authEmail/#authSendBtn/#authStatus gardent exactement leurs ids,
      js/auth.js n'a rien à changer. -->
 <div class="container" id="authContainer" style="display:none;">
@@ -176,47 +164,28 @@
            plutôt que du discours. -->
       <p class="auth-pitch-sub">Scénario, mise en scène, jeu d'acteur, musique, rythme, émotion, originalité : sept notes qui font la moyenne — pas une étoile balancée à l'instinct.</p>
       <ul class="auth-tags" aria-hidden="true">
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="4.2"></circle><circle cx="12" cy="12" r="0.6" fill="currentColor" stroke="none"></circle></svg>7 critères</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg>Films &amp; séries</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2"></rect><path d="M3.5 10h17"></path><path d="M8 3.5v4"></path><path d="M16 3.5v4"></path></svg>Prochaines sorties</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.3" cy="8" r="3.3"></circle><path d="M16 3.8c1.5.7 2.5 2.2 2.5 4S17.5 11.1 16 11.8"></path><path d="M14.5 20.3c0-3-2.3-5-5.2-5s-5.2 2-5.2 5"></path><path d="M19 20c0-2.5-1.7-4.3-4-4.8"></path></svg>Amis &amp; groupes</li>
+        <li>7 critères</li>
+        <li>Films &amp; séries</li>
+        <li>Prochaines sorties</li>
+        <li>Amis &amp; groupes</li>
       </ul>
       <!-- Grille de 3 (auto-fit, voir style.css) plutôt qu'une liste
            empilée : reste sur une seule rangée tant qu'il y a la place,
            repasse à 2 puis 1 colonne toute seule si l'espace manque —
-           aucun palier à caler à la main. Descriptions réécrites
-           (v2.0.10, même motif que le sous-titre) : du concret sur ce que
-           fait vraiment l'app plutôt qu'une formule passe-partout. -->
+           aucun palier à caler à la main. Numéros en Space Mono (v2.0.11)
+           à la place d'icônes : pas de nouvel élément visuel à inventer,
+           juste le même vocabulaire typo que .version-tag/.auth-tags. -->
       <ul class="auth-features">
         <li>
-          <span class="auth-feature-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <circle cx="12" cy="12" r="8"></circle>
-              <circle cx="12" cy="12" r="4.2"></circle>
-              <circle cx="12" cy="12" r="0.6" fill="currentColor" stroke="none"></circle>
-            </svg>
-          </span>
+          <span class="auth-feature-num">01</span>
           <div><b>Note manuelle ou calculée</b><span>La moyenne des 7 critères fait la note — ou tranche toi-même, film par film.</span></div>
         </li>
         <li>
-          <span class="auth-feature-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-              <path d="M5 19V13"></path>
-              <path d="M12 19V8"></path>
-              <path d="M19 19V4"></path>
-            </svg>
-          </span>
+          <span class="auth-feature-num">02</span>
           <div><b>Journal &amp; succès</b><span>Chaque visionnage daté et archivé, des succès à débloquer au fil de ta collection.</span></div>
         </li>
         <li>
-          <span class="auth-feature-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="9.3" cy="8" r="3.3"></circle>
-              <path d="M16 3.8c1.5.7 2.5 2.2 2.5 4S17.5 11.1 16 11.8"></path>
-              <path d="M14.5 20.3c0-3-2.3-5-5.2-5s-5.2 2-5.2 5"></path>
-              <path d="M19 20c0-2.5-1.7-4.3-4-4.8"></path>
-            </svg>
-          </span>
+          <span class="auth-feature-num">03</span>
           <div><b>Amis &amp; groupes</b><span>Compare tes notes, propose un film au groupe, vote pour la prochaine séance.</span></div>
         </li>
       </ul>
@@ -228,34 +197,33 @@
          pleine largeur, ce qui empilait tout verticalement sous le texte
          au lieu d'utiliser la largeur de l'écran. -->
     <div class="auth-side">
-      <!-- Aperçu produit : 3 cartes façon catalogue en éventail, posters/
-           titres en aplats génériques (pas de vraie donnée avant connexion)
-           mais le cadran réutilise .counter/.rate-* tel quel — même rendu
-           que dans le vrai catalogue. Empilées par le flux normal
-           (chevauchement en marge négative) plutôt qu'en coordonnées
-           absolues : reste correct à n'importe quelle largeur/hauteur
-           d'écran au lieu de dépendre de positions calées à la main. -->
+      <!-- Aperçu produit : 3 cartes façon catalogue en éventail, chacune
+           avec un vrai .counter/.rate-* (mêmes classes que le catalogue).
+           Poster en dégradé plutôt qu'icône ou aplat uni (v2.0.11) : la
+           couleur du dégradé reprend celle du cadran juste à côté (gold/
+           green/coral, comme .counter.rate-*) — un vrai détail de
+           direction artistique plutôt qu'un pictogramme générique.
+           Empilées par le flux normal (chevauchement en marge négative)
+           plutôt qu'en coordonnées absolues : reste correct à n'importe
+           quelle largeur/hauteur d'écran. -->
       <div class="auth-showcase" aria-hidden="true">
         <div class="auth-mock-card auth-mock-1">
-          <div class="film-poster film-poster-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M3 15h18M8.5 4v16M15.5 4v16"></path></svg></div>
+          <div class="film-poster auth-mock-poster auth-mock-poster-gold"></div>
           <div class="auth-mock-lines"><div class="auth-mock-line" style="width:78%;"></div><div class="auth-mock-line short"></div></div>
           <div class="counter rate-mid">3.5</div>
         </div>
         <div class="auth-mock-card auth-mock-2">
-          <div class="film-poster film-poster-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg></div>
+          <div class="film-poster auth-mock-poster auth-mock-poster-green"></div>
           <div class="auth-mock-lines"><div class="auth-mock-line" style="width:62%;"></div><div class="auth-mock-line short"></div></div>
           <div class="counter rate-high">4.5</div>
         </div>
         <div class="auth-mock-card auth-mock-3">
-          <div class="film-poster film-poster-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M3 15h18M8.5 4v16M15.5 4v16"></path></svg></div>
+          <div class="film-poster auth-mock-poster auth-mock-poster-coral"></div>
           <div class="auth-mock-lines"><div class="auth-mock-line" style="width:85%;"></div><div class="auth-mock-line short"></div></div>
           <div class="counter rate-low">2.0</div>
         </div>
       </div>
       <div class="auth-card">
-        <div class="auth-card-mark">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M4 7l8 6 8-6"></path></svg>
-        </div>
         <h2>Connexion</h2>
         <p class="auth-intro">Entre ton email : tu recevras un lien de connexion, sans mot de passe.</p>
         <div class="field">
@@ -947,61 +915,61 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=35"></script>
-<script src="js/tmdbConfig.js?v=35"></script>
-<script src="js/data.js?v=35"></script>
-<script src="js/happenings.js?v=35"></script>
+<script src="js/supabaseConfig.js?v=36"></script>
+<script src="js/tmdbConfig.js?v=36"></script>
+<script src="js/data.js?v=36"></script>
+<script src="js/happenings.js?v=36"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=35"></script>
+<script src="js/ui.js?v=36"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=35"></script>
-<script src="js/app.js?v=35"></script>
-<script src="js/tmdb.js?v=35"></script>
-<script src="js/stats.js?v=35"></script>
-<script src="js/achievements.js?v=35"></script>
-<script src="js/journal.js?v=35"></script>
+<script src="js/offline.js?v=36"></script>
+<script src="js/app.js?v=36"></script>
+<script src="js/tmdb.js?v=36"></script>
+<script src="js/stats.js?v=36"></script>
+<script src="js/achievements.js?v=36"></script>
+<script src="js/journal.js?v=36"></script>
 <!-- Après app.js (showToast) — appelée par js/profile.js juste après. -->
-<script src="js/pwa.js?v=35"></script>
-<script src="js/profile.js?v=35"></script>
+<script src="js/pwa.js?v=36"></script>
+<script src="js/profile.js?v=36"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=35"></script>
-<script src="js/router.js?v=35"></script>
-<script src="js/publicProfile.js?v=35"></script>
-<script src="js/top.js?v=35"></script>
-<script src="js/friends.js?v=35"></script>
+<script src="js/admin.js?v=36"></script>
+<script src="js/router.js?v=36"></script>
+<script src="js/publicProfile.js?v=36"></script>
+<script src="js/top.js?v=36"></script>
+<script src="js/friends.js?v=36"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=35"></script>
-<script src="js/watchlist.js?v=35"></script>
+<script src="js/activity.js?v=36"></script>
+<script src="js/watchlist.js?v=36"></script>
 <!-- Après watchlist.js : js/upcoming.js réutilise le tableau watchlist déjà
      chargé (voir plus bas). -->
-<script src="js/series.js?v=35"></script>
+<script src="js/series.js?v=36"></script>
 <!-- Après watchlist.js ET series.js — a besoin des deux tableaux chargés
      (loadWatchlist()/loadTrackedShows()), voir js/upcoming.js. -->
-<script src="js/upcoming.js?v=35"></script>
-<script src="js/groups.js?v=35"></script>
-<script src="js/proposals.js?v=35"></script>
+<script src="js/upcoming.js?v=36"></script>
+<script src="js/groups.js?v=36"></script>
+<script src="js/proposals.js?v=36"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=35"></script>
+<script src="js/invites.js?v=36"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=35"></script>
-<script src="js/auth.js?v=35"></script>
+<script src="js/activityState.js?v=36"></script>
+<script src="js/auth.js?v=36"></script>
 </body>
 </html>

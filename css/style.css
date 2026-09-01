@@ -572,9 +572,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background:var(--ink);
   font-size:22px;
   opacity:0.5;
-  /* Filet de sécurité générique (voir .auth-feature-icon) : le format
-     rectangle (pas carré) laisse plus de marge ici, mais un débordement
-     n'a de toute façon jamais rien à apporter visuellement. */
+  /* Filet de sécurité générique : le format rectangle (pas carré) laisse
+     plus de marge ici, mais un débordement n'a de toute façon jamais rien
+     à apporter visuellement. */
   overflow:hidden;
 }
 .review-badge{
@@ -893,10 +893,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border-radius:999px;
   padding:6px 12px;
 }
-/* SVG dessiné à la main (v2.0.9, étendu à tout l'écran en v2.0.10) plutôt
-   qu'un emoji — voir index.html pour le pourquoi. currentColor hérite de
-   la couleur du texte du tag (var(--text-muted)) : rien à teinter à part. */
-.auth-tags li svg{width:13px; height:13px; flex:none;}
 /* auto-fit plutôt qu'un nombre de colonnes fixe (v2.0.10) : 3 par rangée
    tant qu'il y a la place (colonne de texte large, voir .auth-hero),
    repasse à 2 puis 1 tout seul si l'espace se resserre — aucun palier à
@@ -904,19 +900,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    760px (empilement mobile) et la largeur où .auth-pitch retrouve sa
    pleine mesure. */
 .auth-features{list-style:none; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:20px;}
-.auth-features li{display:flex; flex-direction:column; align-items:flex-start; gap:10px;}
-.auth-feature-icon{
-  flex:none;
-  width:38px; height:38px;
-  border-radius:10px;
-  background:var(--violet-wash);
-  border:1px solid var(--violet-dim);
-  display:flex; align-items:center; justify-content:center;
+.auth-features li{display:flex; flex-direction:column; align-items:flex-start; gap:6px;}
+/* Numéro plutôt qu'icône (v2.0.11) : même vocabulaire typo que
+   .auth-tags/.version-tag (Space Mono), pas un nouvel élément visuel —
+   aucune icône sur cet écran, cassée ou non, après les retours répétés
+   sur les badges carrés (v2.0.3-v2.0.10). */
+.auth-feature-num{
+  font-family:'Space Mono', monospace;
+  font-weight:700;
+  font-size:13px;
   color:var(--violet);
+  letter-spacing:0.03em;
 }
-/* currentColor hérite de la couleur du badge ci-dessus : un seul endroit
-   à changer pour teinter l'icône. */
-.auth-feature-icon svg{width:19px; height:19px;}
 .auth-features b{
   display:block;
   font-family:'Bricolage Grotesque', sans-serif;
@@ -985,7 +980,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .auth-mock-card:first-child{margin-left:0;}
 .auth-mock-card .film-poster{width:32px; height:46px;}
-.auth-mock-card .film-poster-placeholder svg{width:15px; height:15px;}
+/* Dégradé plutôt qu'icône (v2.0.11) : la couleur reprend celle du cadran
+   .rate-* juste à côté sur la même carte (gold/green/coral) — un vrai
+   détail de DA propre à Kinet plutôt qu'un pictogramme façon banque
+   d'icônes. rgba direct (pas --gold-wash/--green-wash/--coral-dim,
+   pensées pour un fond de pilule très discret) : ici le dégradé EST le
+   sujet visuel, il a besoin d'assez de présence pour lire comme un
+   aplat d'affiche, pas juste une teinte de fond. */
+.auth-mock-poster{background:linear-gradient(155deg, var(--surface-3), var(--surface-2));}
+.auth-mock-poster-gold{background:linear-gradient(155deg, rgba(231,178,76,0.4), var(--surface-2) 78%);}
+.auth-mock-poster-green{background:linear-gradient(155deg, rgba(106,209,139,0.4), var(--surface-2) 78%);}
+.auth-mock-poster-coral{background:linear-gradient(155deg, rgba(255,107,87,0.4), var(--surface-2) 78%);}
 .auth-mock-lines{flex:1; min-width:0;}
 .auth-mock-line{
   height:6px;
@@ -1003,16 +1008,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .auth-mock-2{transform:rotate(4deg) translateY(-10px); z-index:2;}
 .auth-mock-3{transform:rotate(-2deg) translateY(4px); z-index:3;}
 .auth-side .auth-card{width:100%; max-width:420px; position:relative;}
-.auth-card-mark{
-  width:44px; height:44px;
-  border-radius:12px;
-  background:var(--violet-wash);
-  border:1px solid var(--violet-dim);
-  display:flex; align-items:center; justify-content:center;
-  color:var(--violet);
-  margin-bottom:16px;
-}
-.auth-card-mark svg{width:20px; height:20px;}
 .auth-card-foot{
   margin-top:16px;
   font-size:11.5px;
