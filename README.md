@@ -744,12 +744,12 @@ revient le plus") de façon simple et prévisible plutôt que par une
 approximation statistique. Nécessite
 `supabase/migrations/026_add_feedback.sql`.
 
-## Interface admin (succès, happenings & retours)
+## Interface admin (succès, happenings, retours & stats)
 
 Un tableau de bord "voir tout / gérer tout" — réservé au compte
 propriétaire de l'app (email en dur, `ADMIN_EMAIL` dans `js/admin.js`),
 accessible via **🛠️ Admin** dans la modale profil (bouton masqué pour
-tout autre compte). Trois onglets :
+tout autre compte). Quatre onglets :
 
 - **Succès** — tous les paliers cumulatifs et tous les succès secrets, y
   compris ceux encore verrouillés (pas de "???" ici, c'est la vue admin).
@@ -769,6 +769,7 @@ tout autre compte). Trois onglets :
   expérience sur mesure (comme l'arc de l'Odyssée ou le défi photo) reste
   du ressort du code, pas de l'admin.
 - **Retours** — voir la section Feedback juste au-dessus.
+- **Stats & logs** — voir la section suivante.
 
 Techniquement (Succès/Happenings) : les définitions (`CUMULATIVE_GROUPS`, `HIDDEN_ACHIEVEMENTS`,
 `HAPPENINGS`) restent dans le code — l'admin ne stocke que les *écarts* par
@@ -780,6 +781,42 @@ ces écarts via `getEffectiveCumulativeGroups()` / `getEffectiveHiddenAchievemen
 / `getEffectiveHappenings()` — vérifiés en `typeof` pour continuer à
 fonctionner seuls sur un compte non admin (jamais de config chargée dans ce
 cas). Nécessite `supabase/migrations/018_add_admin_config.sql`.
+
+## Stats & logs (admin, v2.1)
+
+Onglet **Stats & logs** de la modale admin — trois blocs :
+
+- **Croissance** — inscriptions et installations de l'app (PWA), au total
+  et sur les 7 derniers jours. Répond directement à "qui télécharge le
+  site".
+- **Activité globale (tous comptes)** — comptes créés, films notés,
+  séries suivies, visionnages, agrégés sur TOUS les comptes (pas
+  seulement celui de l'admin) via une fonction `SECURITY DEFINER`
+  (`get_admin_site_stats()`, même famille que `get_global_top_films` —
+  lit tout en interne mais ne renvoie que 4 nombres, jamais une ligne
+  identifiable).
+- **Journal** — les 200 derniers évènements bruts, plus récents en
+  premier : inscriptions, installations, et surtout les **erreurs JS non
+  interceptées qui arrivent vraiment aux visiteurs** (message + fichier +
+  ligne) — jusqu'ici invisibles pour l'admin, elles ne partaient que dans
+  LEUR console à eux.
+
+Techniquement : une seule table `app_events` (append-only, `event_type` +
+`detail` texte libre plutôt qu'une table par type — un nouveau type de log
+demain n'exige pas de nouvelle migration) alimentée par `logEvent()`
+(`js/logging.js`, chargé tôt pour capter aussi les erreurs de chargement
+des scripts suivants) : `window.addEventListener('error', ...)` et
+`'unhandledrejection'` pour les erreurs, un appel explicite à l'inscription
+(`js/profile.js`, sur la vraie création de profil, pas une relecture) et à
+l'installation PWA (`js/pwa.js`, évènement `appinstalled`). `logEvent()`
+ne lève jamais (tout est avalé en silence) : un raté de log ne doit
+jamais devenir une nouvelle erreur visible à son tour.
+
+INSERT ouvert même sans session (`anon` + `authenticated`, seule table du
+projet dans ce cas) : une erreur peut survenir sur l'écran de connexion,
+avant tout compte. La LECTURE reste une vraie policy RLS réservée à
+l'admin, comme le feedback. Nécessite
+`supabase/migrations/027_add_app_events.sql`.
 
 ## Micro-interactions & état de chargement (v1.6)
 

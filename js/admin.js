@@ -81,7 +81,8 @@ function setAdminTab(tab){
   });
   if(tab === 'achievements') renderAdminAchievementsTab();
   else if(tab === 'happenings') renderAdminHappeningsTab();
-  else renderAdminFeedbackTab();
+  else if(tab === 'feedback') renderAdminFeedbackTab();
+  else renderAdminStatsTab();
 }
 
 // --- Onglet Succès ---
@@ -451,6 +452,96 @@ async function toggleFeedbackResolved(id){
   }
   item.resolved = !item.resolved;
   renderAdminFeedbackTab();
+}
+
+// --- Onglet Stats & logs ---
+// Table `app_events` + fonction get_admin_site_stats() (voir js/logging.js
+// et supabase/migrations/027) : "Croissance" (inscriptions/installations,
+// depuis app_events), "Activité globale" (compteurs tous comptes, depuis
+// la fonction — jamais de ligne individuelle, juste 4 nombres) et le
+// journal brut (les 200 derniers évènements, erreurs comprises).
+let allEvents = [];
+let siteStats = null;
+let siteStatsLoaded = false;
+
+const EVENT_TYPE_LABELS = { signup: 'Inscription', pwa_install: 'Installation', error: 'Erreur' };
+
+async function loadSiteStats(){
+  const [statsRes, eventsRes] = await Promise.all([
+    supabaseClient.rpc('get_admin_site_stats'),
+    supabaseClient.from('app_events').select('*').order('created_at', { ascending: false }).limit(200)
+  ]);
+  if(statsRes.error){
+    console.error(statsRes.error);
+    siteStats = null;
+  }else{
+    siteStats = (statsRes.data && statsRes.data[0]) || null;
+  }
+  if(eventsRes.error){
+    console.error(eventsRes.error);
+    allEvents = [];
+  }else{
+    allEvents = eventsRes.data.map(row => ({
+      id: row.id,
+      eventType: row.event_type,
+      detail: row.detail,
+      createdAt: row.created_at
+    }));
+  }
+  siteStatsLoaded = true;
+}
+
+function renderAdminStatsTab(){
+  const wrap = document.getElementById('adminContent');
+  if(!siteStatsLoaded){
+    wrap.innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
+    loadSiteStats().then(renderAdminStatsTab);
+    return;
+  }
+
+  const weekAgo = new Date(Date.now() - 7 * 86400000);
+  const countSince = (type, since) => allEvents.filter(e => e.eventType === type && new Date(e.createdAt) >= since).length;
+  const totalSignups = allEvents.filter(e => e.eventType === 'signup').length;
+  const weekSignups = countSince('signup', weekAgo);
+  const totalInstalls = allEvents.filter(e => e.eventType === 'pwa_install').length;
+  const weekInstalls = countSince('pwa_install', weekAgo);
+  const weekErrors = countSince('error', weekAgo);
+
+  const stat = (value, label) => `<div class="stat-tile"><div class="stat-value">${value != null ? value : '—'}</div><div class="stat-label">${escapeHtml(label)}</div></div>`;
+
+  wrap.innerHTML = `
+    <div class="stats-section">
+      <div class="stats-section-title">Croissance</div>
+      <div class="stat-tiles">
+        ${stat(totalSignups, 'Inscriptions')}
+        ${stat(weekSignups, 'Cette semaine')}
+        ${stat(totalInstalls, 'Installations')}
+        ${stat(weekInstalls, 'Cette semaine')}
+      </div>
+    </div>
+    <div class="stats-section">
+      <div class="stats-section-title">Activité globale (tous comptes)</div>
+      <div class="stat-tiles">
+        ${stat(siteStats && siteStats.total_users, 'Comptes')}
+        ${stat(siteStats && siteStats.total_films, 'Films notés')}
+        ${stat(siteStats && siteStats.total_series, 'Séries suivies')}
+        ${stat(siteStats && siteStats.total_viewings, 'Visionnages')}
+      </div>
+    </div>
+    <div class="stats-section">
+      <div class="stats-section-title">
+        Journal
+        ${weekErrors ? `<span class="ach-tier-progress">${weekErrors} erreur${weekErrors > 1 ? 's' : ''} cette semaine</span>` : ''}
+      </div>
+      ${allEvents.length ? allEvents.map(e => `
+        <div class="event-row">
+          <span class="event-type-badge event-type-${escapeHtml(e.eventType)}">${escapeHtml(EVENT_TYPE_LABELS[e.eventType] || e.eventType)}</span>
+          <span class="event-detail">${escapeHtml(e.detail || '')}</span>
+          <span class="event-date">${new Date(e.createdAt).toLocaleString('fr-FR')}</span>
+        </div>
+      `).join('') : `<div class="empty-state">Rien pour l'instant.</div>`}
+    </div>
+  `;
 }
 
 async function openAdminModal(){

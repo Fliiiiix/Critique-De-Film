@@ -1635,6 +1635,45 @@ input[type="range"]::-moz-range-thumb{
 }
 .feedback-row .btn{flex:none; font-size:11px; padding:8px 12px;}
 
+/* Onglet Stats & logs (admin, v2.1) — les compteurs réutilisent
+   .stat-tile/.stat-value/.stat-label tels quels (mêmes classes que la
+   modale Statistiques personnelle, js/stats.js) ; seul le journal brut
+   ci-dessous a besoin de nouvelles classes. */
+.event-row{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  padding:8px 0;
+  border-top:1px solid var(--line);
+  font-size:12.5px;
+}
+.event-row:first-of-type{border-top:none;}
+.event-type-badge{
+  font-family:'Space Mono', monospace;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.03em;
+  text-transform:uppercase;
+  padding:2px 7px;
+  border-radius:999px;
+  flex:none;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  color:var(--text-muted);
+}
+.event-type-error{color:var(--coral); border-color:var(--coral-dim); background:rgba(255,107,87,0.08);}
+.event-type-signup{color:var(--green); border-color:var(--green-dim); background:var(--green-wash);}
+.event-type-pwa_install{color:var(--violet); border-color:var(--violet-dim); background:var(--violet-wash);}
+.event-detail{flex:1; min-width:0; color:var(--text-muted); overflow-wrap:anywhere;}
+.event-date{
+  font-family:'Space Mono', monospace;
+  font-size:10.5px;
+  color:var(--text-muted);
+  opacity:0.7;
+  flex:none;
+  white-space:nowrap;
+}
+
 .ach-hidden-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));

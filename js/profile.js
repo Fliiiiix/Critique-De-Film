@@ -57,6 +57,10 @@ async function fetchOrCreateProfile(){
       }
     }else{
       currentProfile = created;
+      // Vraie première connexion (pas une simple relecture après course
+      // avec un autre onglet, voir le bloc insErr ci-dessus) — voir
+      // js/logging.js, section "Croissance" de l'onglet admin.
+      logEvent('signup');
     }
   }
   renderUserBar();

@@ -46,6 +46,7 @@ window.addEventListener('appinstalled', () => {
   updateInstallBanner();
   updateInstallHeaderBtn();
   showToast('Kinet installé 🎉');
+  logEvent('pwa_install'); // voir js/logging.js, section "Croissance" de l'onglet admin
 });
 
 async function handleInstallClick(){
