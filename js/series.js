@@ -157,24 +157,7 @@ async function handleRemoveShow(id, fromDetail){
   else renderTrackedShows();
 }
 
-// --- Ajout : modale "Suivre une série" (v2.1), miroir de openModal()/
-// closeModal() (js/app.js) pour l'ajout d'un film — Films et Séries sont
-// deux sections sœurs, elles partagent la même façon d'ajouter un élément
-// plutôt qu'un formulaire à demeure sur la page (voir #seriesPage,
-// index.html). Recherche TMDB (séries) : voir js/tmdb.js.
-
-function openAddSeriesModal(){
-  if(blockIfOffline()) return; // js/offline.js — lecture seule hors ligne
-  document.getElementById('seriesTitleInput').value = '';
-  document.getElementById('seriesTmdbResults').innerHTML = '';
-  clearSeriesTmdbSelection();
-  openOverlay('addSeriesOverlay');
-  document.getElementById('seriesTitleInput').focus();
-}
-
-function closeAddSeriesModal(){
-  closeOverlay('addSeriesOverlay');
-}
+// --- Ajout : recherche TMDB (séries), voir js/tmdb.js ---
 
 let seriesTmdbSearchTimer = null;
 
@@ -298,7 +281,8 @@ async function handleAddShow(){
   watchedEpisodeCounts[data.id] = 0;
   renderTrackedShows();
 
-  closeAddSeriesModal();
+  document.getElementById('seriesTitleInput').value = '';
+  clearSeriesTmdbSelection();
   showToast('Série suivie');
 }
 
@@ -306,9 +290,6 @@ async function handleAddShow(){
 // fait via #primaryTabSeries (js/router.js), qui a son propre listener.
 // #seriesPageBack retiré en v2.1 (voir le commentaire dans index.html) —
 // plus de listener à poser dessus.
-document.getElementById('openAddSeriesBtn').addEventListener('click', openAddSeriesModal);
-document.getElementById('closeAddSeriesModal').addEventListener('click', closeAddSeriesModal);
-document.getElementById('cancelAddSeriesBtn').addEventListener('click', closeAddSeriesModal);
 document.getElementById('seriesAddBtn').addEventListener('click', handleAddShow);
 document.getElementById('seriesTitleInput').addEventListener('input', () => {
   clearTimeout(seriesTmdbSearchTimer);
