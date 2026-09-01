@@ -28,7 +28,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=32">
+<link rel="stylesheet" href="css/style.css?v=35">
 </head>
 <body>
 
@@ -134,16 +134,30 @@
   </div>
 </div>
 
-<!-- Écran de connexion (lien magique par email) — v2.0.2 : avant juste une
-     boîte email, retour utilisateur "il faut donner envie de se
-     connecter" répété deux fois (v2.0 insuffisant) — vraie page d'accueil
-     produit maintenant : texte + tags de valeur + aperçu concret de
-     l'interface (.auth-showcase, décoratif, aucune vraie donnée avant
-     connexion) + carte de connexion, centrée dans tout l'espace visible
-     plutôt que collée en haut avec un grand vide dessous. Empilé en une
-     seule colonne sur mobile, carte en premier (voir la media query
-     760px) ; #authEmail/#authSendBtn/#authStatus gardent exactement leurs
-     ids, js/auth.js n'a rien à changer. -->
+<!-- Écran de connexion (lien magique par email) — v2.0.10 : refonte de
+     fond, pas un nouveau correctif CSS par-dessus les précédents. Deux
+     retours utilisateur distincts à l'origine :
+     1) Les 3 icônes de .auth-features (et plus largement chaque emoji de
+        cet écran — tags, .auth-card-mark, cartes de la vitrine) restaient
+        signalées comme "cassées" malgré 2 correctifs CSS (couleur puis
+        taille/overflow, v2.0.3-v2.0.8). Un emoji couleur dépend
+        entièrement de la police système du visiteur, hors de contrôle
+        CSS — v2.0.9 avait déjà réglé les 3 icônes de .auth-features en
+        SVG (stroke=currentColor, rend identiquement partout) ; ce tour-ci
+        étend le même traitement à TOUS les emojis de cet écran plutôt que
+        de continuer à en garder ici ou là.
+     2) "trop vertical" : sur un écran large, .auth-showcase forçait un
+        retour à la ligne pleine largeur (ancien width:100% en flex) qui
+        empilait texte → vitrine → carte en une seule colonne centrée,
+        sans profiter de la largeur disponible. Restructuré en grille 2
+        colonnes (texte à gauche, vitrine+carte dans .auth-side à droite,
+        voir style.css) — mobile inchangé, toujours empilé carte en
+        premier (voir media query 760px : .auth-hero ET .auth-side ont
+        chacun leur propre column-reverse, pour reconstituer le même
+        ordre visuel carte→vitrine→texte qu'avant avec seulement 2
+        enfants directs dans .auth-hero au lieu de 3).
+     #authEmail/#authSendBtn/#authStatus gardent exactement leurs ids,
+     js/auth.js n'a rien à changer. -->
 <div class="container" id="authContainer" style="display:none;">
   <!-- Texture de fond plein écran (.auth-pattern, en CSS pur — voir
        style.css) : contrairement à .auth-showcase ci-dessous, un motif
@@ -155,24 +169,24 @@
     <div class="auth-pitch">
       <div class="eyebrow">Bienvenue sur Kinet</div>
       <h2 class="auth-headline">Ta grille, tes films, tes séries.</h2>
-      <p class="auth-pitch-sub">Pas une étoile unique : une vraie grille à 7 critères, pensée pour juger avec ta propre tête plutôt qu'avec les avis lus ailleurs.</p>
-      <!-- Émoji dans un <span> à part, hors de la police Space Mono
-           (celle-ci n'a pas de glyphes émoji couleur — le mélanger au
-           texte peut le faire retomber sur un rendu monochrome/cassé) :
-           voir .auth-tags .ico dans style.css. -->
+      <!-- Sous-titre réécrit (v2.0.10) : citer les 7 critères eux-mêmes
+           plutôt qu'une formule abstraite ("ta propre tête", "les avis
+           lus ailleurs") — retour utilisateur : les textes de cet écran
+           "font très IA", trop vagues pour être intéressants. Du concret
+           plutôt que du discours. -->
+      <p class="auth-pitch-sub">Scénario, mise en scène, jeu d'acteur, musique, rythme, émotion, originalité : sept notes qui font la moyenne — pas une étoile balancée à l'instinct.</p>
       <ul class="auth-tags" aria-hidden="true">
-        <li><span class="ico">🎯</span>7 critères</li>
-        <li><span class="ico">📺</span>Films &amp; séries</li>
-        <li><span class="ico">📅</span>Prochaines sorties</li>
-        <li><span class="ico">👥</span>Amis &amp; groupes</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="4.2"></circle><circle cx="12" cy="12" r="0.6" fill="currentColor" stroke="none"></circle></svg>7 critères</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg>Films &amp; séries</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2"></rect><path d="M3.5 10h17"></path><path d="M8 3.5v4"></path><path d="M16 3.5v4"></path></svg>Prochaines sorties</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.3" cy="8" r="3.3"></circle><path d="M16 3.8c1.5.7 2.5 2.2 2.5 4S17.5 11.1 16 11.8"></path><path d="M14.5 20.3c0-3-2.3-5-5.2-5s-5.2 2-5.2 5"></path><path d="M19 20c0-2.5-1.7-4.3-4-4.8"></path></svg>Amis &amp; groupes</li>
       </ul>
-      <!-- Icônes en SVG dessiné (v2.0.9), plus en emoji — signalé à
-           plusieurs reprises par l'utilisateur malgré 2 correctifs CSS
-           successifs (couleur puis taille/overflow) : le vrai problème
-           n'est pas corrigeable de façon fiable en CSS, un emoji couleur
-           dépend entièrement de la police système du navigateur/appareil
-           du visiteur, hors de contrôle. Un SVG hérite de currentColor,
-           rend identiquement partout, aucune dépendance externe. -->
+      <!-- Grille de 3 (auto-fit, voir style.css) plutôt qu'une liste
+           empilée : reste sur une seule rangée tant qu'il y a la place,
+           repasse à 2 puis 1 colonne toute seule si l'espace manque —
+           aucun palier à caler à la main. Descriptions réécrites
+           (v2.0.10, même motif que le sous-titre) : du concret sur ce que
+           fait vraiment l'app plutôt qu'une formule passe-partout. -->
       <ul class="auth-features">
         <li>
           <span class="auth-feature-icon">
@@ -182,7 +196,7 @@
               <circle cx="12" cy="12" r="0.6" fill="currentColor" stroke="none"></circle>
             </svg>
           </span>
-          <div><b>Grille à 7 critères</b><span>Scénario, mise en scène, jeu d'acteur… une vraie note réfléchie, pas juste une étoile.</span></div>
+          <div><b>Note manuelle ou calculée</b><span>La moyenne des 7 critères fait la note — ou tranche toi-même, film par film.</span></div>
         </li>
         <li>
           <span class="auth-feature-icon">
@@ -192,7 +206,7 @@
               <path d="M19 19V4"></path>
             </svg>
           </span>
-          <div><b>Stats, succès, journal</b><span>Ton activité de cinéphile suivie dans le temps, à ton rythme.</span></div>
+          <div><b>Journal &amp; succès</b><span>Chaque visionnage daté et archivé, des succès à débloquer au fil de ta collection.</span></div>
         </li>
         <li>
           <span class="auth-feature-icon">
@@ -203,47 +217,55 @@
               <path d="M19 20c0-2.5-1.7-4.3-4-4.8"></path>
             </svg>
           </span>
-          <div><b>Amis &amp; groupes</b><span>Compare tes goûts, propose des films à plusieurs, vote pour la prochaine séance.</span></div>
+          <div><b>Amis &amp; groupes</b><span>Compare tes notes, propose un film au groupe, vote pour la prochaine séance.</span></div>
         </li>
       </ul>
     </div>
-    <!-- Aperçu produit : 3 cartes façon catalogue en éventail, posters/
-         titres en aplats génériques (pas de vraie donnée avant connexion)
-         mais le cadran réutilise .counter/.rate-* tel quel — même rendu
-         que dans le vrai catalogue. Empilées par le flux normal
-         (chevauchement en marge négative) plutôt qu'en coordonnées
-         absolues : reste correct à n'importe quelle largeur/hauteur
-         d'écran au lieu de dépendre de positions calées à la main —
-         visible à toutes les tailles, y compris mobile (voir media
-         queries dans style.css pour le rétrécissement, pas la disparition). -->
-    <div class="auth-showcase" aria-hidden="true">
-      <div class="auth-mock-card auth-mock-1">
-        <div class="film-poster film-poster-placeholder"><span class="ico">🎬</span></div>
-        <div class="auth-mock-lines"><div class="auth-mock-line" style="width:78%;"></div><div class="auth-mock-line short"></div></div>
-        <div class="counter rate-mid">3.5</div>
+    <!-- Colonne de droite (v2.0.10) : vitrine + carte de connexion,
+         regroupées ici pour former la 2e colonne de la grille .auth-hero
+         (voir style.css) — avant, ces deux blocs étaient enfants directs
+         de .auth-hero et .auth-showcase forçait un retour à la ligne
+         pleine largeur, ce qui empilait tout verticalement sous le texte
+         au lieu d'utiliser la largeur de l'écran. -->
+    <div class="auth-side">
+      <!-- Aperçu produit : 3 cartes façon catalogue en éventail, posters/
+           titres en aplats génériques (pas de vraie donnée avant connexion)
+           mais le cadran réutilise .counter/.rate-* tel quel — même rendu
+           que dans le vrai catalogue. Empilées par le flux normal
+           (chevauchement en marge négative) plutôt qu'en coordonnées
+           absolues : reste correct à n'importe quelle largeur/hauteur
+           d'écran au lieu de dépendre de positions calées à la main. -->
+      <div class="auth-showcase" aria-hidden="true">
+        <div class="auth-mock-card auth-mock-1">
+          <div class="film-poster film-poster-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M3 15h18M8.5 4v16M15.5 4v16"></path></svg></div>
+          <div class="auth-mock-lines"><div class="auth-mock-line" style="width:78%;"></div><div class="auth-mock-line short"></div></div>
+          <div class="counter rate-mid">3.5</div>
+        </div>
+        <div class="auth-mock-card auth-mock-2">
+          <div class="film-poster film-poster-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg></div>
+          <div class="auth-mock-lines"><div class="auth-mock-line" style="width:62%;"></div><div class="auth-mock-line short"></div></div>
+          <div class="counter rate-high">4.5</div>
+        </div>
+        <div class="auth-mock-card auth-mock-3">
+          <div class="film-poster film-poster-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M3 15h18M8.5 4v16M15.5 4v16"></path></svg></div>
+          <div class="auth-mock-lines"><div class="auth-mock-line" style="width:85%;"></div><div class="auth-mock-line short"></div></div>
+          <div class="counter rate-low">2.0</div>
+        </div>
       </div>
-      <div class="auth-mock-card auth-mock-2">
-        <div class="film-poster film-poster-placeholder"><span class="ico">📺</span></div>
-        <div class="auth-mock-lines"><div class="auth-mock-line" style="width:62%;"></div><div class="auth-mock-line short"></div></div>
-        <div class="counter rate-high">4.5</div>
+      <div class="auth-card">
+        <div class="auth-card-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M4 7l8 6 8-6"></path></svg>
+        </div>
+        <h2>Connexion</h2>
+        <p class="auth-intro">Entre ton email : tu recevras un lien de connexion, sans mot de passe.</p>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="authEmail" placeholder="toi@example.com" autocomplete="email">
+        </div>
+        <button class="btn" id="authSendBtn">Envoyer le lien magique</button>
+        <div class="auth-status" id="authStatus"></div>
+        <p class="auth-card-foot">Sans mot de passe, sans pub, juste ton catalogue.</p>
       </div>
-      <div class="auth-mock-card auth-mock-3">
-        <div class="film-poster film-poster-placeholder"><span class="ico">🎬</span></div>
-        <div class="auth-mock-lines"><div class="auth-mock-line" style="width:85%;"></div><div class="auth-mock-line short"></div></div>
-        <div class="counter rate-low">2.0</div>
-      </div>
-    </div>
-    <div class="auth-card">
-      <div class="auth-card-mark"><span class="ico">🎬</span></div>
-      <h2>Connexion</h2>
-      <p class="auth-intro">Entre ton email : tu recevras un lien de connexion, sans mot de passe.</p>
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="authEmail" placeholder="toi@example.com" autocomplete="email">
-      </div>
-      <button class="btn" id="authSendBtn">Envoyer le lien magique</button>
-      <div class="auth-status" id="authStatus"></div>
-      <p class="auth-card-foot">Sans mot de passe, sans pub, juste ton catalogue.</p>
     </div>
   </div>
 </div>
@@ -925,61 +947,61 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=32"></script>
-<script src="js/tmdbConfig.js?v=32"></script>
-<script src="js/data.js?v=32"></script>
-<script src="js/happenings.js?v=32"></script>
+<script src="js/supabaseConfig.js?v=35"></script>
+<script src="js/tmdbConfig.js?v=35"></script>
+<script src="js/data.js?v=35"></script>
+<script src="js/happenings.js?v=35"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=32"></script>
+<script src="js/ui.js?v=35"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=32"></script>
-<script src="js/app.js?v=32"></script>
-<script src="js/tmdb.js?v=32"></script>
-<script src="js/stats.js?v=32"></script>
-<script src="js/achievements.js?v=32"></script>
-<script src="js/journal.js?v=32"></script>
+<script src="js/offline.js?v=35"></script>
+<script src="js/app.js?v=35"></script>
+<script src="js/tmdb.js?v=35"></script>
+<script src="js/stats.js?v=35"></script>
+<script src="js/achievements.js?v=35"></script>
+<script src="js/journal.js?v=35"></script>
 <!-- Après app.js (showToast) — appelée par js/profile.js juste après. -->
-<script src="js/pwa.js?v=32"></script>
-<script src="js/profile.js?v=32"></script>
+<script src="js/pwa.js?v=35"></script>
+<script src="js/profile.js?v=35"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=32"></script>
-<script src="js/router.js?v=32"></script>
-<script src="js/publicProfile.js?v=32"></script>
-<script src="js/top.js?v=32"></script>
-<script src="js/friends.js?v=32"></script>
+<script src="js/admin.js?v=35"></script>
+<script src="js/router.js?v=35"></script>
+<script src="js/publicProfile.js?v=35"></script>
+<script src="js/top.js?v=35"></script>
+<script src="js/friends.js?v=35"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=32"></script>
-<script src="js/watchlist.js?v=32"></script>
+<script src="js/activity.js?v=35"></script>
+<script src="js/watchlist.js?v=35"></script>
 <!-- Après watchlist.js : js/upcoming.js réutilise le tableau watchlist déjà
      chargé (voir plus bas). -->
-<script src="js/series.js?v=32"></script>
+<script src="js/series.js?v=35"></script>
 <!-- Après watchlist.js ET series.js — a besoin des deux tableaux chargés
      (loadWatchlist()/loadTrackedShows()), voir js/upcoming.js. -->
-<script src="js/upcoming.js?v=32"></script>
-<script src="js/groups.js?v=32"></script>
-<script src="js/proposals.js?v=32"></script>
+<script src="js/upcoming.js?v=35"></script>
+<script src="js/groups.js?v=35"></script>
+<script src="js/proposals.js?v=35"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=32"></script>
+<script src="js/invites.js?v=35"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=32"></script>
-<script src="js/auth.js?v=32"></script>
+<script src="js/activityState.js?v=35"></script>
+<script src="js/auth.js?v=35"></script>
 </body>
 </html>

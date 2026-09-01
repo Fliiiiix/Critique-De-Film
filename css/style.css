@@ -785,18 +785,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* --- Vitrine de connexion (v2.0.3) --- */
-/* Émoji posé à côté d'un texte en police restreinte (Space Mono n'a pas
-   de glyphes émoji couleur) : sans ça, certains navigateurs font retomber
-   l'émoji sur un rendu monochrome/cassé plutôt que de router
-   automatiquement vers la police système. Un <span> à part avec sa propre
-   pile de polices force le bon rendu, indépendamment de la police du
-   texte autour. Utilisé partout où un émoji voisine du texte en Space
-   Mono ou pourrait hériter d'une police non garantie. */
-.ico{
-  font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Segoe UI Symbol',sans-serif;
-  font-variant-emoji:emoji;
-  font-style:normal;
-}
+/* .ico (emoji dans un <span> à police système forcée) a existé ici de
+   v2.0.3 à v2.0.9 pour caser un emoji à côté d'un texte en Space Mono
+   (qui n'a pas de glyphes émoji couleur) sans rendu cassé — retiré en
+   v2.0.10, plus aucun emoji sur cet écran, tout est passé en SVG (voir
+   index.html et les commentaires .auth-* plus bas). Classe supprimée
+   plutôt que laissée mort : plus aucune occurrence dans le HTML/JS. */
 /* #authContainer ne force plus de hauteur calculée (calc(100dvh - ...) —
    fragile : l'entête n'a pas de hauteur fixe, sur certains écrans ça
    laissait un vide en trop ou pas assez). À la place : du padding généreux
@@ -840,17 +834,24 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     radial-gradient(620px 420px at 12% 10%, var(--violet-wash), transparent 65%),
     radial-gradient(560px 380px at 90% 55%, var(--gold-wash), transparent 60%);
 }
+/* Grille 2 colonnes (v2.0.10) — avant : flex-wrap avec .auth-showcase en
+   width:100% forçant un retour à la ligne pleine largeur, qui empilait
+   texte → vitrine → carte en une seule colonne centrée quelle que soit la
+   largeur d'écran disponible (retour utilisateur : "trop vertical").
+   Colonne 2 fixe (380px, la largeur de la carte) plutôt que fractionnaire :
+   la carte de connexion n'a aucune raison de s'étirer sur un grand écran.
+   Repasse en une colonne sous 760px (voir media query), .auth-side n'y
+   existe plus visuellement comme colonne — juste un groupe empilé. */
 .auth-hero{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  justify-content:center;
-  gap:40px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 380px;
+  align-items:start;
+  gap:48px;
   max-width:1180px;
   margin:0 auto;
   padding:0 16px;
 }
-.auth-pitch{flex:1 1 380px; min-width:0; max-width:480px;}
+.auth-pitch{min-width:0; max-width:640px;}
 .auth-pitch .eyebrow{margin-bottom:10px;}
 .auth-headline{
   font-family:'Bricolage Grotesque', sans-serif;
@@ -892,9 +893,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border-radius:999px;
   padding:6px 12px;
 }
-.auth-tags li .ico{font-size:13px;}
-.auth-features{list-style:none; display:flex; flex-direction:column; gap:16px;}
-.auth-features li{display:flex; align-items:flex-start; gap:14px;}
+/* SVG dessiné à la main (v2.0.9, étendu à tout l'écran en v2.0.10) plutôt
+   qu'un emoji — voir index.html pour le pourquoi. currentColor hérite de
+   la couleur du texte du tag (var(--text-muted)) : rien à teinter à part. */
+.auth-tags li svg{width:13px; height:13px; flex:none;}
+/* auto-fit plutôt qu'un nombre de colonnes fixe (v2.0.10) : 3 par rangée
+   tant qu'il y a la place (colonne de texte large, voir .auth-hero),
+   repasse à 2 puis 1 tout seul si l'espace se resserre — aucun palier à
+   caler à la main, contrairement à un fixed 3-columns qui casserait entre
+   760px (empilement mobile) et la largeur où .auth-pitch retrouve sa
+   pleine mesure. */
+.auth-features{list-style:none; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:20px;}
+.auth-features li{display:flex; flex-direction:column; align-items:flex-start; gap:10px;}
 .auth-feature-icon{
   flex:none;
   width:38px; height:38px;
@@ -904,11 +914,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   display:flex; align-items:center; justify-content:center;
   color:var(--violet);
 }
-/* SVG dessiné à la main (v2.0.9), plus un emoji — voir index.html pour le
-   pourquoi (2 correctifs CSS successifs sur l'emoji jamais suffisants,
-   le vrai problème étant hors de portée du CSS). currentColor hérite de
-   la couleur du badge ci-dessus : un seul endroit à changer pour teinter
-   l'icône. */
+/* currentColor hérite de la couleur du badge ci-dessus : un seul endroit
+   à changer pour teinter l'icône. */
 .auth-feature-icon svg{width:19px; height:19px;}
 .auth-features b{
   display:block;
@@ -923,6 +930,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   color:var(--text-muted);
   line-height:1.5;
 }
+/* Colonne de droite (v2.0.10) : largeur fixe imposée par .auth-hero
+   (grid-template-columns, voir plus haut) — vitrine + carte empilées ici
+   en flex column, dans cet ordre visuel sur desktop (vitrine au-dessus de
+   la carte). Sous 760px, .auth-hero repasse en une seule colonne et
+   inverse SES DEUX enfants directs (.auth-pitch, .auth-side) pour remettre
+   .auth-side en premier — mais à l'intérieur de .auth-side l'ordre DOM
+   (vitrine, carte) resterait alors carte-en-dernier si on ne le corrigeait
+   pas : .auth-side inverse donc aussi son propre ordre sous 760px pour
+   reconstituer exactement l'ordre visuel voulu carte→vitrine→texte
+   (voir media query). */
+.auth-side{display:flex; flex-direction:column; gap:24px; min-width:0;}
 /* Aperçu produit : 3 cartes façon .film-row en éventail, chacune avec un
    vrai .counter/.rate-* (mêmes classes que le catalogue — rendu
    identique, pas une réinvention) pour rendre "grille à 7 critères"
@@ -932,24 +950,30 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    quelle largeur au lieu de déborder ou de se chevaucher n'importe
    comment selon l'écran — le vrai problème de la version précédente.
    Purement décoratif (aria-hidden côté HTML) : posters/titres en aplats
-   génériques puisqu'aucun appel TMDB n'a de sens avant connexion. Visible
-   à toutes les tailles (voir media queries pour le rétrécissement, pas
-   la disparition — l'ancienne version la masquait sous 760px, ce qui
-   laissait le mobile particulièrement vide). */
+   génériques puisqu'aucun appel TMDB n'a de sens avant connexion. Plus de
+   width:100% ici (v2.0.10) : .auth-showcase est maintenant un item flex
+   de .auth-side (colonne fixe), il en épouse déjà toute la largeur par le
+   comportement par défaut (align-items:stretch) sans avoir besoin de le
+   forcer, et sans provoquer le retour à la ligne pleine largeur que
+   causait ce même width:100% dans l'ancien layout en flex-wrap. */
 .auth-showcase{
   display:flex;
   justify-content:center;
-  width:100%;
-  padding:22px 0 6px;
+  padding:12px 0 4px;
 }
+/* Taille unifiée (v2.0.10) : avant, deux tailles différentes selon le
+   breakpoint (160px desktop / 132px mobile, voir l'ancienne media query
+   760px) parce que la vitrine s'étalait sur toute la largeur de l'écran
+   sur desktop. Coincée dans une colonne fixe de 380px maintenant sur
+   TOUTES les tailles (mobile compris, où .auth-card fait déjà
+   max-width:420px), une seule taille compacte suffit partout. */
 .auth-mock-card{
   flex:none;
-  width:160px;
-  /* -30px et pas plus : au-delà, la carte suivante recouvre le cadran
+  width:132px;
+  /* -22px et pas plus : au-delà, la carte suivante recouvre le cadran
      (tout à droite de la carte précédente) au lieu de juste son affiche —
-     exactement le bug constaté à la vérification avec -58px, qui rendait
-     un des trois cadrans invisible selon la carte. */
-  margin-left:-30px;
+     bug constaté à la vérification avec une marge plus large. */
+  margin-left:-22px;
   display:flex;
   align-items:center;
   gap:9px;
@@ -960,16 +984,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   box-shadow:0 24px 44px -16px rgba(0,0,0,0.6);
 }
 .auth-mock-card:first-child{margin-left:0;}
-.auth-mock-card .film-poster{width:40px; height:58px; font-size:16px;}
+.auth-mock-card .film-poster{width:32px; height:46px;}
+.auth-mock-card .film-poster-placeholder svg{width:15px; height:15px;}
 .auth-mock-lines{flex:1; min-width:0;}
 .auth-mock-line{
-  height:7px;
+  height:6px;
   border-radius:3px;
   background:var(--line);
-  margin-bottom:6px;
+  margin-bottom:5px;
 }
 .auth-mock-line.short{width:38%; background:var(--line-soft);}
-.auth-mock-card .counter{width:34px; height:34px; font-size:11px; flex:none;}
+.auth-mock-card .counter{width:28px; height:28px; font-size:9.5px; flex:none;}
 /* z-index croissant de gauche à droite (pas 1/3/2) : chaque carte suivante
    chevauche la précédente PAR-DESSUS, comme un vrai éventail de cartes —
    l'ordre inverse laissait la carte du milieu passer devant la 3e et en
@@ -977,19 +1002,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .auth-mock-1{transform:rotate(-7deg); z-index:1;}
 .auth-mock-2{transform:rotate(4deg) translateY(-10px); z-index:2;}
 .auth-mock-3{transform:rotate(-2deg) translateY(4px); z-index:3;}
-.auth-hero .auth-card{width:380px; flex:none; position:relative;}
+.auth-side .auth-card{width:100%; max-width:420px; position:relative;}
 .auth-card-mark{
   width:44px; height:44px;
   border-radius:12px;
   background:var(--violet-wash);
   border:1px solid var(--violet-dim);
   display:flex; align-items:center; justify-content:center;
-  /* Même correctif que .auth-feature-icon juste au-dessus (même bug de
-     débordement d'emoji couleur) : taille réduite + overflow:hidden. */
-  font-size:17px;
-  overflow:hidden;
+  color:var(--violet);
   margin-bottom:16px;
 }
+.auth-card-mark svg{width:20px; height:20px;}
 .auth-card-foot{
   margin-top:16px;
   font-size:11.5px;
@@ -2323,6 +2346,22 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   flex:none;
 }
 
+/* auto-fit (voir .auth-features plus haut) ne retombe franchement à 3
+   colonnes confortables qu'à partir d'environ 950px de large — entre ce
+   seuil et 760px (où .auth-hero repasse en une colonne, voir plus bas),
+   la colonne de texte est juste assez étroite pour ne loger que 2
+   colonnes, avec le 3e item livré seul sur sa propre rangée : pas cassé,
+   juste moins net. Cette bande couvre pile la largeur d'un iPad en
+   portrait (768px) — assez courant pour valoir un correctif dédié plutôt
+   que de laisser l'auto-fit livré à lui-même. Sous 1000px, 1 seule
+   colonne, icône à gauche du texte plutôt qu'au-dessus (disposition en
+   ligne d'origine) : plus lisible qu'une colonne unique où l'icône
+   flotterait seule au-dessus d'un texte pleine largeur. */
+@media (max-width:1000px){
+  .auth-features{grid-template-columns:1fr; gap:16px;}
+  .auth-features li{flex-direction:row; align-items:flex-start; gap:14px;}
+}
+
 /* Tablette : la barre d'outils passe en deux rangées pleine largeur avant
    que les libellés des boutons ne disparaissent (voir 600px ci-dessous). */
 @media (max-width:760px){
@@ -2330,21 +2369,24 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   .toolbar-search{width:100%; min-width:0;}
   .toolbar-actions{width:100%; justify-content:space-between;}
 
-  /* Vitrine de connexion : les colonnes (largeur fixe de 380px pour la
-     carte + le texte à côté) ne tiennent plus côte à côte — empilées,
-     carte en premier (ordre DOM pitch/showcase/card + column-reverse)
-     pour que le geste "se connecter" reste immédiat sur mobile, suivi
-     d'un aperçu du produit puis de l'argumentaire complet. La vitrine
-     reste visible (juste rétrécie) plutôt que masquée : la version
-     précédente la cachait sous 760px, ce qui laissait justement le mobile
-     — l'écran le plus consulté — sans aucun élément visuel. */
+  /* Vitrine de connexion : la grille 2 colonnes (texte + .auth-side, voir
+     plus haut) ne tient plus côte à côte — repasse en flex empilé, carte
+     en premier pour que le geste "se connecter" reste immédiat sur
+     mobile, suivi d'un aperçu du produit puis de l'argumentaire complet.
+     Deux column-reverse imbriqués (v2.0.10, un pour chaque niveau) pour
+     reconstituer cet ordre visuel carte→vitrine→texte avec la structure
+     à 2 enfants directs (.auth-pitch, .auth-side) : le premier inverse
+     .auth-pitch/.auth-side (donc .auth-side passe en premier), le second
+     inverse À L'INTÉRIEUR de .auth-side son propre ordre DOM
+     vitrine/carte (donc la carte y passe en premier) — sans quoi la carte
+     resterait juste après le texte, sous la vitrine, au lieu d'être le
+     tout premier élément visible. La vitrine reste visible (juste
+     rétrécie) plutôt que masquée : une version encore plus ancienne la
+     cachait sous 760px, ce qui laissait justement le mobile — l'écran le
+     plus consulté — sans aucun élément visuel. */
   #authContainer{padding:32px 0;}
-  .auth-hero{flex-direction:column-reverse; gap:28px; margin:0 auto;}
-  .auth-hero .auth-card{width:100%; max-width:420px;}
-  .auth-mock-card{width:132px; margin-left:-22px;}
-  .auth-mock-card .film-poster{width:32px; height:46px; font-size:13px;}
-  .auth-mock-card .counter{width:28px; height:28px; font-size:9.5px;}
-  .auth-mock-line{height:6px; margin-bottom:5px;}
+  .auth-hero{display:flex; flex-direction:column-reverse; gap:28px; margin:0 auto;}
+  .auth-side{flex-direction:column-reverse;}
 }
 
 @media (max-width:600px){
