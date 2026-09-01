@@ -96,7 +96,7 @@ async function loadTrackedShows(){
 function renderTrackedShows(){
   const list = document.getElementById('seriesList');
   if(trackedShows.length === 0){
-    list.innerHTML = `<div class="empty-state">Rien pour l'instant — cherche une série ci-dessus pour commencer à suivre ses épisodes.</div>`;
+    list.innerHTML = `<div class="empty-state">Rien pour l'instant. Cherche une série ci-dessus pour commencer à suivre ses épisodes.</div>`;
     return;
   }
   list.innerHTML = trackedShows.map(show => {
@@ -138,7 +138,7 @@ async function openSeries(){
 async function deleteShowRow(id){
   const { error } = await supabaseClient.from('tv_shows').delete().eq('id', id);
   if(error){
-    showToast('Erreur de suppression — réessaie');
+    showToast('Erreur de suppression, réessaie');
     console.error(error);
     return false;
   }
@@ -249,7 +249,7 @@ async function handleAddShow(){
   try{
     details = await fetchTvDetails(seriesTmdbSelected.tmdb_id);
   }catch(e){
-    showToast('Erreur TMDB — réessaie');
+    showToast('Erreur TMDB, réessaie');
     console.error(e);
     return;
   }
@@ -272,7 +272,7 @@ async function handleAddShow(){
     .select()
     .single();
   if(error){
-    showToast(error.code === '23505' ? 'Cette série est déjà suivie' : 'Erreur de sauvegarde — réessaie');
+    showToast(error.code === '23505' ? 'Cette série est déjà suivie' : 'Erreur de sauvegarde, réessaie');
     console.error(error);
     return;
   }
@@ -483,7 +483,7 @@ async function toggleEpisodeWatched(seasonNumber, episodeNumber, watched, checkb
       .from('tv_episodes_watched')
       .insert({ tv_show_id: currentShowId, season_number: seasonNumber, episode_number: episodeNumber, watched_at: Date.now() });
     if(error && error.code !== '23505'){ // 23505 = déjà coché ailleurs (double-clic) — pas une vraie erreur
-      showToast('Erreur — réessaie');
+      showToast('Erreur, réessaie');
       console.error(error);
       if(checkboxEl) checkboxEl.checked = false;
       return;
@@ -495,7 +495,7 @@ async function toggleEpisodeWatched(seasonNumber, episodeNumber, watched, checkb
       .delete()
       .eq('tv_show_id', currentShowId).eq('season_number', seasonNumber).eq('episode_number', episodeNumber);
     if(error){
-      showToast('Erreur — réessaie');
+      showToast('Erreur, réessaie');
       console.error(error);
       if(checkboxEl) checkboxEl.checked = true;
       return;
@@ -520,7 +520,7 @@ async function markSeasonWatched(seasonNumber, episodeCount){
     .from('tv_episodes_watched')
     .upsert(rows, { onConflict: 'user_id,tv_show_id,season_number,episode_number', ignoreDuplicates: true });
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -538,7 +538,7 @@ async function unmarkSeasonWatched(seasonNumber){
     .delete()
     .eq('tv_show_id', currentShowId).eq('season_number', seasonNumber);
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -561,7 +561,7 @@ async function handleSaveSeriesNote(){
     .update({ manual_note: note, review })
     .eq('id', currentShowId);
   if(error){
-    showToast('Erreur de sauvegarde — réessaie');
+    showToast('Erreur de sauvegarde, réessaie');
     console.error(error);
     return;
   }

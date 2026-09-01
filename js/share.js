@@ -44,7 +44,7 @@ async function openShareModal(){
       correctLevel: QRCode.CorrectLevel.M
     });
   }catch(e){
-    qrEl.innerHTML = `<div class="empty-state">QR indisponible — le lien reste juste en dessous.</div>`;
+    qrEl.innerHTML = `<div class="empty-state">QR indisponible. Le lien reste juste en dessous.</div>`;
     console.error(e);
   }
 }
@@ -63,7 +63,7 @@ document.getElementById('copyShareLink').addEventListener('click', async () => {
     await navigator.clipboard.writeText(SHARE_URL);
     showToast('Lien copié');
   }catch(e){
-    showToast('Impossible de copier — sélectionne le lien à la main');
+    showToast('Impossible de copier, sélectionne le lien à la main');
     console.error(e);
   }
 });

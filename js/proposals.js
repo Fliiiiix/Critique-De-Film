@@ -46,7 +46,7 @@ async function markAsChosen(groupId, proposalId, watchDate){
     p_group_id: groupId, p_proposal_id: proposalId, p_watch_date: watchDate || null
   });
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -65,7 +65,7 @@ async function markAsChosen(groupId, proposalId, watchDate){
 async function unmarkChosen(groupId){
   const { error } = await supabaseClient.rpc('unset_chosen_proposal', { p_group_id: groupId });
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -123,7 +123,7 @@ async function loadProposals(groupId){
 function renderGroupProposals(){
   const list = document.getElementById('groupProposalsList');
   if(proposals.length === 0){
-    list.innerHTML = `<div class="tmdb-empty">Aucune proposition pour l'instant — propose un film ci-dessus.</div>`;
+    list.innerHTML = `<div class="tmdb-empty">Aucune proposition pour l'instant. Propose un film ci-dessus.</div>`;
     return;
   }
   const isOwner = typeof groups !== 'undefined' && groups.some(g => g.id === currentGroupId && g.ownerId === currentUser.id);
@@ -170,7 +170,7 @@ function renderGroupProposals(){
     btn.addEventListener('click', () => {
       let watchDate = prompt('Date de la séance (AAAA-MM-JJ), ou laisse vide :') || null;
       if(watchDate && !/^\d{4}-\d{2}-\d{2}$/.test(watchDate)){
-        showToast('Date ignorée — format attendu AAAA-MM-JJ');
+        showToast('Date ignorée, format attendu AAAA-MM-JJ');
         watchDate = null;
       }
       markAsChosen(currentGroupId, parseInt(btn.dataset.choose, 10), watchDate);
@@ -189,12 +189,12 @@ async function castVote(proposalId, value){
   if(current === value){
     const { error } = await supabaseClient.from('group_proposal_votes')
       .delete().eq('proposal_id', proposalId).eq('user_id', currentUser.id);
-    if(error){ showToast('Erreur — réessaie'); console.error(error); return; }
+    if(error){ showToast('Erreur, réessaie'); console.error(error); return; }
     proposalVotes[proposalId] = (proposalVotes[proposalId] || []).filter(v => v.userId !== currentUser.id);
   }else{
     const { error } = await supabaseClient.from('group_proposal_votes')
       .upsert({ proposal_id: proposalId, user_id: currentUser.id, value }, { onConflict: 'proposal_id,user_id' });
-    if(error){ showToast('Erreur — réessaie'); console.error(error); return; }
+    if(error){ showToast('Erreur, réessaie'); console.error(error); return; }
     const votes = (proposalVotes[proposalId] || []).filter(v => v.userId !== currentUser.id);
     votes.push({ userId: currentUser.id, value });
     proposalVotes[proposalId] = votes;
@@ -223,7 +223,7 @@ async function handleProposeFilm(groupId){
     .select()
     .single();
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -356,7 +356,7 @@ function renderProposalDetailFilm(){
 function renderProposalComments(){
   const list = document.getElementById('proposalCommentsList');
   if(proposalComments.length === 0){
-    list.innerHTML = `<div class="tmdb-empty">Aucun commentaire — lance la discussion.</div>`;
+    list.innerHTML = `<div class="tmdb-empty">Aucun commentaire. Lance la discussion.</div>`;
     return;
   }
   list.innerHTML = proposalComments.map(c => `
@@ -438,7 +438,7 @@ async function addProposalComment(){
     .select()
     .single();
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -455,7 +455,7 @@ async function deleteComment(commentId){
   if(!confirm('Supprimer ce commentaire ?')) return;
   const { error } = await supabaseClient.from('group_proposal_comments').delete().eq('id', commentId);
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -469,7 +469,7 @@ async function deleteProposal(proposalId){
   if(!confirm('Supprimer cette proposition et toute sa discussion ?')) return;
   const { error } = await supabaseClient.from('group_proposals').delete().eq('id', proposalId);
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }

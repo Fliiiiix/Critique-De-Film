@@ -57,7 +57,7 @@ async function loadWatchlist(){
 function renderWatchlist(){
   const list = document.getElementById('wlList');
   if(watchlist.length === 0){
-    list.innerHTML = `<div class="empty-state">Rien pour l'instant — ajoute un film ci-dessus.</div>`;
+    list.innerHTML = `<div class="empty-state">Rien pour l'instant. Ajoute un film ci-dessus.</div>`;
     return;
   }
   list.innerHTML = '';
@@ -108,7 +108,7 @@ async function handleAddToWatchlist(){
     .select()
     .single();
   if(error){
-    showToast('Erreur de sauvegarde — réessaie');
+    showToast('Erreur de sauvegarde, réessaie');
     console.error(error);
     return;
   }
@@ -133,7 +133,7 @@ async function handleRemoveFromWatchlist(id){
   if(blockIfOffline()) return; // js/offline.js — lecture seule hors ligne
   const { error } = await supabaseClient.from('watchlist').delete().eq('id', id);
   if(error){
-    showToast('Erreur de suppression — réessaie');
+    showToast('Erreur de suppression, réessaie');
     console.error(error);
     return;
   }

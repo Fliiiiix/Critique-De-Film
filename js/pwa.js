@@ -76,7 +76,7 @@ function updateInstallUI(){
 
   if(deferredInstallPrompt){
     el.innerHTML = `
-      <div class="wl-note">Ajoute Kinet à ton écran d'accueil ou ton bureau — s'ouvre comme une vraie app, plein écran, sans passer par le navigateur.</div>
+      <div class="wl-note">Ajoute Kinet à ton écran d'accueil ou ton bureau. Ça s'ouvre comme une vraie app, plein écran, sans passer par le navigateur.</div>
       <button class="btn secondary" id="installNowBtn" type="button">📲 Installer l'app</button>
     `;
     document.getElementById('installNowBtn').addEventListener('click', handleInstallClick);
@@ -92,7 +92,7 @@ function updateInstallUI(){
   // desktop, par ex.), soit un Chrome/Edge qui n'a pas encore jugé le site
   // "installable" (le prompt met parfois quelques instants/visites à
   // apparaître) — un message générique plutôt qu'un bouton mort.
-  el.innerHTML = `<div class="wl-note">Ton navigateur ne propose pas encore l'installation ici — essaie avec Chrome ou Edge (téléphone ou PC), ou reviens dans quelques instants.</div>`;
+  el.innerHTML = `<div class="wl-note">Ton navigateur ne propose pas encore l'installation ici. Essaie avec Chrome ou Edge (téléphone ou PC), ou reviens dans quelques instants.</div>`;
 }
 
 // --- Bandeau d'installation (#installBanner, v2.0.8) ---
@@ -122,7 +122,7 @@ function updateInstallBanner(){
   const btn = document.getElementById('installBannerBtn');
 
   if(deferredInstallPrompt){
-    subEl.textContent = 'Comme une vraie app, en un geste — téléphone ou PC.';
+    subEl.textContent = 'Comme une vraie app, en un geste : téléphone ou PC.';
     btn.style.display = '';
     banner.style.display = '';
     return;

@@ -38,7 +38,7 @@ async function handleSubmitFeedback(){
     message
   });
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }

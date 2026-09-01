@@ -36,7 +36,7 @@ async function logEvent(eventType, detail){
 // qui remonte jusqu'en haut sans avoir été intercepté ailleurs dans le
 // code, sans devoir instrumenter chaque fonction une par une.
 window.addEventListener('error', (e) => {
-  logEvent('error', `${e.message} — ${e.filename}:${e.lineno}`);
+  logEvent('error', `${e.message} (${e.filename}:${e.lineno})`);
 });
 // Rejets de Promise jamais rattrapés (ex. un .then() sans .catch() sur un
 // appel Supabase) : window 'error' seul ne les voit pas, évènement à part.

@@ -55,7 +55,7 @@ async function addViewing(filmId, watchedAt, note){
 async function removeViewing(id){
   const { error } = await supabaseClient.from('viewings').delete().eq('id', id);
   if(error){
-    showToast('Erreur de suppression — réessaie');
+    showToast('Erreur de suppression, réessaie');
     console.error(error);
     return;
   }

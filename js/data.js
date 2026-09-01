@@ -19,7 +19,7 @@ const CRITERIA = [
     anchors:"0 → terne, mal éclairé, effets qui sortent du film\n0.5 → propre techniquement, sans identité visuelle marquée\n1 → un vrai style visuel, des plans qui pourraient être des photos",
     help:"・Des plans te reviennent-ils de mémoire ?\n・La lumière et les couleurs servent-elles l'émotion des scènes ?\n・Les effets spéciaux sont-ils crédibles ou visibles ?\n・Le film a-t-il une identité visuelle propre ?" },
   { key:'son', label:"Son",
-    def:"Mixage, bruitages, ambiance sonore — hors musique.",
+    def:"Mixage, bruitages, ambiance sonore (hors musique).",
     anchors:"0 → dialogues mal mixés, bruitages absents ou grossiers\n0.5 → propre, fait le travail sans se faire remarquer\n1 → immersif, le son raconte autant que l'image",
     help:"・Comprends-tu les dialogues sans effort ?\n・L'ambiance sonore renforce-t-elle l'immersion ?\n・Le silence est-il utilisé intelligemment ?\n・Le son est-il cohérent avec l'image ?" },
   { key:'musique', label:"Musique",

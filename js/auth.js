@@ -84,7 +84,7 @@ async function handleSendMagicLink(){
   });
   statusEl.textContent = error
     ? `Erreur : ${error.message}`
-    : `Lien envoyé à ${email} — vérifie ta boîte mail (et les spams).`;
+    : `Lien envoyé à ${email}, vérifie ta boîte mail (et les spams).`;
 }
 
 async function handleLogout(){

@@ -100,8 +100,8 @@ function renderAdminAchievementsTab(){
     return `
       <div class="wl-row admin-row${enabled ? '' : ' admin-row-disabled'}">
         <div class="wl-main">
-          <div class="wl-title">${g.icon} ${escapeHtml(g.label)}${current ? ` <span class="wl-year">— ${current.value} ${escapeHtml(g.unit)} actuellement</span>` : ''}</div>
-          <div class="wl-note">Seuils (${escapeHtml(g.unit)}) — ${tiers.map((t, i) => `<input type="number" min="1" class="admin-tier-input" data-group="${g.key}" data-tier="${i}" value="${t.threshold}" title="${escapeHtml(t.name)}">`).join(' · ')}</div>
+          <div class="wl-title">${g.icon} ${escapeHtml(g.label)}${current ? ` <span class="wl-year">(${current.value} ${escapeHtml(g.unit)} actuellement)</span>` : ''}</div>
+          <div class="wl-note">Seuils (${escapeHtml(g.unit)}) : ${tiers.map((t, i) => `<input type="number" min="1" class="admin-tier-input" data-group="${g.key}" data-tier="${i}" value="${t.threshold}" title="${escapeHtml(t.name)}">`).join(' · ')}</div>
         </div>
         <div class="wl-actions">
           <label class="manual-toggle-label"><input type="checkbox" class="admin-ach-enabled" data-group="${g.key}" ${enabled ? 'checked' : ''}><span>Activé</span></label>
@@ -130,11 +130,11 @@ function renderAdminAchievementsTab(){
 
   wrap.innerHTML = `
     <div class="stats-section">
-      <div class="stats-section-title">Paliers cumulatifs — ${a.tiersUnlocked} / ${a.tiersTotal} débloqués</div>
+      <div class="stats-section-title">Paliers cumulatifs (${a.tiersUnlocked} / ${a.tiersTotal} débloqués)</div>
       ${cumulativeRows}
     </div>
     <div class="stats-section">
-      <div class="stats-section-title">Secrets — ${a.hiddenUnlocked} / ${a.hiddenTotal} trouvés (vue admin, sans le "???")</div>
+      <div class="stats-section-title">Secrets (${a.hiddenUnlocked} / ${a.hiddenTotal} trouvés, vue admin, sans le "???")</div>
       ${hiddenRows}
     </div>
   `;
@@ -200,7 +200,7 @@ function renderAdminHappeningsTab(){
     return `
       <div class="wl-row admin-row${enabled ? '' : ' admin-row-disabled'}">
         <div class="wl-main">
-          <div class="wl-title">${h.icon || '⏱️'} ${film ? escapeHtml(film.title) : `tmdb_id ${h.tmdbId} — hors catalogue`}</div>
+          <div class="wl-title">${h.icon || '⏱️'} ${film ? escapeHtml(film.title) : `tmdb_id ${h.tmdbId} (hors catalogue)`}</div>
           <div class="wl-note">${triggerLabel} · codé en dur</div>
         </div>
         <div class="wl-actions">
@@ -218,8 +218,8 @@ function renderAdminHappeningsTab(){
     return `
       <div class="wl-row admin-row${enabled ? '' : ' admin-row-disabled'}">
         <div class="wl-main">
-          <div class="wl-title">${escapeHtml(c.icon || '✨')} ${escapeHtml(c.title || 'Sans titre')} <span class="wl-year">— ${film ? escapeHtml(film.title) : `tmdb_id ${c.tmdbId}`}</span></div>
-          <div class="wl-note">${triggerLabel} · créé depuis l'admin — « ${escapeHtml(c.message || '')} »</div>
+          <div class="wl-title">${escapeHtml(c.icon || '✨')} ${escapeHtml(c.title || 'Sans titre')} <span class="wl-year">(${film ? escapeHtml(film.title) : `tmdb_id ${c.tmdbId}`})</span></div>
+          <div class="wl-note">${triggerLabel} · créé depuis l'admin : « ${escapeHtml(c.message || '')} »</div>
         </div>
         <div class="wl-actions">
           <label class="manual-toggle-label"><input type="checkbox" class="admin-custom-enabled" data-id="${c.id}" ${enabled ? 'checked' : ''}><span>Activé</span></label>
@@ -247,12 +247,12 @@ function renderAdminHappeningsTab(){
       ${customRows || '<div class="tmdb-empty">Aucun pour l\'instant.</div>'}
     </div>
     <div class="stats-section">
-      <div class="stats-section-title">Nouveau happening — message simple, sans coder</div>
+      <div class="stats-section-title">Nouveau happening (message simple, sans coder)</div>
       <form id="adminNewHappeningForm">
         <div class="field">
           <label>Film</label>
           <select id="adminHapFilm" required>
-            <option value="">— Choisir un film noté avec fiche TMDB —</option>
+            <option value="">Choisir un film noté avec fiche TMDB</option>
             ${filmOptions}
           </select>
         </div>
@@ -452,7 +452,7 @@ async function toggleFeedbackResolved(id){
   if(!item) return;
   const { error } = await supabaseClient.from('feedback').update({ resolved: !item.resolved }).eq('id', id);
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }

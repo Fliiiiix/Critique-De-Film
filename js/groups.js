@@ -42,7 +42,7 @@ async function loadGroups(){
 function renderGroupsList(){
   const list = document.getElementById('groupsList');
   if(groups.length === 0){
-    list.innerHTML = `<div class="tmdb-empty">Pas encore de groupe — crée le premier ci-dessus.</div>`;
+    list.innerHTML = `<div class="tmdb-empty">Pas encore de groupe. Crée le premier ci-dessus.</div>`;
     return;
   }
   list.innerHTML = groups.map(g => `
@@ -75,7 +75,7 @@ async function handleCreateGroup(){
     .select()
     .single();
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -146,7 +146,7 @@ function renderChosenBanner(groupId){
     : null;
   el.style.display = '';
   el.innerHTML = `
-    🎟️ <b>Séance élue :</b> ${escapeHtml(p.title)}${dateLabel ? ` — ${dateLabel}` : ''}
+    🎟️ <b>Séance élue :</b> ${escapeHtml(p.title)}${dateLabel ? ` (${dateLabel})` : ''}
   `;
 }
 
@@ -198,7 +198,7 @@ function renderGroupDetail(group, members){
       .map(otherUserId)
       .filter(uid => !memberIds.includes(uid));
     addList.innerHTML = candidates.length === 0
-      ? `<div class="tmdb-empty">Tous tes amis sont déjà dans ce groupe (ou tu n'as pas encore d'ami — voir 👥 Amis).</div>`
+      ? `<div class="tmdb-empty">Tous tes amis sont déjà dans ce groupe (ou tu n'as pas encore d'ami, voir 👥 Amis).</div>`
       : candidates.map(uid => friendRowHtml(uid, `<button class="btn" data-add="${uid}" type="button">Ajouter</button>`)).join('');
     addList.querySelectorAll('button[data-add]').forEach(btn => {
       btn.addEventListener('click', () => addMemberToGroup(group.id, btn.dataset.add));
@@ -291,7 +291,7 @@ document.getElementById('groupDetailBack').addEventListener('click', goToGroups)
 async function addMemberToGroup(groupId, userId){
   const { error } = await supabaseClient.from('group_members').insert({ group_id: groupId, user_id: userId });
   if(error){
-    showToast(error.code === '23505' ? 'Déjà membre' : 'Erreur — réessaie');
+    showToast(error.code === '23505' ? 'Déjà membre' : 'Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -305,7 +305,7 @@ async function removeMemberFromGroup(groupId, userId){
   if(!confirm('Retirer cette personne du groupe ?')) return;
   const { error } = await supabaseClient.from('group_members').delete().eq('group_id', groupId).eq('user_id', userId);
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -318,7 +318,7 @@ async function removeMemberFromGroup(groupId, userId){
 async function leaveGroup(groupId){
   const { error } = await supabaseClient.from('group_members').delete().eq('group_id', groupId).eq('user_id', currentUser.id);
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -331,7 +331,7 @@ async function deleteGroup(groupId){
   if(!confirm('Supprimer définitivement ce groupe ? Tous les membres seront retirés.')) return;
   const { error } = await supabaseClient.from('groups').delete().eq('id', groupId);
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }

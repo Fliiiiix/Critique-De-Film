@@ -49,7 +49,7 @@ async function renderInviteBox(groupId){
       await navigator.clipboard.writeText(inviteUrl(invite.token));
       showToast('Lien copié');
     }catch(e){
-      showToast('Impossible de copier — sélectionne le lien à la main');
+      showToast('Impossible de copier, sélectionne le lien à la main');
       console.error(e);
     }
   });
@@ -59,7 +59,7 @@ async function renderInviteBox(groupId){
 async function generateInviteLink(groupId){
   const { error } = await supabaseClient.from('group_invites').insert({ group_id: groupId, created_by: currentUser.id });
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -70,7 +70,7 @@ async function revokeInviteLink(inviteId, groupId){
   if(!confirm('Révoquer ce lien ? Il ne permettra plus de rejoindre le groupe.')) return;
   const { error } = await supabaseClient.from('group_invites').delete().eq('id', inviteId);
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -90,7 +90,7 @@ async function renderInvitePage(token){
     return;
   }
   if(!preview.valid){
-    content.innerHTML = `<div class="empty-state">Ce lien d'invitation a expiré ou n'est plus valable — demande-en un nouveau à la personne qui te l'a envoyé.</div>`;
+    content.innerHTML = `<div class="empty-state">Ce lien d'invitation a expiré ou n'est plus valable. Demande-en un nouveau à la personne qui te l'a envoyé.</div>`;
     return;
   }
 
@@ -103,7 +103,7 @@ async function renderInvitePage(token){
     content.innerHTML = `
       <div class="stats-section">
         <div class="stats-section-title">Invitation à rejoindre « ${escapeHtml(preview.group_name)} »</div>
-        <p class="auth-intro">Connecte-toi pour rejoindre ce groupe — le lien sera repris automatiquement une fois connecté.</p>
+        <p class="auth-intro">Connecte-toi pour rejoindre ce groupe. Le lien sera repris automatiquement une fois connecté.</p>
         <button class="btn" id="inviteGoLoginBtn" type="button">Se connecter</button>
       </div>
     `;

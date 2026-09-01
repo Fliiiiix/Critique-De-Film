@@ -113,7 +113,7 @@ function renderFriendsPage(){
       `, 'En attente')).join('');
 
   listEl.innerHTML = accepted.length === 0
-    ? `<div class="tmdb-empty">Pas encore d'amis — cherche un pseudo ou un email ci-dessus.</div>`
+    ? `<div class="tmdb-empty">Pas encore d'amis. Cherche un pseudo ou un email ci-dessus.</div>`
     : accepted.map(f => friendRowHtml(otherUserId(f), `
         <button class="btn secondary" data-action="view" data-id="${f.id}" type="button">Voir</button>
         <button class="btn danger" data-action="remove" data-id="${f.id}" type="button">Retirer</button>
@@ -141,7 +141,7 @@ async function respondToRequest(id, accept){
     .update({ status: accept ? 'accepted' : 'declined', responded_at: new Date().toISOString() })
     .eq('id', id);
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -162,7 +162,7 @@ async function respondToRequest(id, accept){
 async function removeFriendship(id, notify = true){
   const { error } = await supabaseClient.from('friendships').delete().eq('id', id);
   if(error){
-    showToast('Erreur — réessaie');
+    showToast('Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -241,7 +241,7 @@ async function sendFriendRequest(targetUserId){
     .select()
     .single();
   if(error){
-    showToast(error.code === '23505' ? 'Demande déjà envoyée' : 'Erreur — réessaie');
+    showToast(error.code === '23505' ? 'Demande déjà envoyée' : 'Erreur, réessaie');
     console.error(error);
     return;
   }
@@ -322,7 +322,7 @@ async function loadFriendRecommendations(){
 function renderFriendRecommendations(films){
   const wrap = document.getElementById('friendRecommendationsList');
   wrap.innerHTML = films.length === 0
-    ? `<div class="tmdb-empty">Rien à recommander pour l'instant — note plus de films en commun avec tes amis.</div>`
+    ? `<div class="tmdb-empty">Rien à recommander pour l'instant. Note plus de films en commun avec tes amis.</div>`
     : films.map(f => `
         <div class="wl-row">
           ${f.poster_url

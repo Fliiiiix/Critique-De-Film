@@ -87,7 +87,7 @@ async function loadFilms(){
       enterOfflineMode(cached.savedAt);
       return;
     }
-    showToast('Erreur de chargement — réessaie');
+    showToast('Erreur de chargement, réessaie');
     console.error(error);
     films = [];
     return;
@@ -181,7 +181,7 @@ function render(){
         ? `<img class="film-poster" src="${f.posterUrl}" alt="" loading="lazy">`
         : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
       <div class="film-main">
-        <div class="film-title">${escapeHtml(f.title)}${isManual ? '<span class="manual-badge" title="Note manuelle — référentiel différent">manuel</span>' : ''}${f.review ? '<span class="review-badge" title="Commentaire enregistré">💬</span>' : ''}${rewatches > 1 ? `<span class="rewatch-badge" title="Revu ${rewatches} fois">↻ ×${rewatches}</span>` : ''}${happening ? `<button class="happening-badge" type="button" title="Un petit quelque chose à découvrir..." aria-label="Un petit quelque chose à découvrir...">${happening.icon}</button>` : ''}</div>
+        <div class="film-title">${escapeHtml(f.title)}${isManual ? '<span class="manual-badge" title="Note manuelle (référentiel différent)">manuel</span>' : ''}${f.review ? '<span class="review-badge" title="Commentaire enregistré">💬</span>' : ''}${rewatches > 1 ? `<span class="rewatch-badge" title="Revu ${rewatches} fois">↻ ×${rewatches}</span>` : ''}${happening ? `<button class="happening-badge" type="button" title="Un petit quelque chose à découvrir..." aria-label="Un petit quelque chose à découvrir...">${happening.icon}</button>` : ''}</div>
         <div class="film-sub">${sub}</div>
       </div>
       <button class="star-btn ${f.fav ? 'active' : ''}" data-id="${f.id}" type="button" title="Favori" aria-label="${f.fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}" aria-pressed="${f.fav}">${f.fav ? '★' : '☆'}</button>
@@ -203,7 +203,7 @@ function render(){
       const newFav = !f.fav;
       const { error } = await supabaseClient.from('films').update({ fav: newFav }).eq('id', f.id).eq('user_id', currentUser.id);
       if(error){
-        showToast('Erreur de sauvegarde — réessaie');
+        showToast('Erreur de sauvegarde, réessaie');
         console.error(error);
         return;
       }
@@ -404,7 +404,7 @@ async function handleSave(){
       .eq('id', editingId)
       .eq('user_id', currentUser.id);
     if(error){
-      showToast('Erreur de sauvegarde — réessaie');
+      showToast('Erreur de sauvegarde, réessaie');
       console.error(error);
       return;
     }
@@ -425,7 +425,7 @@ async function handleSave(){
       .select()
       .single();
     if(error){
-      showToast('Erreur de sauvegarde — réessaie');
+      showToast('Erreur de sauvegarde, réessaie');
       console.error(error);
       return;
     }
@@ -459,7 +459,7 @@ async function handleDelete(){
   if(!editingId) return;
   const { error } = await supabaseClient.from('films').delete().eq('id', editingId).eq('user_id', currentUser.id);
   if(error){
-    showToast('Erreur de suppression — réessaie');
+    showToast('Erreur de suppression, réessaie');
     console.error(error);
     return;
   }
@@ -509,7 +509,7 @@ function importFilms(file){
 
     const importedFilms = Array.isArray(data) ? data : data.films;
     if(!Array.isArray(importedFilms) || !importedFilms.every(isValidImportedFilm)){
-      showToast('Format inattendu — import annulé');
+      showToast('Format inattendu, import annulé');
       return;
     }
 
@@ -524,7 +524,7 @@ function importFilms(file){
     if(replace){
       const { error: delError } = await supabaseClient.from('films').delete().eq('user_id', currentUser.id);
       if(delError){
-        showToast('Erreur pendant le remplacement — réessaie');
+        showToast('Erreur pendant le remplacement, réessaie');
         console.error(delError);
         return;
       }
@@ -548,7 +548,7 @@ function importFilms(file){
 
     const { data: inserted, error: insError } = await supabaseClient.from('films').insert(rows).select();
     if(insError){
-      showToast('Erreur pendant l\'import — réessaie');
+      showToast('Erreur pendant l\'import, réessaie');
       console.error(insError);
       return;
     }
@@ -631,7 +631,7 @@ function exportFilmsToLetterboxd(){
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-  showToast('CSV téléchargé — à importer sur letterboxd.com/import');
+  showToast('CSV téléchargé, à importer sur letterboxd.com/import');
 }
 
 document.getElementById('exportLetterboxdBtn').addEventListener('click', exportFilmsToLetterboxd);

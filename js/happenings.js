@@ -259,7 +259,7 @@ function runOdysseyHappening(){
         <h2>L'épreuve de l'arc</h2>
         <button class="close-x" data-close>✕</button>
       </div>
-      <p class="happening-caption" id="odysseyCaption">Douze anneaux de hache, un seul arc à bander : plie-le et accroche la corde à l'encoche du sommet — vite, et sans t'arrêter, ou elle retombe.</p>
+      <p class="happening-caption" id="odysseyCaption">Douze anneaux de hache, un seul arc à bander : plie-le et accroche la corde à l'encoche du sommet, vite et sans t'arrêter, ou elle retombe.</p>
       <svg class="odyssey-bow" viewBox="0 0 220 200" aria-hidden="true">
         <line x1="15" y1="100" x2="205" y2="100" class="odyssey-bow-guide"/>
         <!-- Encoche du sommet : où le bout libre de la corde doit venir s'accrocher, voir updateOdysseyBow(). -->
@@ -341,7 +341,7 @@ function runCityOfGodHappening(film){
         <h2>Le défi photo, façon favela</h2>
         <button class="close-x" data-close>✕</button>
       </div>
-      <p class="happening-caption" id="cogCaption">Prends une photo. Une vraie, maintenant — qui raconte quelque chose, comme un plan de Cidade de Deus. On s'occupe de l'ambiance.</p>
+      <p class="happening-caption" id="cogCaption">Prends une photo, une vraie : qui raconte quelque chose, comme un plan de Cidade de Deus. On s'occupe de l'ambiance.</p>
       <div id="cogIntro">
         <input type="file" accept="image/*" capture="environment" id="cogPhotoInput">
       </div>
@@ -388,7 +388,7 @@ function runCityOfGodHappening(film){
     photoInput.value = '';
     result.style.display = 'none';
     intro.style.display = '';
-    caption.textContent = 'Prends une photo. Une vraie, maintenant — qui raconte quelque chose, comme un plan de Cidade de Deus. On s\'occupe de l\'ambiance.';
+    caption.textContent = 'Prends une photo, une vraie : qui raconte quelque chose, comme un plan de Cidade de Deus. On s\'occupe de l\'ambiance.';
   });
 
   document.getElementById('cogDownloadBtn').addEventListener('click', () => {

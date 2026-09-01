@@ -101,7 +101,7 @@ function upcomingEndedRowHtml(show){
         : `<div class="film-poster film-poster-placeholder">${TV_PLACEHOLDER_SVG}</div>`}
       <div class="wl-main">
         <div class="wl-title">${escapeHtml(show.title)}</div>
-        <div class="wl-note"><span class="status-badge ended">${escapeHtml(showStatusLabel(show.status))}</span> — plus aucune nouvelle saison prévue</div>
+        <div class="wl-note"><span class="status-badge ended">${escapeHtml(showStatusLabel(show.status))}</span> (plus aucune nouvelle saison prévue)</div>
       </div>
       <div class="wl-actions">
         <button class="btn secondary" data-id="${show.id}" type="button">Ouvrir</button>
@@ -113,7 +113,7 @@ function upcomingEndedRowHtml(show){
 function renderUpcoming(){
   const soonEl = document.getElementById('upcomingSoonList');
   soonEl.innerHTML = upcomingSoon.length === 0
-    ? `<div class="empty-state">Rien de prévu pour l'instant — ajoute des films à ta watchlist ou suis des séries encore en diffusion.</div>`
+    ? `<div class="empty-state">Rien de prévu pour l'instant. Ajoute des films à ta watchlist ou suis des séries encore en diffusion.</div>`
     : upcomingSoon.map(upcomingRowHtml).join('');
 
   const endedEl = document.getElementById('upcomingEndedList');

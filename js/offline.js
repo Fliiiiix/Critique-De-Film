@@ -58,7 +58,7 @@ function formatOfflineTimestamp(ms){
 function enterOfflineMode(savedAt){
   isOfflineMode = true;
   const banner = document.getElementById('offlineBanner');
-  banner.textContent = `📴 Hors ligne — dernières données synchronisées le ${formatOfflineTimestamp(savedAt)}. Lecture seule : reconnecte-toi pour noter ou modifier.`;
+  banner.textContent = `📴 Hors ligne, dernières données synchronisées le ${formatOfflineTimestamp(savedAt)}. Lecture seule : reconnecte-toi pour noter ou modifier.`;
   banner.style.display = '';
 }
 
@@ -74,7 +74,7 @@ function exitOfflineMode(){
 // l'utilisateur) si l'action doit être bloquée.
 function blockIfOffline(){
   if(!isOfflineMode) return false;
-  showToast('Hors ligne — reconnecte-toi pour modifier');
+  showToast('Hors ligne, reconnecte-toi pour modifier');
   return true;
 }
 

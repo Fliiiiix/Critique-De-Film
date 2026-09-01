@@ -96,7 +96,7 @@ const HIDDEN_ACHIEVEMENTS = [
   },
   {
     key: 'sans-affiche', icon: '🎞️', title: 'Sans affiche',
-    desc: "Avoir 10 films ou plus sans fiche TMDB liée — l'ancien monde, avant les affiches.",
+    desc: "Avoir 10 films ou plus sans fiche TMDB liée (l'ancien monde, avant les affiches).",
     check: films => films.filter(f => !f.tmdbId).length >= 10
   },
   {
@@ -162,7 +162,7 @@ const TIER_MEDALS = ['🥉', '🥈', '🥇'];
 function renderTierCard(g){
   const prevThreshold = g.tierIndex >= 0 ? g.tiers[g.tierIndex].threshold : 0;
   const progressText = g.next
-    ? `${g.value} / ${g.next.threshold} ${g.unit} — encore ${g.next.threshold - g.value} avant ${g.next.name}`
+    ? `${g.value} / ${g.next.threshold} ${g.unit} (encore ${g.next.threshold - g.value} avant ${g.next.name})`
     : `Palier maximum atteint (${g.value} ${g.unit})`;
   const span = g.next ? g.next.threshold - prevThreshold : 1;
   const progressPct = g.next ? Math.min(100, Math.max(0, ((g.value - prevThreshold) / span) * 100)) : 100;
@@ -174,7 +174,7 @@ function renderTierCard(g){
         <span class="ach-tier-label">${escapeHtml(g.label)}</span>
       </div>
       <div class="ach-tier-medals">
-        ${g.tiers.map((t, i) => `<span class="ach-medal ${i <= g.tierIndex ? 'earned' : ''}" title="${escapeHtml(t.name)} — ${t.threshold} ${escapeHtml(g.unit)}">${TIER_MEDALS[i]}</span>`).join('')}
+        ${g.tiers.map((t, i) => `<span class="ach-medal ${i <= g.tierIndex ? 'earned' : ''}" title="${escapeHtml(t.name)} : ${t.threshold} ${escapeHtml(g.unit)}">${TIER_MEDALS[i]}</span>`).join('')}
       </div>
       <div class="ach-tier-bar"><div class="ach-tier-fill" style="width:${progressPct.toFixed(1)}%"></div></div>
       <div class="ach-tier-progress">${escapeHtml(progressText)}</div>
@@ -185,7 +185,7 @@ function renderTierCard(g){
 function renderHiddenCard(h){
   if (!h.unlocked){
     return `
-      <div class="ach-hidden-card locked" title="Succès secret — pas encore débloqué">
+      <div class="ach-hidden-card locked" title="Succès secret, pas encore débloqué">
         <span class="ach-hidden-icon">❔</span>
         <span class="ach-hidden-title">???</span>
       </div>

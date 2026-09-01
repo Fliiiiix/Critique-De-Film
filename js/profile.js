@@ -151,7 +151,7 @@ async function handleAvatarFileUpload(e){
     .upload(path, file, { upsert: true, contentType: file.type });
 
   if(upErr){
-    status.textContent = 'Erreur d\'envoi — réessaie.';
+    status.textContent = 'Erreur d\'envoi, réessaie.';
     status.classList.add('error');
     console.error(upErr);
     return;
@@ -187,7 +187,7 @@ document.getElementById('copyPublicProfileLink').addEventListener('click', async
     await navigator.clipboard.writeText(publicProfileUrl());
     showToast('Lien copié');
   }catch(e){
-    showToast('Impossible de copier — sélectionne le lien à la main');
+    showToast('Impossible de copier, sélectionne le lien à la main');
     console.error(e);
   }
 });
