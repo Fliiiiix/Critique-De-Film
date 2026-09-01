@@ -101,6 +101,53 @@ document.getElementById('authEmail').addEventListener('keydown', (e) => {
 });
 document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
+// --- Tags interactifs de l'écran de connexion (v2.0.12) ---
+// Survoler/focus un tag (#authTags) affiche sa description dans
+// #authShowcasePanel à la place du visuel décoratif par défaut (voir
+// index.html + .auth-tag-desc/.auth-hero-visual dans style.css). Un seul
+// tag actif à la fois : dataset.active sur le panneau, lu par les
+// sélecteurs CSS [data-active="..."].
+(function setupAuthTagPanel(){
+  const panel = document.getElementById('authShowcasePanel');
+  if(!panel) return; // page publique/invite : ce panneau n'existe pas
+  const tags = document.querySelectorAll('#authTags .auth-tag');
+  // (hover:hover) plutôt que juste "souris vs tactile" au pif : certains
+  // écrans tactiles avec trackpad/souris annexe passent ce test à true.
+  // Sans lui, le survol simulé au premier tap sur mobile laisserait le
+  // second tap (le vrai clic) fermer aussitôt ce qu'il venait d'ouvrir.
+  const canHover = window.matchMedia('(hover: hover)').matches;
+  const activate = (tag, btn) => {
+    panel.dataset.active = tag;
+    tags.forEach(t => t.classList.toggle('is-active', t === btn));
+  };
+  const deactivate = (tag) => {
+    if(panel.dataset.active !== tag) return;
+    delete panel.dataset.active;
+    tags.forEach(t => t.classList.remove('is-active'));
+  };
+  tags.forEach(btn => {
+    const tag = btn.dataset.tag;
+    if(canHover){
+      // Desktop/souris : survol ET clavier (focus/blur) — pas de handler
+      // click ici, un vrai <button> n'en a pas besoin en plus du hover.
+      btn.addEventListener('mouseenter', () => activate(tag, btn));
+      btn.addEventListener('mouseleave', () => deactivate(tag));
+      btn.addEventListener('focus', () => activate(tag, btn));
+      btn.addEventListener('blur', () => deactivate(tag));
+    }else{
+      // Tactile : pas de survol persistant, le tap bascule affiché/masqué.
+      // Pas de focus/blur en plus ici : un <button> déclenche déjà ce même
+      // click au clavier (Entrée/Espace), les cumuler ferait se refermer
+      // le panneau juste après l'avoir ouvert (focus l'active, puis le
+      // click qui suit immédiatement le désactive).
+      btn.addEventListener('click', () => {
+        if(panel.dataset.active === tag) deactivate(tag);
+        else activate(tag, btn);
+      });
+    }
+  });
+})();
+
 (async function initAuth(){
   buildSortOptions();
   // Lien de profil public (#/u/:userId) : doit s'afficher même sans compte,

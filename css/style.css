@@ -869,17 +869,22 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   max-width:44ch;
   margin-bottom:20px;
 }
-/* Rangée de tags scannable en un coup d'œil, avant même la liste détaillée
-   juste en dessous — même vocabulaire visuel que .manual-badge (pilule,
-   Space Mono, bordure fine) pour rester cohérent avec le reste de l'app. */
+/* Rangée de tags (v2.0.12 : de vrais boutons, plus une simple liste
+   aria-hidden) — même vocabulaire visuel que .manual-badge (pilule, Space
+   Mono, bordure fine) pour rester cohérent avec le reste de l'app. */
 .auth-tags{
   list-style:none;
   display:flex;
   flex-wrap:wrap;
   gap:8px;
-  margin-bottom:28px;
+  margin-bottom:16px;
 }
-.auth-tags li{
+/* display:contents sur le <li> : le <button> devient directement l'item
+   flex de .auth-tags (le <li> disparaît de la boîte, pas du DOM), donc la
+   pilule garde exactement le même gabarit qu'avant (v2.0.9-v2.0.11) sans
+   avoir à dupliquer le padding/la bordure sur deux niveaux. */
+.auth-tags li{display:contents;}
+.auth-tag{
   display:inline-flex;
   align-items:center;
   gap:6px;
@@ -892,39 +897,64 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border:1px solid var(--line);
   border-radius:999px;
   padding:6px 12px;
+  cursor:pointer;
+  transition:color .15s, background .15s, border-color .15s;
 }
-/* auto-fit plutôt qu'un nombre de colonnes fixe (v2.0.10) : 3 par rangée
-   tant qu'il y a la place (colonne de texte large, voir .auth-hero),
-   repasse à 2 puis 1 tout seul si l'espace se resserre — aucun palier à
-   caler à la main, contrairement à un fixed 3-columns qui casserait entre
-   760px (empilement mobile) et la largeur où .auth-pitch retrouve sa
-   pleine mesure. */
-.auth-features{list-style:none; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:20px;}
-.auth-features li{display:flex; flex-direction:column; align-items:flex-start; gap:6px;}
-/* Numéro plutôt qu'icône (v2.0.11) : même vocabulaire typo que
-   .auth-tags/.version-tag (Space Mono), pas un nouvel élément visuel —
-   aucune icône sur cet écran, cassée ou non, après les retours répétés
-   sur les badges carrés (v2.0.3-v2.0.10). */
-.auth-feature-num{
-  font-family:'Space Mono', monospace;
-  font-weight:700;
-  font-size:13px;
+/* :hover ET :focus-visible ET .is-active (posé par js/auth.js, voir
+   toggleAuthTagPanel()) : les 3 chemins pour arriver au même tag actif
+   (souris, clavier, tap tactile) doivent avoir le même rendu. */
+.auth-tag:hover, .auth-tag:focus-visible, .auth-tag.is-active{
   color:var(--violet);
-  letter-spacing:0.03em;
+  background:var(--violet-wash);
+  border-color:var(--violet-dim);
 }
-.auth-features b{
-  display:block;
-  font-family:'Bricolage Grotesque', sans-serif;
-  font-weight:600;
+.auth-tag:focus-visible{outline:2px solid var(--violet-dim); outline-offset:2px;}
+/* Panneau qui bascule entre le visuel par défaut et la description du tag
+   actif (v2.0.12) — remplace l'ancienne liste .auth-features empilée,
+   qui répétait ce que disaient déjà les tags juste au-dessus. Hauteur
+   fixe (pas min-height) : le texte le plus long des 4 descriptions ne
+   doit jamais faire sauter la mise en page au survol d'un tag à l'autre. */
+.auth-showcase-panel{position:relative; height:150px;}
+.auth-hero-visual, .auth-tag-desc{
+  position:absolute; inset:0;
+  display:flex; align-items:center;
+  opacity:0; visibility:hidden;
+  transition:opacity .2s ease;
+}
+.auth-hero-visual{opacity:1; visibility:visible; justify-content:center;}
+.auth-showcase-panel[data-active] .auth-hero-visual{opacity:0; visibility:hidden;}
+.auth-tag-desc{
   font-size:14.5px;
-  margin-bottom:2px;
-}
-.auth-features span{
-  display:block;
-  font-size:13px;
+  line-height:1.6;
   color:var(--text-muted);
-  line-height:1.5;
+  padding-right:24px;
 }
+.auth-showcase-panel[data-active="critere"] [data-panel="critere"],
+.auth-showcase-panel[data-active="films-series"] [data-panel="films-series"],
+.auth-showcase-panel[data-active="prochainement"] [data-panel="prochainement"],
+.auth-showcase-panel[data-active="amis"] [data-panel="amis"]{
+  opacity:1; visibility:visible;
+}
+/* Visuel par défaut : le cadran du logo (mêmes classes que .brand-mark,
+   juste agrandi) entouré de 3 notes flottantes — mêmes .counter/.rate-*
+   que la vitrine à droite et le catalogue lui-même, pas un nouveau motif
+   inventé pour l'occasion. */
+.auth-hero-dial{width:104px; height:104px; opacity:0.85;}
+.auth-hero-dial .brand-mark-track{stroke-width:2.5;}
+.auth-hero-dial .brand-mark-arc{stroke-width:2.5;}
+.auth-hero-badge{
+  position:absolute;
+  width:38px; height:38px; font-size:12px;
+  animation:auth-hero-float 7s ease-in-out infinite;
+}
+.auth-hero-badge-1{top:6%; left:20%; animation-delay:0s;}
+.auth-hero-badge-2{bottom:10%; left:6%; animation-delay:-2.3s;}
+.auth-hero-badge-3{top:10%; right:12%; animation-delay:-4.6s;}
+@keyframes auth-hero-float{
+  0%, 100%{transform:translateY(0);}
+  50%{transform:translateY(-9px);}
+}
+@media (prefers-reduced-motion:reduce){.auth-hero-badge{animation:none;}}
 /* Colonne de droite (v2.0.10) : largeur fixe imposée par .auth-hero
    (grid-template-columns, voir plus haut) — vitrine + carte empilées ici
    en flex column, dans cet ordre visuel sur desktop (vitrine au-dessus de
@@ -2339,22 +2369,6 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   font-size:11px;
   color:var(--text-muted);
   flex:none;
-}
-
-/* auto-fit (voir .auth-features plus haut) ne retombe franchement à 3
-   colonnes confortables qu'à partir d'environ 950px de large — entre ce
-   seuil et 760px (où .auth-hero repasse en une colonne, voir plus bas),
-   la colonne de texte est juste assez étroite pour ne loger que 2
-   colonnes, avec le 3e item livré seul sur sa propre rangée : pas cassé,
-   juste moins net. Cette bande couvre pile la largeur d'un iPad en
-   portrait (768px) — assez courant pour valoir un correctif dédié plutôt
-   que de laisser l'auto-fit livré à lui-même. Sous 1000px, 1 seule
-   colonne, icône à gauche du texte plutôt qu'au-dessus (disposition en
-   ligne d'origine) : plus lisible qu'une colonne unique où l'icône
-   flotterait seule au-dessus d'un texte pleine largeur. */
-@media (max-width:1000px){
-  .auth-features{grid-template-columns:1fr; gap:16px;}
-  .auth-features li{flex-direction:row; align-items:flex-start; gap:14px;}
 }
 
 /* Tablette : la barre d'outils passe en deux rangées pleine largeur avant
