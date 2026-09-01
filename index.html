@@ -28,7 +28,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=31">
+<link rel="stylesheet" href="css/style.css?v=32">
 </head>
 <body>
 
@@ -166,10 +166,45 @@
         <li><span class="ico">📅</span>Prochaines sorties</li>
         <li><span class="ico">👥</span>Amis &amp; groupes</li>
       </ul>
+      <!-- Icônes en SVG dessiné (v2.0.9), plus en emoji — signalé à
+           plusieurs reprises par l'utilisateur malgré 2 correctifs CSS
+           successifs (couleur puis taille/overflow) : le vrai problème
+           n'est pas corrigeable de façon fiable en CSS, un emoji couleur
+           dépend entièrement de la police système du navigateur/appareil
+           du visiteur, hors de contrôle. Un SVG hérite de currentColor,
+           rend identiquement partout, aucune dépendance externe. -->
       <ul class="auth-features">
-        <li><span class="auth-feature-icon">🎯</span><div><b>Grille à 7 critères</b><span>Scénario, mise en scène, jeu d'acteur… une vraie note réfléchie, pas juste une étoile.</span></div></li>
-        <li><span class="auth-feature-icon">📊</span><div><b>Stats, succès, journal</b><span>Ton activité de cinéphile suivie dans le temps, à ton rythme.</span></div></li>
-        <li><span class="auth-feature-icon">👥</span><div><b>Amis &amp; groupes</b><span>Compare tes goûts, propose des films à plusieurs, vote pour la prochaine séance.</span></div></li>
+        <li>
+          <span class="auth-feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="8"></circle>
+              <circle cx="12" cy="12" r="4.2"></circle>
+              <circle cx="12" cy="12" r="0.6" fill="currentColor" stroke="none"></circle>
+            </svg>
+          </span>
+          <div><b>Grille à 7 critères</b><span>Scénario, mise en scène, jeu d'acteur… une vraie note réfléchie, pas juste une étoile.</span></div>
+        </li>
+        <li>
+          <span class="auth-feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M5 19V13"></path>
+              <path d="M12 19V8"></path>
+              <path d="M19 19V4"></path>
+            </svg>
+          </span>
+          <div><b>Stats, succès, journal</b><span>Ton activité de cinéphile suivie dans le temps, à ton rythme.</span></div>
+        </li>
+        <li>
+          <span class="auth-feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="9.3" cy="8" r="3.3"></circle>
+              <path d="M16 3.8c1.5.7 2.5 2.2 2.5 4S17.5 11.1 16 11.8"></path>
+              <path d="M14.5 20.3c0-3-2.3-5-5.2-5s-5.2 2-5.2 5"></path>
+              <path d="M19 20c0-2.5-1.7-4.3-4-4.8"></path>
+            </svg>
+          </span>
+          <div><b>Amis &amp; groupes</b><span>Compare tes goûts, propose des films à plusieurs, vote pour la prochaine séance.</span></div>
+        </li>
       </ul>
     </div>
     <!-- Aperçu produit : 3 cartes façon catalogue en éventail, posters/
@@ -809,8 +844,15 @@
       <div id="installSectionContent"></div>
     </div>
 
-    <div class="modal-footer">
-      <div><button class="btn secondary" id="logoutBtn" type="button">Déconnexion</button></div>
+    <!-- profile-modal-footer : classe dédiée (v2.0.9) — la règle mobile
+         générique de .modal-footer .right (pensée pour le footer du
+         formulaire film, voir plus bas) forçait Annuler/Enregistrer en
+         pleine largeur sans rien prévoir d'équivalent pour Déconnexion
+         (hors .right) : elle restait seule sur sa ligne, visuellement
+         détachée plutôt qu'"au même niveau" — signalé par l'utilisateur.
+         Voir style.css pour le comportement mobile dédié. -->
+    <div class="modal-footer profile-modal-footer">
+      <button class="btn secondary" id="logoutBtn" type="button">Déconnexion</button>
       <div class="right">
         <button class="btn secondary" id="cancelProfileBtn">Annuler</button>
         <button class="btn" id="saveProfileBtn">Enregistrer</button>
@@ -883,61 +925,61 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=31"></script>
-<script src="js/tmdbConfig.js?v=31"></script>
-<script src="js/data.js?v=31"></script>
-<script src="js/happenings.js?v=31"></script>
+<script src="js/supabaseConfig.js?v=32"></script>
+<script src="js/tmdbConfig.js?v=32"></script>
+<script src="js/data.js?v=32"></script>
+<script src="js/happenings.js?v=32"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=31"></script>
+<script src="js/ui.js?v=32"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=31"></script>
-<script src="js/app.js?v=31"></script>
-<script src="js/tmdb.js?v=31"></script>
-<script src="js/stats.js?v=31"></script>
-<script src="js/achievements.js?v=31"></script>
-<script src="js/journal.js?v=31"></script>
+<script src="js/offline.js?v=32"></script>
+<script src="js/app.js?v=32"></script>
+<script src="js/tmdb.js?v=32"></script>
+<script src="js/stats.js?v=32"></script>
+<script src="js/achievements.js?v=32"></script>
+<script src="js/journal.js?v=32"></script>
 <!-- Après app.js (showToast) — appelée par js/profile.js juste après. -->
-<script src="js/pwa.js?v=31"></script>
-<script src="js/profile.js?v=31"></script>
+<script src="js/pwa.js?v=32"></script>
+<script src="js/profile.js?v=32"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=31"></script>
-<script src="js/router.js?v=31"></script>
-<script src="js/publicProfile.js?v=31"></script>
-<script src="js/top.js?v=31"></script>
-<script src="js/friends.js?v=31"></script>
+<script src="js/admin.js?v=32"></script>
+<script src="js/router.js?v=32"></script>
+<script src="js/publicProfile.js?v=32"></script>
+<script src="js/top.js?v=32"></script>
+<script src="js/friends.js?v=32"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=31"></script>
-<script src="js/watchlist.js?v=31"></script>
+<script src="js/activity.js?v=32"></script>
+<script src="js/watchlist.js?v=32"></script>
 <!-- Après watchlist.js : js/upcoming.js réutilise le tableau watchlist déjà
      chargé (voir plus bas). -->
-<script src="js/series.js?v=31"></script>
+<script src="js/series.js?v=32"></script>
 <!-- Après watchlist.js ET series.js — a besoin des deux tableaux chargés
      (loadWatchlist()/loadTrackedShows()), voir js/upcoming.js. -->
-<script src="js/upcoming.js?v=31"></script>
-<script src="js/groups.js?v=31"></script>
-<script src="js/proposals.js?v=31"></script>
+<script src="js/upcoming.js?v=32"></script>
+<script src="js/groups.js?v=32"></script>
+<script src="js/proposals.js?v=32"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=31"></script>
+<script src="js/invites.js?v=32"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=31"></script>
-<script src="js/auth.js?v=31"></script>
+<script src="js/activityState.js?v=32"></script>
+<script src="js/auth.js?v=32"></script>
 </body>
 </html>

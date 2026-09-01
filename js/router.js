@@ -115,6 +115,16 @@ async function renderRoute(){
   // de ce fichier) — vérifiée avant le if(!currentUser) qui bloque tout le
   // reste, pour rester accessible qu'on soit connecté ou non.
   if(route.name === 'publicProfile'){
+    // #authContainer n'est pas dans PAGE_IDS (showOnlyPage() ne le touche
+    // jamais) : sur un premier chargement à froid il est déjà display:none
+    // par défaut, donc invisible sans rien faire — mais si quelqu'un colle
+    // ce lien dans la barre d'adresse d'un onglet déjà ouvert SANS session
+    // (écran de connexion déjà affiché par showAuthScreen()), renderRoute()
+    // tourne via hashchange sans jamais repasser par showAuthScreen()/
+    // showApp(), et l'écran de connexion restait affiché par-dessus le
+    // profil public — bug constaté en testant ce scénario précis. Masqué
+    // explicitement ici, quel que soit l'état de départ.
+    document.getElementById('authContainer').style.display = 'none';
     showOnlyPage('publicProfilePage');
     await renderPublicProfilePage(route.userId);
     return;
@@ -125,6 +135,9 @@ async function renderRoute(){
   // initAuth() (js/auth.js), pas par ici : ce cas ne couvre qu'une
   // navigation vers #/invite/:token depuis une session déjà active.
   if(route.name === 'invite'){
+    // Même raisonnement que publicProfile juste au-dessus : ce chemin
+    // tourne aussi sur un simple hashchange, pas seulement à froid.
+    document.getElementById('authContainer').style.display = 'none';
     showOnlyPage('invitePage');
     await renderInvitePage(route.token);
     return;
@@ -169,8 +182,23 @@ window.addEventListener('hashchange', renderRoute);
 // n'importe quelle page (le header est toujours visible hors modal — voir
 // css .overlay qui les recouvre). div+role="link" plutôt que <button> car
 // un <h1> n'est pas un contenu autorisé dans <button> (phrasing content).
+//
+// goHome() seul ne suffit pas ici : contrairement aux autres boutons
+// "← Retour" de l'app (tous sur des pages qui exigent déjà une session),
+// le logo reste cliquable sur #publicProfilePage/#invitePage, les deux
+// seules pages accessibles SANS connexion (voir js/publicProfile.js,
+// js/invites.js, qui ont déjà exactement cette même garde sur leur
+// propre bouton retour). Sans ce garde-fou : `location.hash = ''` change
+// bien l'URL mais renderRoute() s'arrête à `if(!currentUser) return;`
+// sans rien afficher — la page reste figée sur l'ancien contenu, bug
+// constaté en cliquant le logo depuis un profil public en étant
+// déconnecté.
+function goHomeOrAuth(){
+  if(currentUser) goHome();
+  else showAuthScreen();
+}
 const homeLinkEl = document.getElementById('homeLink');
-homeLinkEl.addEventListener('click', goHome);
+homeLinkEl.addEventListener('click', goHomeOrAuth);
 homeLinkEl.addEventListener('keydown', (e) => {
-  if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goHome(); }
+  if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goHomeOrAuth(); }
 });

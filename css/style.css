@@ -902,20 +902,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background:var(--violet-wash);
   border:1px solid var(--violet-dim);
   display:flex; align-items:center; justify-content:center;
-  /* Un glyphe emoji couleur ne suit pas la même boîte qu'un caractère
-     texte au même font-size — Segoe UI Emoji/Apple Color Emoji rendent
-     nettement plus grand que leur taille nominale, débordait visiblement
-     du cadre à 17px (constaté par l'utilisateur, à répétition). Réduit à
-     14px ET overflow:hidden en filet de sécurité : quelle que soit la
-     police emoji réellement utilisée par le navigateur/OS du visiteur,
-     rien ne peut plus déborder du cadre défini, même si ses métriques
-     diffèrent de celles testées ici. Même paire de règles appliquée à
-     .auth-card-mark juste en dessous, exposée au même risque. */
-  font-size:14px;
-  overflow:hidden;
-  font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Segoe UI Symbol',sans-serif;
-  font-variant-emoji:emoji;
+  color:var(--violet);
 }
+/* SVG dessiné à la main (v2.0.9), plus un emoji — voir index.html pour le
+   pourquoi (2 correctifs CSS successifs sur l'emoji jamais suffisants,
+   le vrai problème étant hors de portée du CSS). currentColor hérite de
+   la couleur du badge ci-dessus : un seul endroit à changer pour teinter
+   l'icône. */
+.auth-feature-icon svg{width:19px; height:19px;}
 .auth-features b{
   display:block;
   font-family:'Bricolage Grotesque', sans-serif;
@@ -2405,6 +2399,18 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   .modal-footer{flex-wrap:wrap; gap:12px 16px;}
   .live-score{flex:1 1 100%;}
   .modal-footer .right{flex:1 1 100%; flex-wrap:wrap; justify-content:flex-end;}
+
+  /* Modale profil (.profile-modal-footer, v2.0.9) : Déconnexion vit hors
+     de .right (voir index.html — regroupement volontaire, distinct
+     d'Annuler/Enregistrer), donc la règle juste au-dessus ne s'y applique
+     qu'à moitié : .right passait en pleine largeur, Déconnexion restait à
+     sa taille naturelle, seule sur sa ligne — visuellement détachée du
+     reste plutôt qu'"au même niveau" (signalé par l'utilisateur). Colonne
+     dédiée : Annuler/Enregistrer d'abord (l'action probable), Déconnexion
+     ensuite, même largeur pleine que le reste plutôt que perdue à part. */
+  .profile-modal-footer{flex-direction:column; align-items:stretch;}
+  .profile-modal-footer .right{order:1; flex-basis:auto;}
+  .profile-modal-footer #logoutBtn{order:2; width:100%; margin-top:2px;}
 }
 
 @media (max-width:380px){

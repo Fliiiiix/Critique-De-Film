@@ -616,16 +616,35 @@ page publique montre pseudo, avatar, quelques tuiles (films notés / note
 moyenne / favoris) et le catalogue trié par note — jamais l'email ni les
 commentaires (`review`), désactivé par défaut (opt-in).
 
+**Comment le vérifier soi-même** : cocher la case, "Enregistrer", copier le
+lien affiché (bouton "Copier"), puis l'ouvrir dans une fenêtre privée/
+navigation invitée (pas juste un nouvel onglet du même navigateur, qui
+resterait connecté) — c'est la seule façon fiable de voir exactement ce
+qu'un visiteur sans compte reçoit. Cocher/décocher puis "Enregistrer" à
+nouveau pour activer/désactiver.
+
 Techniquement : colonne `profiles.public_profile` (`false` par défaut) +
 une fonction `SECURITY DEFINER` `get_public_profile(p_user_id)`, seule
 fonction de tout le projet accordée au rôle `anon` (toutes les autres
 exigent `authenticated`). Elle lit `films`/`profiles` de l'utilisateur visé
 en interne, mais ne renvoie que pseudo/avatar/catalogue agrégé — jamais de
 ligne brute — et 0 ligne (sans distinguer "profil inexistant" de "resté
-privé") tant que `public_profile` n'est pas passé à `true`. Testé en
-conditions réelles contre la prod : bascule public → appel direct avec un
-client Supabase 100% anonyme (aucune session) → contenu correct reçu →
-bascule retour à privé → le même client anonyme ne reçoit plus rien.
+privé") tant que `public_profile` n'est pas passé à `true`. Vérifié en
+conditions réelles (v2.0.9) : la fonction RPC répond correctement en
+anonyme, et un clic à froid sur un lien `#/u/:userId` (cas réel d'usage —
+un proche qui reçoit le lien) affiche la page sans jamais passer par
+l'écran de connexion.
+
+**Bug trouvé et corrigé (v2.0.9)** : `renderRoute()` (js/router.js) gérait
+`#/u/:userId` et `#/invite/:token` correctement au tout premier chargement,
+mais pas de façon robuste sur un `hashchange` ultérieur (ex. quelqu'un colle
+le lien dans la barre d'adresse d'un onglet déjà ouvert sur l'écran de
+connexion) — `#authContainer` restait affiché par-dessus faute d'être
+explicitement masqué. Pareillement, cliquer le logo "Kinet" depuis cette
+page en étant déconnecté ne menait nulle part (`goHome()` change l'URL mais
+`renderRoute()` s'arrête à `if(!currentUser) return;` sans rien afficher) —
+remplacé par `goHomeOrAuth()`, qui redirige vers l'écran de connexion s'il
+n'y a personne, comme le fait déjà le bouton "← Retour" de cette page.
 Nécessite `supabase/migrations/016_add_public_profile.sql`.
 
 ## Happenings (easter eggs par film)
