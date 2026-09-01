@@ -1866,6 +1866,18 @@ input[type="range"]::-moz-range-thumb{
   text-transform:capitalize;
 }
 
+/* Discrète par construction (v2.1, demande explicite) : même traitement
+   visuel que .version-tag (Space Mono, petite taille, opacité réduite) —
+   une signature, pas un élément qui réclame l'attention. */
+.app-footer{
+  text-align:center;
+  padding:28px 16px 20px;
+  font-family:'Space Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.04em;
+  color:var(--text-muted);
+  opacity:0.5;
+}
 .toast{
   position:fixed;
   bottom:24px;

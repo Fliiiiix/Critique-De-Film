@@ -28,7 +28,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=46">
+<link rel="stylesheet" href="css/style.css?v=47">
 </head>
 <body>
 
@@ -916,69 +916,75 @@
   </div>
 </div>
 
+<!-- Signature discrète (v2.1) — hors des conteneurs à bascule (comme le
+     digest/bandeaux hors ligne/installation plus haut) : reste visible en
+     bas de PAGE, quelle que soit la page affichée par showOnlyPage(),
+     sans avoir à la dupliquer dans chacune. -->
+<footer class="app-footer">Made by Flix</footer>
+
 <div class="toast" id="toast"></div>
 
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=46"></script>
-<script src="js/tmdbConfig.js?v=46"></script>
-<script src="js/data.js?v=46"></script>
-<script src="js/happenings.js?v=46"></script>
+<script src="js/supabaseConfig.js?v=47"></script>
+<script src="js/tmdbConfig.js?v=47"></script>
+<script src="js/data.js?v=47"></script>
+<script src="js/happenings.js?v=47"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=46"></script>
+<script src="js/ui.js?v=47"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=46"></script>
-<script src="js/app.js?v=46"></script>
-<script src="js/tmdb.js?v=46"></script>
-<script src="js/stats.js?v=46"></script>
-<script src="js/achievements.js?v=46"></script>
-<script src="js/journal.js?v=46"></script>
+<script src="js/offline.js?v=47"></script>
+<script src="js/app.js?v=47"></script>
+<script src="js/tmdb.js?v=47"></script>
+<script src="js/stats.js?v=47"></script>
+<script src="js/achievements.js?v=47"></script>
+<script src="js/journal.js?v=47"></script>
 <!-- Après app.js (showToast) — appelée par js/profile.js juste après. -->
-<script src="js/pwa.js?v=46"></script>
-<script src="js/profile.js?v=46"></script>
+<script src="js/pwa.js?v=47"></script>
+<script src="js/profile.js?v=47"></script>
 <!-- Après profile.js (closeProfileModal/openProfileModal) et data.js
      (FEEDBACK_CATEGORIES) — même raisonnement que pwa.js juste au-dessus. -->
-<script src="js/feedback.js?v=46"></script>
+<script src="js/feedback.js?v=47"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=46"></script>
-<script src="js/router.js?v=46"></script>
-<script src="js/publicProfile.js?v=46"></script>
-<script src="js/top.js?v=46"></script>
-<script src="js/friends.js?v=46"></script>
+<script src="js/admin.js?v=47"></script>
+<script src="js/router.js?v=47"></script>
+<script src="js/publicProfile.js?v=47"></script>
+<script src="js/top.js?v=47"></script>
+<script src="js/friends.js?v=47"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=46"></script>
-<script src="js/watchlist.js?v=46"></script>
+<script src="js/activity.js?v=47"></script>
+<script src="js/watchlist.js?v=47"></script>
 <!-- Après watchlist.js : js/upcoming.js réutilise le tableau watchlist déjà
      chargé (voir plus bas). -->
-<script src="js/series.js?v=46"></script>
+<script src="js/series.js?v=47"></script>
 <!-- Après watchlist.js ET series.js — a besoin des deux tableaux chargés
      (loadWatchlist()/loadTrackedShows()), voir js/upcoming.js. -->
-<script src="js/upcoming.js?v=46"></script>
-<script src="js/groups.js?v=46"></script>
-<script src="js/proposals.js?v=46"></script>
+<script src="js/upcoming.js?v=47"></script>
+<script src="js/groups.js?v=47"></script>
+<script src="js/proposals.js?v=47"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=46"></script>
+<script src="js/invites.js?v=47"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=46"></script>
-<script src="js/auth.js?v=46"></script>
+<script src="js/activityState.js?v=47"></script>
+<script src="js/auth.js?v=47"></script>
 </body>
 </html>
