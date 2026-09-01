@@ -288,7 +288,8 @@ async function handleAddShow(){
 
 // Plus de #seriesBtn dans l'entête depuis v2.0.6 — l'accès à Séries se
 // fait via #primaryTabSeries (js/router.js), qui a son propre listener.
-document.getElementById('seriesPageBack').addEventListener('click', goHome);
+// #seriesPageBack retiré en v2.1 (voir le commentaire dans index.html) —
+// plus de listener à poser dessus.
 document.getElementById('seriesAddBtn').addEventListener('click', handleAddShow);
 document.getElementById('seriesTitleInput').addEventListener('input', () => {
   clearTimeout(seriesTmdbSearchTimer);
