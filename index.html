@@ -28,7 +28,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=37">
+<link rel="stylesheet" href="css/style.css?v=38">
 </head>
 <body>
 
@@ -168,10 +168,12 @@
         <li><button type="button" class="auth-tag" data-tag="amis">Amis &amp; groupes</button></li>
       </ul>
       <div class="auth-showcase-panel" id="authShowcasePanel">
-        <!-- Visuel par défaut (aucun tag actif) : le cadran du logo agrandi
-             + 3 notes flottantes, purement décoratif — voir js/auth.js
-             pour ce qui bascule l'affichage selon le tag survolé. -->
+        <!-- Visuel par défaut (aucun tag actif) : lueur + cadran du logo
+             agrandi + notes et posters qui flottent doucement, purement
+             décoratif — voir js/auth.js pour ce qui bascule l'affichage
+             selon le tag survolé/tapé. -->
         <div class="auth-hero-visual" aria-hidden="true">
+          <div class="auth-hero-glow"></div>
           <svg class="auth-hero-dial" viewBox="0 0 40 40">
             <circle class="brand-mark-track" cx="20" cy="20" r="16"></circle>
             <circle class="brand-mark-arc" cx="20" cy="20" r="16"></circle>
@@ -179,11 +181,30 @@
           <span class="counter rate-mid auth-hero-badge auth-hero-badge-1">4.0</span>
           <span class="counter rate-high auth-hero-badge auth-hero-badge-2">4.5</span>
           <span class="counter rate-low auth-hero-badge auth-hero-badge-3">2.5</span>
+          <span class="auth-hero-poster auth-hero-poster-1"></span>
+          <span class="auth-hero-poster auth-hero-poster-2"></span>
         </div>
-        <p class="auth-tag-desc" data-panel="critere">Scénario, mise en scène, jeu d'acteur, musique, rythme, émotion, originalité. La moyenne des 7 fait la note — ou tranche toi-même, film par film.</p>
-        <p class="auth-tag-desc" data-panel="films-series">Ton catalogue de films notés d'un côté, tes séries suivies épisode par épisode de l'autre : deux sections séparées, chacune à son rythme.</p>
-        <p class="auth-tag-desc" data-panel="prochainement">Les films de ta watchlist qui sortent bientôt et les prochains épisodes de tes séries en cours, réunis au même endroit.</p>
-        <p class="auth-tag-desc" data-panel="amis">Compare tes notes à celles de tes amis, propose un film à un groupe, vote pour la prochaine séance.</p>
+        <!-- Chaque description vient avec un petit visuel qui lui est
+             propre (barres, posters, frise, avatars) plutôt que du texte
+             seul — même vocabulaire que le reste de la page (dégradés de
+             .auth-mock-poster-*, cercles façon .user-avatar), aucune
+             icône. -->
+        <div class="auth-tag-desc" data-panel="critere">
+          <div class="auth-tag-visual auth-tag-visual-bars" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+          <p>Scénario, mise en scène, jeu d'acteur, musique, rythme, émotion, originalité. La moyenne des 7 fait la note — ou tranche toi-même, film par film.</p>
+        </div>
+        <div class="auth-tag-desc" data-panel="films-series">
+          <div class="auth-tag-visual auth-tag-visual-split" aria-hidden="true"><span></span><span></span></div>
+          <p>Ton catalogue de films notés d'un côté, tes séries suivies épisode par épisode de l'autre : deux sections séparées, chacune à son rythme.</p>
+        </div>
+        <div class="auth-tag-desc" data-panel="prochainement">
+          <div class="auth-tag-visual auth-tag-visual-timeline" aria-hidden="true"><span></span><span></span><span class="is-next"></span></div>
+          <p>Les films de ta watchlist qui sortent bientôt et les prochains épisodes de tes séries en cours, réunis au même endroit.</p>
+        </div>
+        <div class="auth-tag-desc" data-panel="amis">
+          <div class="auth-tag-visual auth-tag-visual-avatars" aria-hidden="true"><span></span><span></span><span></span></div>
+          <p>Compare tes notes à celles de tes amis, propose un film à un groupe, vote pour la prochaine séance.</p>
+        </div>
       </div>
     </div>
     <!-- Colonne de droite (v2.0.10) : vitrine + carte de connexion,
@@ -911,61 +932,61 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=37"></script>
-<script src="js/tmdbConfig.js?v=37"></script>
-<script src="js/data.js?v=37"></script>
-<script src="js/happenings.js?v=37"></script>
+<script src="js/supabaseConfig.js?v=38"></script>
+<script src="js/tmdbConfig.js?v=38"></script>
+<script src="js/data.js?v=38"></script>
+<script src="js/happenings.js?v=38"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=37"></script>
+<script src="js/ui.js?v=38"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=37"></script>
-<script src="js/app.js?v=37"></script>
-<script src="js/tmdb.js?v=37"></script>
-<script src="js/stats.js?v=37"></script>
-<script src="js/achievements.js?v=37"></script>
-<script src="js/journal.js?v=37"></script>
+<script src="js/offline.js?v=38"></script>
+<script src="js/app.js?v=38"></script>
+<script src="js/tmdb.js?v=38"></script>
+<script src="js/stats.js?v=38"></script>
+<script src="js/achievements.js?v=38"></script>
+<script src="js/journal.js?v=38"></script>
 <!-- Après app.js (showToast) — appelée par js/profile.js juste après. -->
-<script src="js/pwa.js?v=37"></script>
-<script src="js/profile.js?v=37"></script>
+<script src="js/pwa.js?v=38"></script>
+<script src="js/profile.js?v=38"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=37"></script>
-<script src="js/router.js?v=37"></script>
-<script src="js/publicProfile.js?v=37"></script>
-<script src="js/top.js?v=37"></script>
-<script src="js/friends.js?v=37"></script>
+<script src="js/admin.js?v=38"></script>
+<script src="js/router.js?v=38"></script>
+<script src="js/publicProfile.js?v=38"></script>
+<script src="js/top.js?v=38"></script>
+<script src="js/friends.js?v=38"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=37"></script>
-<script src="js/watchlist.js?v=37"></script>
+<script src="js/activity.js?v=38"></script>
+<script src="js/watchlist.js?v=38"></script>
 <!-- Après watchlist.js : js/upcoming.js réutilise le tableau watchlist déjà
      chargé (voir plus bas). -->
-<script src="js/series.js?v=37"></script>
+<script src="js/series.js?v=38"></script>
 <!-- Après watchlist.js ET series.js — a besoin des deux tableaux chargés
      (loadWatchlist()/loadTrackedShows()), voir js/upcoming.js. -->
-<script src="js/upcoming.js?v=37"></script>
-<script src="js/groups.js?v=37"></script>
-<script src="js/proposals.js?v=37"></script>
+<script src="js/upcoming.js?v=38"></script>
+<script src="js/groups.js?v=38"></script>
+<script src="js/proposals.js?v=38"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=37"></script>
+<script src="js/invites.js?v=38"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=37"></script>
-<script src="js/auth.js?v=37"></script>
+<script src="js/activityState.js?v=38"></script>
+<script src="js/auth.js?v=38"></script>
 </body>
 </html>

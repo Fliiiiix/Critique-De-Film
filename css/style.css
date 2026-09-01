@@ -910,20 +910,27 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .auth-tag:focus-visible{outline:2px solid var(--violet-dim); outline-offset:2px;}
 /* Panneau qui bascule entre le visuel par défaut et la description du tag
-   actif (v2.0.12) — remplace l'ancienne liste .auth-features empilée,
-   qui répétait ce que disaient déjà les tags juste au-dessus. Hauteur
-   fixe (pas min-height) : le texte le plus long des 4 descriptions ne
-   doit jamais faire sauter la mise en page au survol d'un tag à l'autre. */
-.auth-showcase-panel{position:relative; height:150px;}
+   actif (v2.0.12, glissement ajouté en v2.0.13) — remplace l'ancienne
+   liste .auth-features empilée, qui répétait ce que disaient déjà les
+   tags juste au-dessus. Hauteur fixe (pas min-height) : le texte le plus
+   long des 4 descriptions ne doit jamais faire sauter la mise en page au
+   survol d'un tag à l'autre. */
+.auth-showcase-panel{position:relative; height:158px;}
+/* translateX plutôt qu'un simple fondu (v2.0.13, retour utilisateur :
+   "je voudrais que le texte arrive en glissant") : le sortant glisse vers
+   la gauche en disparaissant, l'entrant arrive de la droite — un seul
+   sens de lecture, jamais les deux en même temps au même endroit. */
 .auth-hero-visual, .auth-tag-desc{
   position:absolute; inset:0;
-  display:flex; align-items:center;
+  display:flex; align-items:center; gap:18px;
   opacity:0; visibility:hidden;
-  transition:opacity .2s ease;
+  transform:translateX(16px);
+  transition:opacity .25s ease, transform .25s ease, visibility .25s;
 }
-.auth-hero-visual{opacity:1; visibility:visible; justify-content:center;}
-.auth-showcase-panel[data-active] .auth-hero-visual{opacity:0; visibility:hidden;}
-.auth-tag-desc{
+.auth-hero-visual{opacity:1; visibility:visible; justify-content:center; transform:translateX(0);}
+.auth-showcase-panel[data-active] .auth-hero-visual{opacity:0; visibility:hidden; transform:translateX(-16px);}
+.auth-tag-desc p{
+  margin:0;
   font-size:14.5px;
   line-height:1.6;
   color:var(--text-muted);
@@ -933,12 +940,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .auth-showcase-panel[data-active="films-series"] [data-panel="films-series"],
 .auth-showcase-panel[data-active="prochainement"] [data-panel="prochainement"],
 .auth-showcase-panel[data-active="amis"] [data-panel="amis"]{
-  opacity:1; visibility:visible;
+  opacity:1; visibility:visible; transform:translateX(0);
 }
-/* Visuel par défaut : le cadran du logo (mêmes classes que .brand-mark,
-   juste agrandi) entouré de 3 notes flottantes — mêmes .counter/.rate-*
-   que la vitrine à droite et le catalogue lui-même, pas un nouveau motif
-   inventé pour l'occasion. */
+/* Visuel par défaut : lueur douce derrière le cadran du logo (mêmes
+   classes que .brand-mark, juste agrandi), entouré de notes et de
+   posters qui flottent — mêmes .counter/.rate-* et dégradés que la
+   vitrine à droite et le catalogue lui-même (v2.0.13 : densifié après
+   retour "tu ne t'es pas trop mouillé", pas un nouveau motif inventé
+   pour l'occasion, juste plus des mêmes). */
+.auth-hero-glow{
+  position:absolute;
+  width:150px; height:150px;
+  border-radius:50%;
+  background:radial-gradient(circle, var(--violet-wash) 0%, transparent 72%);
+  animation:auth-hero-glow-pulse 5s ease-in-out infinite;
+}
+@keyframes auth-hero-glow-pulse{
+  0%, 100%{transform:scale(1); opacity:0.7;}
+  50%{transform:scale(1.18); opacity:1;}
+}
 .auth-hero-dial{width:104px; height:104px; opacity:0.85;}
 .auth-hero-dial .brand-mark-track{stroke-width:2.5;}
 .auth-hero-dial .brand-mark-arc{stroke-width:2.5;}
@@ -947,14 +967,95 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   width:38px; height:38px; font-size:12px;
   animation:auth-hero-float 7s ease-in-out infinite;
 }
-.auth-hero-badge-1{top:6%; left:20%; animation-delay:0s;}
-.auth-hero-badge-2{bottom:10%; left:6%; animation-delay:-2.3s;}
-.auth-hero-badge-3{top:10%; right:12%; animation-delay:-4.6s;}
+.auth-hero-badge-1{top:4%; left:20%; animation-delay:0s;}
+.auth-hero-badge-2{bottom:8%; left:6%; animation-delay:-2.3s;}
+.auth-hero-badge-3{top:8%; right:14%; animation-delay:-4.6s;}
+/* Petites affiches en dégradé (mêmes classes de couleur que
+   .auth-mock-poster-*) glissées parmi les notes flottantes — ce panneau
+   et la vitrine à droite partagent le même vocabulaire visuel. */
+.auth-hero-poster{
+  position:absolute;
+  width:26px; height:38px;
+  border-radius:6px;
+  border:1px solid var(--line);
+  animation:auth-hero-float 8s ease-in-out infinite;
+}
+.auth-hero-poster-1{
+  top:16%; right:2%;
+  background:linear-gradient(155deg, rgba(140,124,255,0.4), var(--surface-2) 78%);
+  animation-delay:-1.5s;
+}
+.auth-hero-poster-2{
+  bottom:2%; left:32%;
+  background:linear-gradient(155deg, rgba(231,178,76,0.4), var(--surface-2) 78%);
+  animation-delay:-5.2s;
+}
 @keyframes auth-hero-float{
   0%, 100%{transform:translateY(0);}
   50%{transform:translateY(-9px);}
 }
-@media (prefers-reduced-motion:reduce){.auth-hero-badge{animation:none;}}
+@media (prefers-reduced-motion:reduce){
+  .auth-hero-badge, .auth-hero-poster, .auth-hero-glow{animation:none;}
+}
+/* Petits visuels d'accompagnement de chaque description (v2.0.13) — un
+   texte seul dans ce panneau, sans rien à côté, retombait aussi vide que
+   le visuel par défaut d'avant ; celui-ci reprend juste ce que le tag
+   annonce (barres = grille notée, affiches = films/séries, frise =
+   prochainement, avatars = amis), même vocabulaire que le reste de
+   l'écran, aucune icône. */
+.auth-tag-visual{flex:none;}
+.auth-tag-visual-bars{display:flex; align-items:flex-end; gap:4px; height:42px;}
+.auth-tag-visual-bars span{width:7px; border-radius:3px 3px 0 0; background:var(--violet);}
+.auth-tag-visual-bars span:nth-child(1){height:42%; opacity:0.45;}
+.auth-tag-visual-bars span:nth-child(2){height:68%; opacity:0.6;}
+.auth-tag-visual-bars span:nth-child(3){height:54%; opacity:0.75;}
+.auth-tag-visual-bars span:nth-child(4){height:100%; opacity:1;}
+.auth-tag-visual-bars span:nth-child(5){height:62%; opacity:0.75;}
+.auth-tag-visual-split{display:flex; gap:6px;}
+.auth-tag-visual-split span{
+  width:30px; height:44px;
+  border-radius:6px;
+  border:1px solid var(--line);
+}
+.auth-tag-visual-split span:first-child{background:linear-gradient(155deg, rgba(140,124,255,0.4), var(--surface-2) 78%);}
+.auth-tag-visual-split span:last-child{background:linear-gradient(155deg, rgba(106,209,139,0.4), var(--surface-2) 78%);}
+.auth-tag-visual-timeline{display:flex; align-items:center; width:68px;}
+.auth-tag-visual-timeline span{
+  width:7px; height:7px; flex:none;
+  border-radius:50%;
+  background:var(--line);
+  position:relative;
+}
+.auth-tag-visual-timeline span:not(:last-child){margin-right:20px;}
+.auth-tag-visual-timeline span:not(:last-child)::after{
+  content:'';
+  position:absolute; left:100%; top:50%;
+  width:20px; height:1px;
+  background:var(--line);
+  transform:translateY(-50%);
+}
+.auth-tag-visual-timeline span.is-next{
+  width:11px; height:11px;
+  background:var(--gold);
+  box-shadow:0 0 0 4px var(--gold-wash);
+  animation:auth-tag-pulse 1.8s ease-in-out infinite;
+}
+@keyframes auth-tag-pulse{
+  0%, 100%{transform:scale(1);}
+  50%{transform:scale(1.15);}
+}
+@media (prefers-reduced-motion:reduce){.auth-tag-visual-timeline span.is-next{animation:none;}}
+.auth-tag-visual-avatars{display:flex;}
+.auth-tag-visual-avatars span{
+  width:32px; height:32px;
+  border-radius:50%;
+  border:2px solid var(--surface);
+  margin-left:-11px;
+}
+.auth-tag-visual-avatars span:first-child{margin-left:0;}
+.auth-tag-visual-avatars span:nth-child(1){background:linear-gradient(155deg, var(--violet), var(--violet-dim));}
+.auth-tag-visual-avatars span:nth-child(2){background:linear-gradient(155deg, var(--gold), var(--gold-dim));}
+.auth-tag-visual-avatars span:nth-child(3){background:linear-gradient(155deg, var(--green), var(--green-dim));}
 /* Colonne de droite (v2.0.10) : largeur fixe imposée par .auth-hero
    (grid-template-columns, voir plus haut) — vitrine + carte empilées ici
    en flex column, dans cet ordre visuel sur desktop (vitrine au-dessus de
