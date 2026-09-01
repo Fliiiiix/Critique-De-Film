@@ -1,13 +1,13 @@
-// --- Installation en app (PWA, v2.0.7 puis v2.0.8) ---
+// --- Installation en app (PWA, v2.0.7, v2.0.8, entête v2.1) ---
 // Kinet est installable comme une vraie application — téléphone (Android/
 // iOS) et PC (Chrome/Edge) — sans passer par un store, en s'appuyant sur
 // le manifest (manifest.json) et le service worker déjà enregistré pour le
-// mode hors ligne (sw.js, voir js/offline.js). Deux surfaces pilotées
+// mode hors ligne (sw.js, voir js/offline.js). Trois surfaces pilotées
 // d'ici : #installSection (modale profil, référence permanente une fois
-// qu'on sait où la trouver) et #installBanner (v2.0.8, bandeau pleine
+// qu'on sait où la trouver), #installBanner (v2.0.8, bandeau pleine
 // largeur hors des conteneurs auth/app — visible immédiatement, y compris
-// sur l'écran de connexion avant tout compte, demande explicite après
-// que la section modale seule ait été jugée pas assez visible).
+// sur l'écran de connexion avant tout compte) et #installHeaderBtn (v2.1,
+// icône d'entête — accès direct sans ouvrir le profil, demande explicite).
 
 let deferredInstallPrompt = null;
 
@@ -37,12 +37,14 @@ window.addEventListener('beforeinstallprompt', (e) => {
   deferredInstallPrompt = e;
   updateInstallUI();
   updateInstallBanner();
+  updateInstallHeaderBtn();
 });
 
 window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
   updateInstallUI();
   updateInstallBanner();
+  updateInstallHeaderBtn();
   showToast('Kinet installé 🎉');
 });
 
@@ -55,6 +57,7 @@ async function handleInstallClick(){
   deferredInstallPrompt = null;
   updateInstallUI();
   updateInstallBanner();
+  updateInstallHeaderBtn();
 }
 
 // Appelée à l'ouverture de la modale profil (js/profile.js) et par les
@@ -145,8 +148,32 @@ document.getElementById('installBannerDismiss').addEventListener('click', () => 
   updateInstallBanner();
 });
 
+// --- Icône d'entête (#installHeaderBtn, v2.1) ---
+// Même logique de visibilité que #installBanner (masquée si déjà
+// installée ou si rien de concret à proposer — jamais de bouton mort),
+// mais SANS la mémoire de fermeture de session : contrairement au
+// bandeau (une relance ponctuelle qu'on peut vouloir ignorer un moment),
+// c'est un accès permanent au même titre que Watchlist/Amis/Top juste à
+// côté — un utilisateur qui l'a fermé une fois ne doit pas perdre le
+// moyen d'installer plus tard.
+function updateInstallHeaderBtn(){
+  const btn = document.getElementById('installHeaderBtn');
+  if(!btn) return;
+  btn.style.display = (!isStandaloneDisplay() && (deferredInstallPrompt || isIOSDevice())) ? '' : 'none';
+}
+
+// Prompt natif dispo : un seul clic suffit, comme les 2 autres surfaces.
+// iOS n'a pas de prompt déclenchable en JS (Safari ne l'expose pas) —
+// mêmes instructions manuelles qu'ailleurs, en toast plutôt qu'en modale
+// pour un simple rappel qu'on connaît déjà en général la 2e fois.
+document.getElementById('installHeaderBtn').addEventListener('click', () => {
+  if(deferredInstallPrompt) handleInstallClick();
+  else if(isIOSDevice()) showToast("Bouton Partager de Safari, puis \"Sur l'écran d'accueil\"");
+});
+
 // Premier calcul au chargement : iOS n'a pas d'évènement à attendre
 // (isIOSDevice() est vrai ou faux dès le départ), donc sans cet appel le
 // bandeau resterait masqué indéfiniment sur iPhone/iPad tant qu'aucun
 // beforeinstallprompt ne se déclenche — ce qui n'arrive jamais là-bas.
 updateInstallBanner();
+updateInstallHeaderBtn();

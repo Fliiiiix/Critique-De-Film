@@ -715,9 +715,9 @@ coder, voir Interface admin ci-dessous.
 
 ## Feedback (v2.1)
 
-Boîte à idées accessible depuis **💬 Donner un avis** dans la modale
-profil ("Mon activité", visible pour n'importe quel compte connecté) :
-une catégorie (Bug / Idée / Autre) et un message libre, envoyés dans la
+Boîte à idées accessible depuis l'icône **💬** de l'entête (au même niveau
+que Watchlist/Prochainement/Amis/Top, visible pour n'importe quel compte
+connecté) : une catégorie (Bug / Idée / Autre) et un message libre, envoyés dans la
 table `feedback`. Lu uniquement par l'admin, dans le nouvel onglet
 **Retours** de la modale admin (voir section suivante) — regroupés par
 catégorie, les catégories triées par nombre de retours **non traités**
@@ -807,7 +807,7 @@ page ou le couloir Old Boy déjà en place) ; le pulse étoile/sauvegarde est
 au contraire piloté en direct par le clic — il reste actif quel que soit ce
 réglage, comme l'arc final d'Odyssée.
 
-## Installation en app (PWA, v2.0.7, bandeau v2.0.8)
+## Installation en app (PWA, v2.0.7, bandeau v2.0.8, icône d'entête v2.1)
 
 Kinet s'installe comme une vraie application — téléphone (Android/iOS) et
 PC (Chrome/Edge) — sans passer par un store. Aucun `.apk` distinct :
@@ -831,6 +831,11 @@ spécifiquement "présent sur le Play Store".
   **y compris sur l'écran de connexion avant tout compte**. Fermeture
   mémorisée le temps de la session (`sessionStorage`) seulement — reparaît
   à la prochaine vraie visite plutôt que de disparaître pour de bon.
+- **Icône d'entête** (`#installHeaderBtn`, v2.1) — 3e surface, au même
+  niveau que Watchlist/Amis/Top : un accès direct sans passer par le
+  profil. Masquée si déjà installé ou si rien de concret à proposer
+  (même logique que le bandeau), mais SANS mémoire de fermeture — un accès
+  permanent, pas une relance ponctuelle qu'on peut vouloir ignorer.
 - **UI d'installation** (`js/pwa.js`) : dans la modale profil (section
   "Installer Kinet", sous "Mon activité" — sert de référence permanente
   une fois qu'on sait où la trouver, en complément du bandeau). Contenu

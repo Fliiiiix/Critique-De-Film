@@ -1,10 +1,12 @@
 // --- Feedback utilisateur ---
-// Formulaire simple (catégorie + message), accessible depuis la modale
-// profil ("Mon activité"), lu uniquement par l'admin dans un nouvel onglet
-// "Retours" de la modale admin (voir js/admin.js). Table `feedback`,
-// policies RLS voir supabase/migrations/026 — contrairement à
-// admin_config, une vraie règle en base restreint la lecture à l'admin,
-// pas juste un choix d'affichage côté client.
+// Formulaire simple (catégorie + message), accessible directement depuis
+// une icône d'entête (v2.1 — vivait dans "Mon activité" de la modale
+// profil jusque-là, demande explicite de le remonter au même niveau que
+// Watchlist/Amis/Top), lu uniquement par l'admin dans un onglet "Retours"
+// de la modale admin (voir js/admin.js). Table `feedback`, policies RLS
+// voir supabase/migrations/026 — contrairement à admin_config, une vraie
+// règle en base restreint la lecture à l'admin, pas juste un choix
+// d'affichage côté client.
 
 function populateFeedbackCategorySelect(){
   document.getElementById('feedbackCategory').innerHTML = FEEDBACK_CATEGORIES
@@ -13,21 +15,13 @@ function populateFeedbackCategorySelect(){
 }
 
 function openFeedbackModal(){
-  // Accessible depuis la modale profil, même schéma que Stats/Succès/
-  // Journal (js/stats.js, js/achievements.js, js/journal.js) : la
-  // refermer d'abord évite deux modales de tailles différentes superposées.
-  closeProfileModal();
   document.getElementById('feedbackMessage').value = '';
   document.getElementById('feedbackCategory').value = FEEDBACK_CATEGORIES[0].key;
   openOverlay('feedbackOverlay');
 }
 
-// Rouvre la modale profil (pas juste closeOverlay simple) : ce formulaire
-// n'est accessible QUE depuis "Mon activité" dans le profil — en ressortir
-// doit ramener là où on était, même raisonnement que closeJournal()/
-// closeAdminModal().
 function closeFeedbackModal(){
-  closeOverlay('feedbackOverlay', () => openProfileModal());
+  closeOverlay('feedbackOverlay');
 }
 
 async function handleSubmitFeedback(){
