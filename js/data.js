@@ -40,6 +40,16 @@ const CRITERIA = [
 // chacun des 10 fichiers qui dessinent une ligne de film — un seul
 // endroit à changer si l'icône doit un jour évoluer.
 const FILM_PLACEHOLDER_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M3 15h18M8.5 4v16M15.5 4v16"></path></svg>';
+
+// Feedback utilisateur (v2.1) — même liste utilisée pour remplir le
+// <select> du formulaire (js/feedback.js) et pour étiqueter/regrouper les
+// retours côté admin (js/admin.js) : un seul endroit si une catégorie
+// doit un jour être ajoutée/renommée.
+const FEEDBACK_CATEGORIES = [
+  { key:'bug', label:'Bug' },
+  { key:'idee', label:'Idée' },
+  { key:'autre', label:'Autre' }
+];
 const TV_PLACEHOLDER_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg>';
 
 // Films importés depuis l'Excel d'origine.

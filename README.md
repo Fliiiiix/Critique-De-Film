@@ -713,12 +713,43 @@ tableau `HAPPENINGS` (tmdb_id, type de déclenchement, fonction associée) ;
 un happening simple ("un badge → un message") peut aussi se créer sans
 coder, voir Interface admin ci-dessous.
 
-## Interface admin (succès & happenings)
+## Feedback (v2.1)
 
-Un tableau de bord "voir tout / gérer tout" sur les succès et les
-happenings — réservé au compte propriétaire de l'app (email en dur,
-`ADMIN_EMAIL` dans `js/admin.js`), accessible via **🛠️ Admin** dans la
-modale profil (bouton masqué pour tout autre compte). Deux onglets :
+Boîte à idées accessible depuis **💬 Donner un avis** dans la modale
+profil ("Mon activité", visible pour n'importe quel compte connecté) :
+une catégorie (Bug / Idée / Autre) et un message libre, envoyés dans la
+table `feedback`. Lu uniquement par l'admin, dans le nouvel onglet
+**Retours** de la modale admin (voir section suivante) — regroupés par
+catégorie, les catégories triées par nombre de retours **non traités**
+décroissant (une catégorie déjà entièrement traitée redescend plutôt que
+de rester en tête indéfiniment), et à l'intérieur d'un groupe les
+non-traités remontent en premier. Chaque retour a un bouton "Marquer
+traité" / "Rouvrir".
+
+Contrairement à `admin_config` (section suivante), où la restriction
+admin n'est qu'un choix d'affichage côté client (chacun n'y voit de toute
+façon que sa propre ligne), la séparation ici est une vraie policy RLS
+(`supabase/migrations/026_add_feedback.sql`) : un utilisateur ne peut
+lire QUE ses propres retours, jamais ceux des autres, même via un appel
+API direct — seul le compte dont l'email correspond à `ADMIN_EMAIL`
+(dupliqué côté SQL, la policy ne peut pas lire une constante JS) voit
+tout.
+
+Pas de vrai "ML" ni de détection automatique de doublons/sujets récurrents
+malgré l'idée évoquée au départ : Supabase est juste du Postgres, rien
+pour faire tourner un modèle, et un vrai clustering de texte libre aurait
+été plus complexe que fiable pour le volume attendu ici. Le tri par
+catégorie + compteur de non-traités atteint le même besoin ("voir ce qui
+revient le plus") de façon simple et prévisible plutôt que par une
+approximation statistique. Nécessite
+`supabase/migrations/026_add_feedback.sql`.
+
+## Interface admin (succès, happenings & retours)
+
+Un tableau de bord "voir tout / gérer tout" — réservé au compte
+propriétaire de l'app (email en dur, `ADMIN_EMAIL` dans `js/admin.js`),
+accessible via **🛠️ Admin** dans la modale profil (bouton masqué pour
+tout autre compte). Trois onglets :
 
 - **Succès** — tous les paliers cumulatifs et tous les succès secrets, y
   compris ceux encore verrouillés (pas de "???" ici, c'est la vue admin).
@@ -737,8 +768,9 @@ modale profil (bouton masqué pour tout autre compte). Deux onglets :
   message — affiché dans une modale simple au déclenchement. Une vraie
   expérience sur mesure (comme l'arc de l'Odyssée ou le défi photo) reste
   du ressort du code, pas de l'admin.
+- **Retours** — voir la section Feedback juste au-dessus.
 
-Techniquement : les définitions (`CUMULATIVE_GROUPS`, `HIDDEN_ACHIEVEMENTS`,
+Techniquement (Succès/Happenings) : les définitions (`CUMULATIVE_GROUPS`, `HIDDEN_ACHIEVEMENTS`,
 `HAPPENINGS`) restent dans le code — l'admin ne stocke que les *écarts* par
 rapport à elles (seuil modifié, activé/désactivé) et les happenings créés
 depuis l'interface, dans une seule ligne JSON par compte
@@ -751,8 +783,8 @@ cas). Nécessite `supabase/migrations/018_add_admin_config.sql`.
 
 ## Micro-interactions & état de chargement (v1.6)
 
-Les 7 fenêtres modales de l'app (édition de film, profil, statistiques,
-succès, admin, journal, profil d'ami) s'ouvraient déjà avec une animation
+Les fenêtres modales de l'app (édition de film, profil, statistiques,
+succès, admin, journal, profil d'ami, feedback) s'ouvraient déjà avec une animation
 (`overlayIn`/`modalIn`) mais se fermaient d'un coup, sans transition. Elles
 partagent maintenant une fermeture symétrique (`overlayOut`/`modalOut`,
 `openOverlay()`/`closeOverlay()` dans `js/ui.js`) — chaque `close*()` garde

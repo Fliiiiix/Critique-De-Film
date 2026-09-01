@@ -1,12 +1,12 @@
 // --- Ouverture/fermeture partagée des modales (.overlay > .modal) ---
-// Les 7 fenêtres de l'app (édition de film, profil, stats, succès, admin,
-// journal, profil d'ami) suivaient chacune le même schéma sans rien
-// partager : classList.add/remove('open'), fermeture instantanée. Ouvrir
+// Les fenêtres de l'app (édition de film, profil, stats, succès, admin,
+// journal, profil d'ami, feedback) suivaient chacune le même schéma sans
+// rien partager : classList.add/remove('open'), fermeture instantanée. Ouvrir
 // avait déjà une animation (overlayIn/modalIn, voir css/style.css) mais
 // fermer non — ce module ajoute une fermeture symétrique (overlayOut/
 // modalOut) tout en laissant chaque close*() responsable de ses propres
 // à-côtés (ex. closeModal() doit toujours faire editingId = null), via le
-// paramètre extraCleanup plutôt que de dupliquer cette logique 7 fois.
+// paramètre extraCleanup plutôt que de dupliquer cette logique partout.
 //
 // Animation de fermeture = autonome une fois lancée par le clic (comme
 // l'ouverture, la transition de page, le couloir Old Boy) : elle garde
@@ -100,7 +100,8 @@ document.addEventListener('keydown', (e) => {
     achievementsOverlay: () => closeAchievements(),
     adminOverlay: () => closeAdminModal(),
     journalOverlay: () => closeJournal(),
-    friendProfileOverlay: () => closeFriendProfile()
+    friendProfileOverlay: () => closeFriendProfile(),
+    feedbackOverlay: () => closeFeedbackModal()
   };
   for(const id in closers){
     if(document.getElementById(id).classList.contains('open')){
@@ -109,6 +110,36 @@ document.addEventListener('keydown', (e) => {
     }
   }
 });
+
+// --- Molette pour affiner un curseur de note ---
+// Retour utilisateur : le drag à la souris manque de précision pour poser
+// une valeur exacte, et sur tactile un scroll de page dont le doigt
+// traversait une barre de notation la faisait changer par erreur (déjà
+// réglé au doigt via touch-action:pan-y sur input[type="range"], voir
+// css/style.css). Même risque à la souris avec la molette :
+// sans garde-fou, un simple scroll de PAGE dont le curseur croise une
+// barre de notation la ferait changer sans le vouloir. Double condition
+// donc, pas une seule : la molette doit être SUR la barre (e.target)
+// ET cette barre doit déjà avoir le focus (cliquée ou atteinte au clavier
+// juste avant) — un simple survol pendant qu'on scrolle la page ne suffit
+// jamais à déclencher un changement.
+document.addEventListener('wheel', (e) => {
+  const input = e.target.closest('input[type="range"]');
+  if(!input || document.activeElement !== input) return;
+  e.preventDefault();
+  const step = parseFloat(input.step) || 1;
+  const min = parseFloat(input.min);
+  const max = parseFloat(input.max);
+  const dir = e.deltaY < 0 ? 1 : -1; // molette vers le haut = augmente, comme un volume
+  let next = parseFloat(input.value) + dir * step;
+  next = Math.min(max, Math.max(min, next));
+  // toFixed() plutôt que la valeur brute : 0.1 + 0.2 en JS donne
+  // 0.30000000000000004, ce qui casserait le prochain calcul de pas
+  // (0.30000000000000004 + 0.1 dérive encore plus) au fil des crans.
+  const decimals = (String(step).split('.')[1] || '').length;
+  input.value = next.toFixed(decimals);
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+}, { passive: false });
 
 // --- Micro-interactions ponctuelles (étoile favori, sauvegarde) ---
 // Pilotées en direct par un clic (pas autonomes/en boucle) : PAS

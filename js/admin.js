@@ -1,13 +1,20 @@
-// --- Interface admin : "voir tout, gérer tout" pour les succès et les
-// happenings. Réservée au compte propriétaire (ADMIN_EMAIL) — pas de vrai
-// rôle admin en base, un email en dur suffit pour un usage perso, même
-// logique que site_status géré à la main dans le Table Editor Supabase.
+// --- Interface admin : "voir tout, gérer tout" pour les succès, les
+// happenings et les retours utilisateur. Réservée au compte propriétaire
+// (ADMIN_EMAIL) — pas de vrai rôle admin en base pour les 2 premiers
+// onglets (Succès/Happenings), un email en dur côté client suffit pour un
+// usage perso, même logique que site_status géré à la main dans le Table
+// Editor Supabase. L'onglet Retours (feedback.resolved en dessous) fait
+// exception : LUI a une vraie policy RLS derrière (voir
+// supabase/migrations/026), pas juste ce garde-fou d'affichage — un
+// retour peut contenir une remarque personnelle qu'un autre compte ne
+// doit jamais pouvoir lire.
 //
-// Les définitions restent dans le code (js/achievements.js, js/happenings.js) :
-// cette interface ne stocke que des ÉCARTS par rapport à elles (seuil
-// modifié, activé/désactivé) + les happenings "génériques" (message simple)
-// créés sans coder — un seul blob JSON par admin (table admin_config, voir
-// supabase/migrations/018) plutôt qu'une table par réglage.
+// Les définitions Succès/Happenings restent dans le code
+// (js/achievements.js, js/happenings.js) : cette interface ne stocke que
+// des ÉCARTS par rapport à elles (seuil modifié, activé/désactivé) + les
+// happenings "génériques" (message simple) créés sans coder — un seul
+// blob JSON par admin (table admin_config, voir supabase/migrations/018)
+// plutôt qu'une table par réglage.
 
 const ADMIN_EMAIL = 'sab.fxs@gmail.com';
 
@@ -65,7 +72,7 @@ function getAdminCustomHappenings(){
   return (adminConfig && adminConfig.happenings && adminConfig.happenings.custom) || [];
 }
 
-// --- Onglets Succès / Happenings ---
+// --- Onglets Succès / Happenings / Retours ---
 function setAdminTab(tab){
   document.querySelectorAll('#adminTabs .avatar-source-tab').forEach(btn => {
     const active = btn.dataset.adminTab === tab;
@@ -73,7 +80,8 @@ function setAdminTab(tab){
     btn.setAttribute('aria-selected', active ? 'true' : 'false');
   });
   if(tab === 'achievements') renderAdminAchievementsTab();
-  else renderAdminHappeningsTab();
+  else if(tab === 'happenings') renderAdminHappeningsTab();
+  else renderAdminFeedbackTab();
 }
 
 // --- Onglet Succès ---
@@ -347,6 +355,102 @@ function renderAdminHappeningsTab(){
     renderAdminHappeningsTab();
     showToast('Happening créé');
   });
+}
+
+// --- Onglet Retours ---
+let allFeedback = [];
+let allFeedbackLoaded = false;
+
+async function loadAllFeedback(){
+  // RLS (migrations/026) renvoie déjà tout pour l'admin et rien que ses
+  // propres lignes pour les autres — pas de .eq('user_id', ...) ici,
+  // contrairement à loadFilms() : ce serait redondant avec la policy, et
+  // figerait la requête sur l'admin alors que renderAdminFeedbackTab()
+  // n'est de toute façon jamais appelée sans isAdmin() en amont.
+  const { data, error } = await supabaseClient
+    .from('feedback')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if(error){
+    console.error(error);
+    allFeedback = [];
+    return;
+  }
+  allFeedback = data.map(row => ({
+    id: row.id,
+    category: row.category,
+    message: row.message,
+    resolved: row.resolved,
+    createdAt: row.created_at
+  }));
+  allFeedbackLoaded = true;
+}
+
+// Regroupe par catégorie, categories triées par nombre de retours NON
+// traités décroissant — demande explicite ("trier par ordre des choses
+// plus récurrentes à la moins") : une catégorie déjà entièrement traitée
+// redescend au lieu de rester en tête indéfiniment. Dans chaque groupe,
+// les non-traités remontent en premier (plus actionnable), puis les plus
+// récents d'abord.
+function groupFeedbackByCategory(){
+  return FEEDBACK_CATEGORIES
+    .map(cat => {
+      const items = allFeedback
+        .filter(f => f.category === cat.key)
+        .slice()
+        .sort((a, b) => (a.resolved === b.resolved ? 0 : a.resolved ? 1 : -1) || (b.createdAt > a.createdAt ? 1 : -1));
+      const openCount = items.filter(f => !f.resolved).length;
+      return { ...cat, items, openCount };
+    })
+    .filter(g => g.items.length > 0)
+    .sort((a, b) => b.openCount - a.openCount || b.items.length - a.items.length);
+}
+
+function renderAdminFeedbackTab(){
+  const wrap = document.getElementById('adminContent');
+  if(!allFeedbackLoaded){
+    wrap.innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
+    loadAllFeedback().then(renderAdminFeedbackTab);
+    return;
+  }
+  if(!allFeedback.length){
+    wrap.innerHTML = `<div class="empty-state">Aucun retour pour l'instant.</div>`;
+    return;
+  }
+  const groups = groupFeedbackByCategory();
+  wrap.innerHTML = groups.map(g => `
+    <div class="stats-section">
+      <div class="stats-section-title">
+        ${escapeHtml(g.label)}
+        <span class="ach-tier-progress">${g.items.length} retour${g.items.length > 1 ? 's' : ''}${g.openCount ? ` · ${g.openCount} non traité${g.openCount > 1 ? 's' : ''}` : ' · tous traités'}</span>
+      </div>
+      ${g.items.map(f => `
+        <div class="feedback-row${f.resolved ? ' is-resolved' : ''}">
+          <div class="feedback-row-main">
+            <p class="feedback-message">${escapeHtml(f.message)}</p>
+            <div class="feedback-meta">${new Date(f.createdAt).toLocaleDateString('fr-FR')}</div>
+          </div>
+          <button class="btn secondary" type="button" data-feedback-toggle="${f.id}">${f.resolved ? 'Rouvrir' : 'Marquer traité'}</button>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+  wrap.querySelectorAll('[data-feedback-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => toggleFeedbackResolved(parseInt(btn.dataset.feedbackToggle, 10)));
+  });
+}
+
+async function toggleFeedbackResolved(id){
+  const item = allFeedback.find(f => f.id === id);
+  if(!item) return;
+  const { error } = await supabaseClient.from('feedback').update({ resolved: !item.resolved }).eq('id', id);
+  if(error){
+    showToast('Erreur — réessaie');
+    console.error(error);
+    return;
+  }
+  item.resolved = !item.resolved;
+  renderAdminFeedbackTab();
 }
 
 async function openAdminModal(){

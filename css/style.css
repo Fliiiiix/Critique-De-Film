@@ -1612,6 +1612,29 @@ input[type="range"]::-moz-range-thumb{
   color:var(--text-muted);
 }
 
+/* Onglet Retours (admin, v2.1) — une ligne par retour, regroupées par
+   catégorie dans des .stats-section (mêmes classes que l'onglet
+   Statistiques, pas un nouveau conteneur). */
+.feedback-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  padding:12px 0;
+  border-top:1px solid var(--line);
+}
+.feedback-row:first-of-type{border-top:none;}
+.feedback-row.is-resolved{opacity:0.5;}
+.feedback-row-main{min-width:0;}
+.feedback-message{margin:0; font-size:13.5px; line-height:1.5;}
+.feedback-meta{
+  font-family:'Space Mono', monospace;
+  font-size:10.5px;
+  color:var(--text-muted);
+  margin-top:5px;
+}
+.feedback-row .btn{flex:none; font-size:11px; padding:8px 12px;}
+
 .ach-hidden-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
