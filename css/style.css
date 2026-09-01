@@ -2306,6 +2306,33 @@ body[data-view-mode="grid"] #topList .film-poster-placeholder{
   width:100%; height:auto; aspect-ratio:2/3;
   border-radius:8px;
 }
+/* Cartes de hauteur inégale en grille (v2.0.15) — retour utilisateur :
+   "les carrés ne sont pas de la même taille". .wl-title/.wl-note (à la
+   différence de .film-title, qui tronque déjà sur une ligne) n'avaient
+   aucune limite : une note perso longue ("pourquoi je veux le voir")
+   faisait grandir SA carte de plusieurs dizaines de pixels par rapport
+   aux voisines, décalant toute la rangée en grille (une rangée entière
+   s'aligne sur son item le plus haut). Même traitement que .film-title
+   pour le titre (1 ligne, ellipsis) ; -webkit-line-clamp pour la note
+   (2 lignes max, pas une simple ligne — un vrai texte perso mérite plus
+   qu'un mot avant de couper). Rien ne change en mode LISTE : une rangée
+   plus haute qu'une autre y reste normale (liste verticale, pas de grille
+   2D à aligner). */
+body[data-view-mode="grid"] #wlList .wl-title,
+body[data-view-mode="grid"] #seriesList .wl-title,
+body[data-view-mode="grid"] #topList .wl-title{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+body[data-view-mode="grid"] #wlList .wl-note,
+body[data-view-mode="grid"] #seriesList .wl-note,
+body[data-view-mode="grid"] #topList .wl-note{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+}
 body[data-view-mode="grid"] #wlList .wl-actions,
 body[data-view-mode="grid"] #seriesList .wl-actions{margin-top:2px;}
 body[data-view-mode="grid"] #wlList .wl-actions .btn,
