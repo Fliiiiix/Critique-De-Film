@@ -39,7 +39,7 @@ function renderTopFilms(){
       <div class="top-rank">${i + 1}</div>
       ${f.poster_url
         ? `<img class="film-poster" src="${f.poster_url}" alt="" loading="lazy">`
-        : `<div class="film-poster film-poster-placeholder">🎬</div>`}
+        : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
       <div class="wl-main">
         <div class="wl-title">${escapeHtml(f.title)}${f.release_year ? ` <span class="wl-year">(${f.release_year})</span>` : ''}</div>
         <div class="wl-note">${f.rating_count} note${f.rating_count > 1 ? 's' : ''}</div>

@@ -108,7 +108,7 @@ function renderTrackedShows(){
       <div class="wl-row">
         ${show.posterUrl
           ? `<img class="film-poster" src="${show.posterUrl}" alt="" loading="lazy">`
-          : `<div class="film-poster film-poster-placeholder">📺</div>`}
+          : `<div class="film-poster film-poster-placeholder">${TV_PLACEHOLDER_SVG}</div>`}
         <div class="wl-main">
           <div class="wl-title">${escapeHtml(show.title)}${show.firstAirYear ? ` <span class="wl-year">(${show.firstAirYear})</span>` : ''}</div>
           <div class="wl-note">${progress}${show.status ? ` · <span class="status-badge ${isShowEnded(show.status) ? 'ended' : 'ongoing'}">${escapeHtml(showStatusLabel(show.status))}</span>` : ''}</div>
@@ -174,7 +174,7 @@ function renderSeriesTmdbResults(results){
     const item = document.createElement('div');
     item.className = 'tmdb-result';
     item.innerHTML = `
-      ${poster ? `<img src="${poster}" alt="">` : `<div class="tmdb-poster-placeholder">📺</div>`}
+      ${poster ? `<img src="${poster}" alt="">` : `<div class="tmdb-poster-placeholder">${TV_PLACEHOLDER_SVG}</div>`}
       <div class="tmdb-result-info">
         <div class="tmdb-result-title">${escapeHtml(r.title)}</div>
         <div class="tmdb-result-year">${year}</div>

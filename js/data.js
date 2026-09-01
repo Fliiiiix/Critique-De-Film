@@ -32,6 +32,16 @@ const CRITERIA = [
     help:"・As-tu ressenti quelque chose de fort ?\n・Le film a-t-il tenu ses promesses par rapport à tes attentes ?\n・Y repenses-tu depuis ?\n・Le recommanderais-tu spontanément ?" },
 ];
 
+// Affiche manquante (v2.0.14) — SVG dessiné à la main plutôt qu'un emoji
+// 🎬/📺 brut : même raisonnement que l'écran de connexion (v2.0.9), et
+// même le cas le PLUS visible de tout le site (une affiche manquante
+// arrive dès le premier film ajouté). Constantes partagées ici (data.js
+// charge avant tout le reste, voir index.html) plutôt que dupliquées dans
+// chacun des 10 fichiers qui dessinent une ligne de film — un seul
+// endroit à changer si l'icône doit un jour évoluer.
+const FILM_PLACEHOLDER_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M3 15h18M8.5 4v16M15.5 4v16"></path></svg>';
+const TV_PLACEHOLDER_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg>';
+
 // Films importés depuis l'Excel d'origine.
 // Ordre des valeurs c[] dans l'ancien référentiel :
 // [impression, scenario, realisation, jeu, image, son, musique]

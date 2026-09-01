@@ -148,7 +148,7 @@ function renderJournalRow(e){
     <div class="journal-row">
       ${e.film.posterUrl
         ? `<img class="film-poster" src="${e.film.posterUrl}" alt="" loading="lazy">`
-        : `<div class="film-poster film-poster-placeholder">🎬</div>`}
+        : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
       <div class="journal-main">
         <div class="journal-title">${escapeHtml(e.film.title)}${e.isRewatch ? '<span class="rewatch-badge" title="Revisionnage">↻</span>' : ''}</div>
         ${e.note ? `<div class="journal-note">${escapeHtml(e.note)}</div>` : ''}

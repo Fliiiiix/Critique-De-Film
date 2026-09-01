@@ -11,7 +11,7 @@ function publicProfileFilmRowHtml(f){
     <div class="film-row friend-film-row">
       ${f.poster_url
         ? `<img class="film-poster" src="${f.poster_url}" alt="" loading="lazy">`
-        : `<div class="film-poster film-poster-placeholder">🎬</div>`}
+        : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
       <div class="film-main">
         <div class="film-title">${escapeHtml(f.title)}${f.fav ? ' <span title="Favori">★</span>' : ''}</div>
         <div class="film-sub">${f.release_year || ''}</div>

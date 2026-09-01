@@ -139,17 +139,19 @@ header{
 }
 .header-nav-btn{
   position:relative; /* point du badge .has-unread ci-dessous */
+  display:flex; align-items:center; justify-content:center;
   background:none;
   border:1px solid transparent;
   color:var(--text-muted);
-  font-size:17px;
-  line-height:1;
   width:38px; height:38px;
   border-radius:10px;
   cursor:pointer;
   transition:background .15s, color .15s, border-color .15s;
 }
 .header-nav-btn:hover{background:var(--surface-2); border-color:var(--line); color:var(--text);}
+/* SVG (v2.0.14) plutôt qu'un emoji — voir le commentaire au-dessus de
+   #primaryTabs dans index.html pour le pourquoi. */
+.header-nav-btn svg{width:18px; height:18px;}
 /* Badge "non lu" (js/activityState.js) : un seul point, sur 👥, qui couvre
    Amis + Groupes (pas d'icône Groupes séparée dans l'entête). */
 .header-nav-btn.has-unread::after{
@@ -184,7 +186,8 @@ header{
   border-radius:50%;
   object-fit:cover;
 }
-.user-avatar-fallback{font-size:16px; opacity:0.6;}
+.user-avatar-fallback{display:flex; opacity:0.6;}
+.user-avatar-fallback svg{width:18px; height:18px;}
 /* Discret volontairement (v2.0) : le numéro de version reste affiché
    (l'utilisateur y tient) mais tassé contre le titre plutôt que mis en
    avant — ce n'est pas une donnée que quelqu'un vient chercher. */
@@ -223,6 +226,7 @@ header{
   cursor:pointer;
   transition:background .15s, color .15s, border-color .15s, transform .1s;
 }
+.primary-tab svg{width:17px; height:17px; flex:none;}
 .primary-tab:hover{background:var(--surface-2); color:var(--text);}
 .primary-tab:active{transform:scale(0.98);}
 .primary-tab[aria-selected="true"]{
@@ -565,12 +569,24 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border:1px solid var(--line);
   flex:none;
 }
+/* SVG (v2.0.14) plutôt qu'un emoji 🎬/📺 — même raisonnement que l'écran
+   de connexion (v2.0.9-v2.0.11) : un emoji couleur dépend de la police du
+   visiteur, hors de contrôle CSS. C'est même le cas le PLUS visible de
+   tout le site (un poster manquant, ça arrive dès le premier film ajouté,
+   sur toutes les listes), pas juste l'écran de connexion qu'on ne voit
+   qu'une fois — voir js/app.js, js/watchlist.js, js/series.js,
+   js/top.js, js/upcoming.js, js/friends.js, js/groups.js, js/journal.js,
+   js/proposals.js, js/publicProfile.js (tous génèrent ce même
+   `<div class="film-poster film-poster-placeholder"><svg>...</svg></div>`
+   plutôt qu'un emoji brut). Taille en % (pas en px) : un seul réglage
+   fonctionne à toutes les tailles de posters (grille large, liste
+   compacte, mobile) sans dupliquer une règle par variante. */
+.film-poster-placeholder svg{width:42%; height:42%;}
 .film-poster-placeholder{
   display:flex;
   align-items:center;
   justify-content:center;
   background:var(--ink);
-  font-size:22px;
   opacity:0.5;
   /* Filet de sécurité générique : le format rectangle (pas carré) laisse
      plus de marge ici, mais un débordement n'a de toute façon jamais rien
@@ -1248,9 +1264,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   justify-content:center;
   background:var(--ink);
   border-radius:5px;
-  font-size:14px;
   opacity:0.5;
 }
+.tmdb-poster-placeholder svg{width:42%; height:42%;}
 .tmdb-result-title{font-size:13px;}
 .tmdb-result-year{
   font-family:'Space Mono', monospace;
@@ -1620,10 +1636,12 @@ input[type="range"]::-moz-range-thumb{
 }
 .install-banner-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
 .install-banner-text b{
+  display:inline-flex; align-items:center; gap:6px;
   font-family:'Bricolage Grotesque', sans-serif;
   font-weight:700;
   font-size:14.5px;
 }
+.install-banner-icon{width:16px; height:16px; color:var(--violet); flex:none;}
 .install-banner-text span{
   font-size:12.5px;
   color:var(--text-muted);
@@ -1730,9 +1748,9 @@ input[type="range"]::-moz-range-thumb{
   align-items:center;
   justify-content:center;
   background:var(--surface);
-  font-size:18px;
   opacity:0.5;
 }
+.stats-extreme-poster-placeholder svg{width:42%; height:42%;}
 .stats-extreme-info{min-width:0;}
 .stats-extreme-label{
   font-family:'Space Mono', monospace;

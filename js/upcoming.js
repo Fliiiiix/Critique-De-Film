@@ -84,7 +84,7 @@ function upcomingRowHtml(item){
     <div class="wl-row">
       ${item.posterUrl
         ? `<img class="film-poster" src="${item.posterUrl}" alt="" loading="lazy">`
-        : `<div class="film-poster film-poster-placeholder">${item.type === 'episode' ? '📺' : '🎬'}</div>`}
+        : `<div class="film-poster film-poster-placeholder">${item.type === 'episode' ? TV_PLACEHOLDER_SVG : FILM_PLACEHOLDER_SVG}</div>`}
       <div class="wl-main">
         <div class="wl-title">${escapeHtml(item.title)}</div>
         <div class="wl-note">${escapeHtml(item.sub)}${dateLabel ? ` · ${dateLabel}` : ''}</div>
@@ -98,7 +98,7 @@ function upcomingEndedRowHtml(show){
     <div class="wl-row">
       ${show.posterUrl
         ? `<img class="film-poster" src="${show.posterUrl}" alt="" loading="lazy">`
-        : `<div class="film-poster film-poster-placeholder">📺</div>`}
+        : `<div class="film-poster film-poster-placeholder">${TV_PLACEHOLDER_SVG}</div>`}
       <div class="wl-main">
         <div class="wl-title">${escapeHtml(show.title)}</div>
         <div class="wl-note"><span class="status-badge ended">${escapeHtml(showStatusLabel(show.status))}</span> — plus aucune nouvelle saison prévue</div>

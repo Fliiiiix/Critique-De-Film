@@ -144,7 +144,7 @@ function renderGroupProposals(){
     <div class="wl-row proposal-row">
       ${p.posterUrl
         ? `<img class="film-poster" src="${p.posterUrl}" alt="" loading="lazy">`
-        : `<div class="film-poster film-poster-placeholder">🎬</div>`}
+        : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
       <div class="wl-main">
         <div class="wl-title">${escapeHtml(p.title)}${p.releaseYear ? ` <span class="wl-year">(${p.releaseYear})</span>` : ''}${chosenBadge}</div>
         <div class="wl-note">Proposé par ${escapeHtml(proposer)}</div>
@@ -250,7 +250,7 @@ function renderProposalTmdbResults(results){
     const item = document.createElement('div');
     item.className = 'tmdb-result';
     item.innerHTML = `
-      ${poster ? `<img src="${poster}" alt="">` : `<div class="tmdb-poster-placeholder">🎬</div>`}
+      ${poster ? `<img src="${poster}" alt="">` : `<div class="tmdb-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
       <div class="tmdb-result-info">
         <div class="tmdb-result-title">${escapeHtml(r.title)}</div>
         <div class="tmdb-result-year">${year}</div>
@@ -344,7 +344,7 @@ function renderProposalDetailFilm(){
   document.getElementById('proposalDetailFilm').innerHTML = `
     ${p.posterUrl
       ? `<img class="film-poster" src="${p.posterUrl}" alt="" loading="lazy">`
-      : `<div class="film-poster film-poster-placeholder">🎬</div>`}
+      : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
     <div class="wl-main">
       <div class="wl-title">${escapeHtml(p.title)}${p.releaseYear ? ` <span class="wl-year">(${p.releaseYear})</span>` : ''}</div>
       <div class="wl-note">Proposé par ${escapeHtml(proposer)}</div>

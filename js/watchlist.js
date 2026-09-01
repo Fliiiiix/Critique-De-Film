@@ -67,7 +67,7 @@ function renderWatchlist(){
     row.innerHTML = `
       ${item.posterUrl
         ? `<img class="film-poster" src="${item.posterUrl}" alt="" loading="lazy">`
-        : `<div class="film-poster film-poster-placeholder">🎬</div>`}
+        : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
       <div class="wl-main">
         <div class="wl-title">${escapeHtml(item.title)}${item.releaseYear ? ` <span class="wl-year">(${item.releaseYear})</span>` : ''}</div>
         ${item.note ? `<div class="wl-note">${escapeHtml(item.note)}</div>` : ''}
@@ -180,7 +180,7 @@ function renderWlTmdbResults(results){
     const item = document.createElement('div');
     item.className = 'tmdb-result';
     item.innerHTML = `
-      ${poster ? `<img src="${poster}" alt="">` : `<div class="tmdb-poster-placeholder">🎬</div>`}
+      ${poster ? `<img src="${poster}" alt="">` : `<div class="tmdb-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
       <div class="tmdb-result-info">
         <div class="tmdb-result-title">${escapeHtml(r.title)}</div>
         <div class="tmdb-result-year">${year}</div>

@@ -327,7 +327,7 @@ function renderFriendRecommendations(films){
         <div class="wl-row">
           ${f.poster_url
             ? `<img class="film-poster" src="${f.poster_url}" alt="" loading="lazy">`
-            : `<div class="film-poster film-poster-placeholder">🎬</div>`}
+            : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
           <div class="wl-main">
             <div class="wl-title">${escapeHtml(f.title)}${f.release_year ? ` <span class="wl-year">(${f.release_year})</span>` : ''}</div>
             <div class="wl-note">${f.rating_count} note${f.rating_count > 1 ? 's' : ''} dans ton cercle</div>
@@ -420,7 +420,7 @@ async function openFriendProfile(userId){
             <div class="film-row friend-film-row">
               ${f.posterUrl
                 ? `<img class="film-poster" src="${f.posterUrl}" alt="" loading="lazy">`
-                : `<div class="film-poster film-poster-placeholder">🎬</div>`}
+                : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
               <div class="film-main">
                 <div class="film-title">${escapeHtml(f.title)}</div>
                 <div class="film-sub">${f.releaseYear || ''}</div>

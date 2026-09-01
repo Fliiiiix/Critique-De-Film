@@ -103,7 +103,7 @@ function renderStatsInto(content, list = films){
       <div class="stats-extreme">
         ${s.best.posterUrl
           ? `<img class="stats-extreme-poster" src="${s.best.posterUrl}" alt="" loading="lazy">`
-          : `<div class="stats-extreme-poster stats-extreme-poster-placeholder">🎬</div>`}
+          : `<div class="stats-extreme-poster stats-extreme-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
         <div class="stats-extreme-info">
           <div class="stats-extreme-label">Mieux noté</div>
           <div class="stats-extreme-title">${escapeHtml(s.best.title)}</div>
@@ -114,7 +114,7 @@ function renderStatsInto(content, list = films){
       <div class="stats-extreme">
         ${s.worst.posterUrl
           ? `<img class="stats-extreme-poster" src="${s.worst.posterUrl}" alt="" loading="lazy">`
-          : `<div class="stats-extreme-poster stats-extreme-poster-placeholder">🎬</div>`}
+          : `<div class="stats-extreme-poster stats-extreme-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
         <div class="stats-extreme-info">
           <div class="stats-extreme-label">Moins bien noté</div>
           <div class="stats-extreme-title">${escapeHtml(s.worst.title)}</div>

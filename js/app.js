@@ -179,7 +179,7 @@ function render(){
       <div class="holes"><span></span><span></span><span></span></div>
       ${f.posterUrl
         ? `<img class="film-poster" src="${f.posterUrl}" alt="" loading="lazy">`
-        : `<div class="film-poster film-poster-placeholder">🎬</div>`}
+        : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
       <div class="film-main">
         <div class="film-title">${escapeHtml(f.title)}${isManual ? '<span class="manual-badge" title="Note manuelle — référentiel différent">manuel</span>' : ''}${f.review ? '<span class="review-badge" title="Commentaire enregistré">💬</span>' : ''}${rewatches > 1 ? `<span class="rewatch-badge" title="Revu ${rewatches} fois">↻ ×${rewatches}</span>` : ''}${happening ? `<button class="happening-badge" type="button" title="Un petit quelque chose à découvrir..." aria-label="Un petit quelque chose à découvrir...">${happening.icon}</button>` : ''}</div>
         <div class="film-sub">${sub}</div>

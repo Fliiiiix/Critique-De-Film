@@ -276,7 +276,7 @@ function renderGroupTopFilms(films){
         <div class="wl-row">
           ${f.poster_url
             ? `<img class="film-poster" src="${f.poster_url}" alt="" loading="lazy">`
-            : `<div class="film-poster film-poster-placeholder">🎬</div>`}
+            : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
           <div class="wl-main">
             <div class="wl-title">${escapeHtml(f.title)}${f.release_year ? ` <span class="wl-year">(${f.release_year})</span>` : ''}</div>
             <div class="wl-note">${f.rating_count} membres l'ont noté</div>
