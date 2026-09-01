@@ -101,7 +101,8 @@ document.addEventListener('keydown', (e) => {
     adminOverlay: () => closeAdminModal(),
     journalOverlay: () => closeJournal(),
     friendProfileOverlay: () => closeFriendProfile(),
-    feedbackOverlay: () => closeFeedbackModal()
+    feedbackOverlay: () => closeFeedbackModal(),
+    shareOverlay: () => closeShareModal()
   };
   for(const id in closers){
     if(document.getElementById(id).classList.contains('open')){

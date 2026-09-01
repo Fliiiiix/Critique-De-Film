@@ -719,7 +719,9 @@ Boîte à idées accessible depuis l'icône **💬** de l'entête (au même nive
 que Watchlist/Prochainement/Amis/Top, visible pour n'importe quel compte
 connecté) : une catégorie (Bug / Idée / Autre) et un message libre, envoyés dans la
 table `feedback`. Lu uniquement par l'admin, dans le nouvel onglet
-**Retours** de la modale admin (voir section suivante) — regroupés par
+**Avis** de la modale admin (voir section suivante — pas "Retours" comme
+au tout début : ça se lisait comme un bouton "← Retour" de navigation,
+utilisé partout ailleurs dans l'app, plutôt qu'un onglet) — regroupés par
 catégorie, les catégories triées par nombre de retours **non traités**
 décroissant (une catégorie déjà entièrement traitée redescend plutôt que
 de rester en tête indéfiniment), et à l'intérieur d'un groupe les
@@ -744,7 +746,7 @@ revient le plus") de façon simple et prévisible plutôt que par une
 approximation statistique. Nécessite
 `supabase/migrations/026_add_feedback.sql`.
 
-## Interface admin (succès, happenings, retours & stats)
+## Interface admin (succès, happenings, avis & stats)
 
 Un tableau de bord "voir tout / gérer tout" — réservé au compte
 propriétaire de l'app (email en dur, `ADMIN_EMAIL` dans `js/admin.js`),
@@ -768,7 +770,7 @@ tout autre compte). Quatre onglets :
   message — affiché dans une modale simple au déclenchement. Une vraie
   expérience sur mesure (comme l'arc de l'Odyssée ou le défi photo) reste
   du ressort du code, pas de l'admin.
-- **Retours** — voir la section Feedback juste au-dessus.
+- **Avis** — voir la section Feedback juste au-dessus.
 - **Stats & logs** — voir la section suivante.
 
 Techniquement (Succès/Happenings) : les définitions (`CUMULATIVE_GROUPS`, `HIDDEN_ACHIEVEMENTS`,

@@ -1,5 +1,5 @@
--- Feedback utilisateur — voir js/feedback.js (formulaire, modale profil)
--- et js/admin.js (onglet "Retours" de la modale admin, lecture seule
+-- Feedback utilisateur — voir js/feedback.js (formulaire, icône d'entête)
+-- et js/admin.js (onglet "Avis" de la modale admin, lecture seule
 -- admin). CONTRAIREMENT à admin_config (migration 018, où la séparation
 -- admin est juste un choix d'affichage côté client — chacun n'y voit de
 -- toute façon que sa propre ligne), un retour peut contenir une remarque

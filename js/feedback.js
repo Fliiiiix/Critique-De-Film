@@ -2,7 +2,7 @@
 // Formulaire simple (catégorie + message), accessible directement depuis
 // une icône d'entête (v2.1 — vivait dans "Mon activité" de la modale
 // profil jusque-là, demande explicite de le remonter au même niveau que
-// Watchlist/Amis/Top), lu uniquement par l'admin dans un onglet "Retours"
+// Watchlist/Amis/Top), lu uniquement par l'admin dans un onglet "Avis"
 // de la modale admin (voir js/admin.js). Table `feedback`, policies RLS
 // voir supabase/migrations/026 — contrairement à admin_config, une vraie
 // règle en base restreint la lecture à l'admin, pas juste un choix

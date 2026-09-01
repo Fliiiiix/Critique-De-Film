@@ -1915,8 +1915,40 @@ input[type="range"]::-moz-range-thumb{
   font-size:11px;
   letter-spacing:0.04em;
   color:var(--text-muted);
-  opacity:0.5;
 }
+/* opacité posée sur chaque élément, pas sur .app-footer lui-même : un
+   opacity sur le conteneur créerait un contexte de composition qui
+   plafonnerait aussi ":hover" du bouton en dessous — impossible de le
+   faire ressortir à l'interaction sans ça. */
+.app-footer-credit{opacity:0.5;}
+.app-footer-link{
+  background:none;
+  border:none;
+  padding:0;
+  font:inherit;
+  color:var(--text-muted);
+  opacity:0.5;
+  text-decoration:underline;
+  text-underline-offset:2px;
+  cursor:pointer;
+  transition:opacity .15s;
+}
+.app-footer-link:hover, .app-footer-link:focus-visible{opacity:0.9;}
+/* Blanc pur (pas un ton de la palette) : la fiabilité du scan passe avant
+   la cohérence de marque sur ce seul élément — c'est le rôle entier du
+   cadre. */
+.share-qr-frame{
+  width:180px; height:180px;
+  margin:0 auto 18px;
+  padding:12px;
+  background:#ffffff;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.share-qr-frame img, .share-qr-frame canvas, .share-qr-frame table{display:block;}
+.share-modal .public-profile-link-row{margin-bottom:16px;}
 .toast{
   position:fixed;
   bottom:24px;

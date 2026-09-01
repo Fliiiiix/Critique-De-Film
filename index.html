@@ -28,7 +28,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=48">
+<link rel="stylesheet" href="css/style.css?v=51">
 </head>
 <body>
 
@@ -858,17 +858,24 @@
   </div>
 </div>
 
-<!-- Modal admin (succès + happenings + retours + stats) — voir js/admin.js -->
+<!-- Modal admin (succès + happenings + avis + stats) — voir js/admin.js -->
 <div class="overlay" id="adminOverlay">
   <div class="modal stats-modal admin-modal">
     <div class="modal-head">
       <h2>Admin</h2>
       <button class="close-x" id="closeAdmin" aria-label="Fermer">✕</button>
     </div>
+    <!-- "Avis" et pas "Retours" (nom d'origine) : ça se lisait comme un
+         bouton de navigation "← Retour" (utilisé partout ailleurs dans
+         l'app pour "revenir en arrière", voir les 12 boutons
+         id="...Back") plutôt qu'un onglet — retour utilisateur, cliquait
+         dessus en s'attendant à reculer. "Avis" reprend le terme déjà
+         utilisé côté utilisateur (icône d'entête "Donner un avis"),
+         cohérent des deux côtés plutôt qu'un synonyme choisi séparément. -->
     <div class="avatar-source-tabs" role="tablist" id="adminTabs">
       <button type="button" class="avatar-source-tab active" data-admin-tab="achievements" role="tab" aria-selected="true">Succès</button>
       <button type="button" class="avatar-source-tab" data-admin-tab="happenings" role="tab" aria-selected="false">Happenings</button>
-      <button type="button" class="avatar-source-tab" data-admin-tab="feedback" role="tab" aria-selected="false">Retours</button>
+      <button type="button" class="avatar-source-tab" data-admin-tab="feedback" role="tab" aria-selected="false">Avis</button>
       <button type="button" class="avatar-source-tab" data-admin-tab="stats" role="tab" aria-selected="false">Stats &amp; logs</button>
     </div>
     <div id="adminContent"></div>
@@ -920,76 +927,104 @@
 <!-- Signature discrète (v2.1) — hors des conteneurs à bascule (comme le
      digest/bandeaux hors ligne/installation plus haut) : reste visible en
      bas de PAGE, quelle que soit la page affichée par showOnlyPage(),
-     sans avoir à la dupliquer dans chacune. -->
-<footer class="app-footer">Made by Flix</footer>
+     sans avoir à la dupliquer dans chacune. "Partager" (v2.1) accessible
+     même sans connexion (montrer le QR à un proche avant que l'un des
+     deux ait un compte a du sens) — voir js/share.js. -->
+<footer class="app-footer">
+  <span class="app-footer-credit">Made by Flix</span> ·
+  <button class="app-footer-link" id="shareBtn" type="button">Partager</button>
+</footer>
+
+<!-- Modal de partage (v2.1) — QR + lien, pour installer Kinet sur un
+     autre appareil ou le montrer à quelqu'un sans faire retaper l'URL à
+     la main. Voir js/share.js. -->
+<div class="overlay" id="shareOverlay">
+  <div class="modal share-modal">
+    <div class="modal-head">
+      <h2>Partager Kinet</h2>
+      <button class="close-x" id="closeShare" aria-label="Fermer">✕</button>
+    </div>
+    <div class="share-qr-frame"><div id="shareQrCode"></div></div>
+    <div class="public-profile-link-row">
+      <span id="shareLinkText"></span>
+      <button class="crit-help-toggle" id="copyShareLink" type="button">Copier</button>
+    </div>
+    <p class="auth-card-foot">Scanne, ou copie le lien — Chrome/Edge proposent d'installer l'app direct depuis la page, sans store.</p>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=48"></script>
+<script src="js/supabaseConfig.js?v=51"></script>
 <!-- Juste après supabaseConfig.js (a besoin de supabaseClient) et avant
      tout le reste : capte les erreurs de chargement des scripts suivants,
      pas seulement celles de l'app une fois démarrée — voir js/logging.js. -->
-<script src="js/logging.js?v=48"></script>
-<script src="js/tmdbConfig.js?v=48"></script>
-<script src="js/data.js?v=48"></script>
-<script src="js/happenings.js?v=48"></script>
+<script src="js/logging.js?v=51"></script>
+<script src="js/tmdbConfig.js?v=51"></script>
+<script src="js/data.js?v=51"></script>
+<script src="js/happenings.js?v=51"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=48"></script>
+<script src="js/ui.js?v=51"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=48"></script>
-<script src="js/app.js?v=48"></script>
-<script src="js/tmdb.js?v=48"></script>
-<script src="js/stats.js?v=48"></script>
-<script src="js/achievements.js?v=48"></script>
-<script src="js/journal.js?v=48"></script>
+<script src="js/offline.js?v=51"></script>
+<script src="js/app.js?v=51"></script>
+<script src="js/tmdb.js?v=51"></script>
+<script src="js/stats.js?v=51"></script>
+<script src="js/achievements.js?v=51"></script>
+<script src="js/journal.js?v=51"></script>
 <!-- Après app.js (showToast) — appelée par js/profile.js juste après. -->
-<script src="js/pwa.js?v=48"></script>
-<script src="js/profile.js?v=48"></script>
+<script src="js/pwa.js?v=51"></script>
+<script src="js/profile.js?v=51"></script>
 <!-- Après profile.js (closeProfileModal/openProfileModal) et data.js
      (FEEDBACK_CATEGORIES) — même raisonnement que pwa.js juste au-dessus. -->
-<script src="js/feedback.js?v=48"></script>
+<script src="js/feedback.js?v=51"></script>
+<!-- N'a besoin que de ui.js (openOverlay/closeOverlay) et app.js
+     (showToast), chargés bien avant — placé ici pour rester groupé avec
+     les autres modales accessibles depuis le chrome plutôt que pour une
+     vraie dépendance. -->
+<script src="js/share.js?v=51"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=48"></script>
-<script src="js/router.js?v=48"></script>
-<script src="js/publicProfile.js?v=48"></script>
-<script src="js/top.js?v=48"></script>
-<script src="js/friends.js?v=48"></script>
+<script src="js/admin.js?v=51"></script>
+<script src="js/router.js?v=51"></script>
+<script src="js/publicProfile.js?v=51"></script>
+<script src="js/top.js?v=51"></script>
+<script src="js/friends.js?v=51"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=48"></script>
-<script src="js/watchlist.js?v=48"></script>
+<script src="js/activity.js?v=51"></script>
+<script src="js/watchlist.js?v=51"></script>
 <!-- Après watchlist.js : js/upcoming.js réutilise le tableau watchlist déjà
      chargé (voir plus bas). -->
-<script src="js/series.js?v=48"></script>
+<script src="js/series.js?v=51"></script>
 <!-- Après watchlist.js ET series.js — a besoin des deux tableaux chargés
      (loadWatchlist()/loadTrackedShows()), voir js/upcoming.js. -->
-<script src="js/upcoming.js?v=48"></script>
-<script src="js/groups.js?v=48"></script>
-<script src="js/proposals.js?v=48"></script>
+<script src="js/upcoming.js?v=51"></script>
+<script src="js/groups.js?v=51"></script>
+<script src="js/proposals.js?v=51"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=48"></script>
+<script src="js/invites.js?v=51"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=48"></script>
-<script src="js/auth.js?v=48"></script>
+<script src="js/activityState.js?v=51"></script>
+<script src="js/auth.js?v=51"></script>
 </body>
 </html>

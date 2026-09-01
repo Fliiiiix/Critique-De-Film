@@ -3,7 +3,7 @@
 // (ADMIN_EMAIL) — pas de vrai rôle admin en base pour les 2 premiers
 // onglets (Succès/Happenings), un email en dur côté client suffit pour un
 // usage perso, même logique que site_status géré à la main dans le Table
-// Editor Supabase. L'onglet Retours (feedback.resolved en dessous) fait
+// Editor Supabase. L'onglet Avis (feedback.resolved en dessous) fait
 // exception : LUI a une vraie policy RLS derrière (voir
 // supabase/migrations/026), pas juste ce garde-fou d'affichage — un
 // retour peut contenir une remarque personnelle qu'un autre compte ne
@@ -72,7 +72,7 @@ function getAdminCustomHappenings(){
   return (adminConfig && adminConfig.happenings && adminConfig.happenings.custom) || [];
 }
 
-// --- Onglets Succès / Happenings / Retours ---
+// --- Onglets Succès / Happenings / Avis / Stats ---
 function setAdminTab(tab){
   document.querySelectorAll('#adminTabs .avatar-source-tab').forEach(btn => {
     const active = btn.dataset.adminTab === tab;
@@ -358,7 +358,7 @@ function renderAdminHappeningsTab(){
   });
 }
 
-// --- Onglet Retours ---
+// --- Onglet Avis ---
 let allFeedback = [];
 let allFeedbackLoaded = false;
 
@@ -375,15 +375,21 @@ async function loadAllFeedback(){
   if(error){
     console.error(error);
     allFeedback = [];
-    return;
+  }else{
+    allFeedback = data.map(row => ({
+      id: row.id,
+      category: row.category,
+      message: row.message,
+      resolved: row.resolved,
+      createdAt: row.created_at
+    }));
   }
-  allFeedback = data.map(row => ({
-    id: row.id,
-    category: row.category,
-    message: row.message,
-    resolved: row.resolved,
-    createdAt: row.created_at
-  }));
+  // Posé même en cas d'erreur (comme loadSiteStats() plus bas) : sinon
+  // renderAdminFeedbackTab() relance loadAllFeedback() à chaque appel
+  // (son garde-fou ne teste que allFeedbackLoaded) — un échec réseau, ou
+  // simplement la migration 026 pas encore exécutée, partait en boucle de
+  // requêtes ratées à chaque re-render plutôt que d'échouer une fois et
+  // d'afficher l'état vide. Bug constaté en testant ce scénario précis.
   allFeedbackLoaded = true;
 }
 
