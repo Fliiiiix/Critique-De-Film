@@ -118,9 +118,14 @@ document.getElementById('logoutBtn').addEventListener('click', handleLogout);
     values[c.key] = 0.5; // point de départ neutre, au milieu de l'échelle
     const row = document.createElement('div');
     row.className = 'auth-demo-row';
+    // step="0.1" (retour utilisateur : step="0.5" ne donnait que 3
+    // positions possibles par curseur — 0/0.5/1, "un peu bizarre") plutôt
+    // que le step="0.05" du vrai formulaire (js/app.js) : assez fin pour
+    // ne plus sauter par paliers grossiers, sans les 20 crans du vrai
+    // formulaire, hors de propos pour une démo qu'on manipule 2 secondes.
     row.innerHTML = `
       <span class="auth-demo-label">${escapeHtml(c.label)}</span>
-      <input type="range" min="0" max="1" step="0.5" value="0.5" data-key="${c.key}" aria-label="${escapeHtml(c.label)}">
+      <input type="range" min="0" max="1" step="0.1" value="0.5" data-key="${c.key}" aria-label="${escapeHtml(c.label)}">
     `;
     wrap.appendChild(row);
   });
