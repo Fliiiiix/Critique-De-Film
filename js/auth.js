@@ -101,51 +101,41 @@ document.getElementById('authEmail').addEventListener('keydown', (e) => {
 });
 document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
-// --- Tags interactifs de l'écran de connexion (v2.0.12) ---
-// Survoler/focus un tag (#authTags) affiche sa description dans
-// #authShowcasePanel à la place du visuel décoratif par défaut (voir
-// index.html + .auth-tag-desc/.auth-hero-visual dans style.css). Un seul
-// tag actif à la fois : dataset.active sur le panneau, lu par les
-// sélecteurs CSS [data-active="..."].
-(function setupAuthTagPanel(){
-  const panel = document.getElementById('authShowcasePanel');
-  if(!panel) return; // page publique/invite : ce panneau n'existe pas
-  const tags = document.querySelectorAll('#authTags .auth-tag');
-  // (hover:hover) plutôt que juste "souris vs tactile" au pif : certains
-  // écrans tactiles avec trackpad/souris annexe passent ce test à true.
-  // Sans lui, le survol simulé au premier tap sur mobile laisserait le
-  // second tap (le vrai clic) fermer aussitôt ce qu'il venait d'ouvrir.
-  const canHover = window.matchMedia('(hover: hover)').matches;
-  const activate = (tag, btn) => {
-    panel.dataset.active = tag;
-    tags.forEach(t => t.classList.toggle('is-active', t === btn));
-  };
-  const deactivate = (tag) => {
-    if(panel.dataset.active !== tag) return;
-    delete panel.dataset.active;
-    tags.forEach(t => t.classList.remove('is-active'));
-  };
-  tags.forEach(btn => {
-    const tag = btn.dataset.tag;
-    if(canHover){
-      // Desktop/souris : survol ET clavier (focus/blur) — pas de handler
-      // click ici, un vrai <button> n'en a pas besoin en plus du hover.
-      btn.addEventListener('mouseenter', () => activate(tag, btn));
-      btn.addEventListener('mouseleave', () => deactivate(tag));
-      btn.addEventListener('focus', () => activate(tag, btn));
-      btn.addEventListener('blur', () => deactivate(tag));
-    }else{
-      // Tactile : pas de survol persistant, le tap bascule affiché/masqué.
-      // Pas de focus/blur en plus ici : un <button> déclenche déjà ce même
-      // click au clavier (Entrée/Espace), les cumuler ferait se refermer
-      // le panneau juste après l'avoir ouvert (focus l'active, puis le
-      // click qui suit immédiatement le désactive).
-      btn.addEventListener('click', () => {
-        if(panel.dataset.active === tag) deactivate(tag);
-        else activate(tag, btn);
-      });
-    }
+// --- Démo jouable de la grille (v2.0.16) ---
+// Signature element de l'écran de connexion (voir index.html pour le
+// diagnostic complet) : 7 curseurs générés depuis CRITERIA (js/data.js —
+// la même source que le vrai formulaire de notation, js/app.js), avec la
+// note recalculée en direct via computeNote()/noteColorClass() — les
+// MÊMES fonctions que le catalogue, pas une simulation à part réécrite
+// ici. Remplace setupAuthTagPanel()/#authTags/#authShowcasePanel
+// (v2.0.12-v2.0.13, supprimés).
+(function setupAuthDemo(){
+  const wrap = document.getElementById('authDemoSliders');
+  const counterEl = document.getElementById('authDemoCounter');
+  if(!wrap || !counterEl) return; // page publique/invite : pas de démo ici
+  const values = {};
+  CRITERIA.forEach(c => {
+    values[c.key] = 0.5; // point de départ neutre, au milieu de l'échelle
+    const row = document.createElement('div');
+    row.className = 'auth-demo-row';
+    row.innerHTML = `
+      <span class="auth-demo-label">${escapeHtml(c.label)}</span>
+      <input type="range" min="0" max="1" step="0.5" value="0.5" data-key="${c.key}" aria-label="${escapeHtml(c.label)}">
+    `;
+    wrap.appendChild(row);
   });
+  function updateCounter(){
+    const note = computeNote(values);
+    counterEl.textContent = note.toFixed(1);
+    counterEl.className = 'counter auth-demo-counter ' + noteColorClass(note);
+  }
+  wrap.querySelectorAll('input[type="range"]').forEach(input => {
+    input.addEventListener('input', () => {
+      values[input.dataset.key] = parseFloat(input.value);
+      updateCounter();
+    });
+  });
+  updateCounter();
 })();
 
 (async function initAuth(){

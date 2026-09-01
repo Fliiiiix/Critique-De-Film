@@ -810,17 +810,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 /* #authContainer ne force plus de hauteur calculée (calc(100dvh - ...) —
    fragile : l'entête n'a pas de hauteur fixe, sur certains écrans ça
    laissait un vide en trop ou pas assez). À la place : du padding généreux
-   et un contenu volontairement plus riche (texture + vitrine produit
+   et un contenu volontairement plus riche (texture + démo jouable
    visible à toutes les tailles, pas juste sur desktop) pour que l'écran
-   ne dépende d'aucun calcul de viewport pour ne pas paraître vide.
-   overflow-x:hidden : les cartes de la vitrine ci-dessous débordent
-   légèrement de leur boîte à cause de leur légère rotation — sans ça, ce
-   débordement purement décoratif pourrait forcer un défilement horizontal
-   sur un écran étroit. */
+   ne dépende d'aucun calcul de viewport pour ne pas paraître vide. */
 #authContainer{
   position:relative;
   padding:48px 0 72px;
-  overflow-x:hidden;
 }
 /* Texture plein écran (grille de points) + halo de couleur — position
    fixed et non absolute : couvre tout le viewport quelle que soit la
@@ -850,14 +845,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     radial-gradient(620px 420px at 12% 10%, var(--violet-wash), transparent 65%),
     radial-gradient(560px 380px at 90% 55%, var(--gold-wash), transparent 60%);
 }
-/* Grille 2 colonnes (v2.0.10) — avant : flex-wrap avec .auth-showcase en
-   width:100% forçant un retour à la ligne pleine largeur, qui empilait
-   texte → vitrine → carte en une seule colonne centrée quelle que soit la
-   largeur d'écran disponible (retour utilisateur : "trop vertical").
-   Colonne 2 fixe (380px, la largeur de la carte) plutôt que fractionnaire :
-   la carte de connexion n'a aucune raison de s'étirer sur un grand écran.
-   Repasse en une colonne sous 760px (voir media query), .auth-side n'y
-   existe plus visuellement comme colonne — juste un groupe empilé. */
+/* Grille 2 colonnes (v2.0.10) : texte + démo à gauche, carte de connexion
+   à droite. Colonne 2 fixe (380px, la largeur de la carte) plutôt que
+   fractionnaire : la carte de connexion n'a aucune raison de s'étirer sur
+   un grand écran. Repasse en une seule colonne sous 760px (voir media
+   query 760px). */
 .auth-hero{
   display:grid;
   grid-template-columns:minmax(0,1fr) 380px;
@@ -883,278 +875,58 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-size:15px;
   line-height:1.6;
   max-width:44ch;
-  margin-bottom:20px;
+  margin-bottom:24px;
 }
-/* Rangée de tags (v2.0.12 : de vrais boutons, plus une simple liste
-   aria-hidden) — même vocabulaire visuel que .manual-badge (pilule, Space
-   Mono, bordure fine) pour rester cohérent avec le reste de l'app. */
-.auth-tags{
-  list-style:none;
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-bottom:16px;
-}
-/* display:contents sur le <li> : le <button> devient directement l'item
-   flex de .auth-tags (le <li> disparaît de la boîte, pas du DOM), donc la
-   pilule garde exactement le même gabarit qu'avant (v2.0.9-v2.0.11) sans
-   avoir à dupliquer le padding/la bordure sur deux niveaux. */
-.auth-tags li{display:contents;}
-.auth-tag{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-family:'Space Mono', monospace;
-  font-size:11.5px;
-  font-weight:600;
-  letter-spacing:0.02em;
-  color:var(--text-muted);
-  background:var(--surface-2);
-  border:1px solid var(--line);
-  border-radius:999px;
-  padding:6px 12px;
-  cursor:pointer;
-  transition:color .15s, background .15s, border-color .15s;
-}
-/* :hover ET :focus-visible ET .is-active (posé par js/auth.js, voir
-   toggleAuthTagPanel()) : les 3 chemins pour arriver au même tag actif
-   (souris, clavier, tap tactile) doivent avoir le même rendu. */
-.auth-tag:hover, .auth-tag:focus-visible, .auth-tag.is-active{
-  color:var(--violet);
-  background:var(--violet-wash);
-  border-color:var(--violet-dim);
-}
-.auth-tag:focus-visible{outline:2px solid var(--violet-dim); outline-offset:2px;}
-/* Panneau qui bascule entre le visuel par défaut et la description du tag
-   actif (v2.0.12, glissement ajouté en v2.0.13) — remplace l'ancienne
-   liste .auth-features empilée, qui répétait ce que disaient déjà les
-   tags juste au-dessus. Hauteur fixe (pas min-height) : le texte le plus
-   long des 4 descriptions ne doit jamais faire sauter la mise en page au
-   survol d'un tag à l'autre. */
-.auth-showcase-panel{position:relative; height:158px;}
-/* translateX plutôt qu'un simple fondu (v2.0.13, retour utilisateur :
-   "je voudrais que le texte arrive en glissant") : le sortant glisse vers
-   la gauche en disparaissant, l'entrant arrive de la droite — un seul
-   sens de lecture, jamais les deux en même temps au même endroit. */
-.auth-hero-visual, .auth-tag-desc{
-  position:absolute; inset:0;
-  display:flex; align-items:center; gap:18px;
-  opacity:0; visibility:hidden;
-  transform:translateX(16px);
-  transition:opacity .25s ease, transform .25s ease, visibility .25s;
-}
-.auth-hero-visual{opacity:1; visibility:visible; justify-content:center; transform:translateX(0);}
-.auth-showcase-panel[data-active] .auth-hero-visual{opacity:0; visibility:hidden; transform:translateX(-16px);}
-.auth-tag-desc p{
-  margin:0;
-  font-size:14.5px;
-  line-height:1.6;
-  color:var(--text-muted);
-  padding-right:24px;
-}
-.auth-showcase-panel[data-active="critere"] [data-panel="critere"],
-.auth-showcase-panel[data-active="films-series"] [data-panel="films-series"],
-.auth-showcase-panel[data-active="prochainement"] [data-panel="prochainement"],
-.auth-showcase-panel[data-active="amis"] [data-panel="amis"]{
-  opacity:1; visibility:visible; transform:translateX(0);
-}
-/* Visuel par défaut : lueur douce derrière le cadran du logo (mêmes
-   classes que .brand-mark, juste agrandi), entouré de notes et de
-   posters qui flottent — mêmes .counter/.rate-* et dégradés que la
-   vitrine à droite et le catalogue lui-même (v2.0.13 : densifié après
-   retour "tu ne t'es pas trop mouillé", pas un nouveau motif inventé
-   pour l'occasion, juste plus des mêmes). */
-.auth-hero-glow{
-  position:absolute;
-  width:150px; height:150px;
-  border-radius:50%;
-  background:radial-gradient(circle, var(--violet-wash) 0%, transparent 72%);
-  animation:auth-hero-glow-pulse 5s ease-in-out infinite;
-}
-@keyframes auth-hero-glow-pulse{
-  0%, 100%{transform:scale(1); opacity:0.7;}
-  50%{transform:scale(1.18); opacity:1;}
-}
-.auth-hero-dial{width:104px; height:104px; opacity:0.85;}
-.auth-hero-dial .brand-mark-track{stroke-width:2.5;}
-.auth-hero-dial .brand-mark-arc{stroke-width:2.5;}
-.auth-hero-badge{
-  position:absolute;
-  width:38px; height:38px; font-size:12px;
-  animation:auth-hero-float 7s ease-in-out infinite;
-}
-.auth-hero-badge-1{top:4%; left:20%; animation-delay:0s;}
-.auth-hero-badge-2{bottom:8%; left:6%; animation-delay:-2.3s;}
-.auth-hero-badge-3{top:8%; right:14%; animation-delay:-4.6s;}
-/* Petites affiches en dégradé (mêmes classes de couleur que
-   .auth-mock-poster-*) glissées parmi les notes flottantes — ce panneau
-   et la vitrine à droite partagent le même vocabulaire visuel. */
-.auth-hero-poster{
-  position:absolute;
-  width:26px; height:38px;
-  border-radius:6px;
-  border:1px solid var(--line);
-  animation:auth-hero-float 8s ease-in-out infinite;
-}
-.auth-hero-poster-1{
-  top:16%; right:2%;
-  background:linear-gradient(155deg, rgba(140,124,255,0.4), var(--surface-2) 78%);
-  animation-delay:-1.5s;
-}
-.auth-hero-poster-2{
-  bottom:2%; left:32%;
-  background:linear-gradient(155deg, rgba(231,178,76,0.4), var(--surface-2) 78%);
-  animation-delay:-5.2s;
-}
-@keyframes auth-hero-float{
-  0%, 100%{transform:translateY(0);}
-  50%{transform:translateY(-9px);}
-}
-@media (prefers-reduced-motion:reduce){
-  .auth-hero-badge, .auth-hero-poster, .auth-hero-glow{animation:none;}
-}
-/* Petits visuels d'accompagnement de chaque description (v2.0.13) — un
-   texte seul dans ce panneau, sans rien à côté, retombait aussi vide que
-   le visuel par défaut d'avant ; celui-ci reprend juste ce que le tag
-   annonce (barres = grille notée, affiches = films/séries, frise =
-   prochainement, avatars = amis), même vocabulaire que le reste de
-   l'écran, aucune icône. */
-.auth-tag-visual{flex:none;}
-.auth-tag-visual-bars{display:flex; align-items:flex-end; gap:4px; height:42px;}
-.auth-tag-visual-bars span{width:7px; border-radius:3px 3px 0 0; background:var(--violet);}
-.auth-tag-visual-bars span:nth-child(1){height:42%; opacity:0.45;}
-.auth-tag-visual-bars span:nth-child(2){height:68%; opacity:0.6;}
-.auth-tag-visual-bars span:nth-child(3){height:54%; opacity:0.75;}
-.auth-tag-visual-bars span:nth-child(4){height:100%; opacity:1;}
-.auth-tag-visual-bars span:nth-child(5){height:62%; opacity:0.75;}
-.auth-tag-visual-split{display:flex; gap:6px;}
-.auth-tag-visual-split span{
-  width:30px; height:44px;
-  border-radius:6px;
-  border:1px solid var(--line);
-}
-.auth-tag-visual-split span:first-child{background:linear-gradient(155deg, rgba(140,124,255,0.4), var(--surface-2) 78%);}
-.auth-tag-visual-split span:last-child{background:linear-gradient(155deg, rgba(106,209,139,0.4), var(--surface-2) 78%);}
-.auth-tag-visual-timeline{display:flex; align-items:center; width:68px;}
-.auth-tag-visual-timeline span{
-  width:7px; height:7px; flex:none;
-  border-radius:50%;
-  background:var(--line);
-  position:relative;
-}
-.auth-tag-visual-timeline span:not(:last-child){margin-right:20px;}
-.auth-tag-visual-timeline span:not(:last-child)::after{
-  content:'';
-  position:absolute; left:100%; top:50%;
-  width:20px; height:1px;
-  background:var(--line);
-  transform:translateY(-50%);
-}
-.auth-tag-visual-timeline span.is-next{
-  width:11px; height:11px;
-  background:var(--gold);
-  box-shadow:0 0 0 4px var(--gold-wash);
-  animation:auth-tag-pulse 1.8s ease-in-out infinite;
-}
-@keyframes auth-tag-pulse{
-  0%, 100%{transform:scale(1);}
-  50%{transform:scale(1.15);}
-}
-@media (prefers-reduced-motion:reduce){.auth-tag-visual-timeline span.is-next{animation:none;}}
-.auth-tag-visual-avatars{display:flex;}
-.auth-tag-visual-avatars span{
-  width:32px; height:32px;
-  border-radius:50%;
-  border:2px solid var(--surface);
-  margin-left:-11px;
-}
-.auth-tag-visual-avatars span:first-child{margin-left:0;}
-.auth-tag-visual-avatars span:nth-child(1){background:linear-gradient(155deg, var(--violet), var(--violet-dim));}
-.auth-tag-visual-avatars span:nth-child(2){background:linear-gradient(155deg, var(--gold), var(--gold-dim));}
-.auth-tag-visual-avatars span:nth-child(3){background:linear-gradient(155deg, var(--green), var(--green-dim));}
-/* Colonne de droite (v2.0.10) : largeur fixe imposée par .auth-hero
-   (grid-template-columns, voir plus haut) — vitrine + carte empilées ici
-   en flex column, dans cet ordre visuel sur desktop (vitrine au-dessus de
-   la carte). Sous 760px, .auth-hero repasse en une seule colonne et
-   inverse SES DEUX enfants directs (.auth-pitch, .auth-side) pour remettre
-   .auth-side en premier — mais à l'intérieur de .auth-side l'ordre DOM
-   (vitrine, carte) resterait alors carte-en-dernier si on ne le corrigeait
-   pas : .auth-side inverse donc aussi son propre ordre sous 760px pour
-   reconstituer exactement l'ordre visuel voulu carte→vitrine→texte
-   (voir media query). */
-.auth-side{display:flex; flex-direction:column; gap:24px; min-width:0;}
-/* Aperçu produit : 3 cartes façon .film-row en éventail, chacune avec un
-   vrai .counter/.rate-* (mêmes classes que le catalogue — rendu
-   identique, pas une réinvention) pour rendre "grille à 7 critères"
-   concret au lieu d'une simple promesse en texte. Chevauchement obtenu
-   par le flux normal (marges négatives), PAS par des coordonnées
-   absolues top/left calées à la main : ça reste correct à n'importe
-   quelle largeur au lieu de déborder ou de se chevaucher n'importe
-   comment selon l'écran — le vrai problème de la version précédente.
-   Purement décoratif (aria-hidden côté HTML) : posters/titres en aplats
-   génériques puisqu'aucun appel TMDB n'a de sens avant connexion. Plus de
-   width:100% ici (v2.0.10) : .auth-showcase est maintenant un item flex
-   de .auth-side (colonne fixe), il en épouse déjà toute la largeur par le
-   comportement par défaut (align-items:stretch) sans avoir besoin de le
-   forcer, et sans provoquer le retour à la ligne pleine largeur que
-   causait ce même width:100% dans l'ancien layout en flex-wrap. */
-.auth-showcase{
-  display:flex;
-  justify-content:center;
-  padding:12px 0 4px;
-}
-/* Taille unifiée (v2.0.10) : avant, deux tailles différentes selon le
-   breakpoint (160px desktop / 132px mobile, voir l'ancienne media query
-   760px) parce que la vitrine s'étalait sur toute la largeur de l'écran
-   sur desktop. Coincée dans une colonne fixe de 380px maintenant sur
-   TOUTES les tailles (mobile compris, où .auth-card fait déjà
-   max-width:420px), une seule taille compacte suffit partout. */
-.auth-mock-card{
-  flex:none;
-  width:132px;
-  /* -22px et pas plus : au-delà, la carte suivante recouvre le cadran
-     (tout à droite de la carte précédente) au lieu de juste son affiche —
-     bug constaté à la vérification avec une marge plus large. */
-  margin-left:-22px;
-  display:flex;
-  align-items:center;
-  gap:9px;
-  background:linear-gradient(165deg, var(--surface) 0%, var(--surface-2) 200%);
+/* Signature element (v2.0.16) : la grille à 7 critères, jouable avant
+   même la connexion, plutôt que décrite en prose à côté d'icônes — voir
+   le commentaire dans index.html pour le diagnostic complet. Carte à
+   part (fond + bordure) pour lire comme un vrai widget qu'on manipule,
+   pas comme un paragraphe de plus. */
+.auth-demo{
+  background:linear-gradient(160deg, var(--surface) 0%, var(--surface-2) 220%);
   border:1px solid var(--line);
   border-radius:14px;
-  padding:9px;
-  box-shadow:0 24px 44px -16px rgba(0,0,0,0.6);
+  padding:22px 24px;
 }
-.auth-mock-card:first-child{margin-left:0;}
-.auth-mock-card .film-poster{width:32px; height:46px;}
-/* Dégradé plutôt qu'icône (v2.0.11) : la couleur reprend celle du cadran
-   .rate-* juste à côté sur la même carte (gold/green/coral) — un vrai
-   détail de DA propre à Kinet plutôt qu'un pictogramme façon banque
-   d'icônes. rgba direct (pas --gold-wash/--green-wash/--coral-dim,
-   pensées pour un fond de pilule très discret) : ici le dégradé EST le
-   sujet visuel, il a besoin d'assez de présence pour lire comme un
-   aplat d'affiche, pas juste une teinte de fond. */
-.auth-mock-poster{background:linear-gradient(155deg, var(--surface-3), var(--surface-2));}
-.auth-mock-poster-gold{background:linear-gradient(155deg, rgba(231,178,76,0.4), var(--surface-2) 78%);}
-.auth-mock-poster-green{background:linear-gradient(155deg, rgba(106,209,139,0.4), var(--surface-2) 78%);}
-.auth-mock-poster-coral{background:linear-gradient(155deg, rgba(255,107,87,0.4), var(--surface-2) 78%);}
-.auth-mock-lines{flex:1; min-width:0;}
-.auth-mock-line{
-  height:6px;
-  border-radius:3px;
-  background:var(--line);
-  margin-bottom:5px;
+.auth-demo-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding-bottom:16px;
+  margin-bottom:18px;
+  border-bottom:1px solid var(--line);
 }
-.auth-mock-line.short{width:38%; background:var(--line-soft);}
-.auth-mock-card .counter{width:28px; height:28px; font-size:9.5px; flex:none;}
-/* z-index croissant de gauche à droite (pas 1/3/2) : chaque carte suivante
-   chevauche la précédente PAR-DESSUS, comme un vrai éventail de cartes —
-   l'ordre inverse laissait la carte du milieu passer devant la 3e et en
-   masquer presque tout le contenu (bug constaté à la vérification). */
-.auth-mock-1{transform:rotate(-7deg); z-index:1;}
-.auth-mock-2{transform:rotate(4deg) translateY(-10px); z-index:2;}
-.auth-mock-3{transform:rotate(-2deg) translateY(4px); z-index:3;}
-.auth-side .auth-card{width:100%; max-width:420px; position:relative;}
+.auth-demo-head .eyebrow{margin-bottom:4px;}
+.auth-demo-hint{margin:0; font-size:12.5px; color:var(--text-muted);}
+/* Même classe .counter que partout dans l'app (grille/liste, vitrine
+   d'amis, top films...) — cette note EST une vraie note, calculée par la
+   même fonction (computeNote(), js/app.js), pas une maquette qui y
+   ressemble. */
+.auth-demo-counter{width:56px; height:56px; font-size:17px; flex:none;}
+.auth-demo-sliders{display:flex; flex-direction:column; gap:12px;}
+.auth-demo-row{display:flex; align-items:center; gap:16px;}
+.auth-demo-label{
+  font-family:'Space Mono', monospace;
+  font-size:11.5px;
+  color:var(--text-muted);
+  width:148px;
+  flex:none;
+}
+.auth-pitch-foot{
+  margin:18px 0 0;
+  font-size:12.5px;
+  color:var(--text-muted);
+  line-height:1.6;
+}
+/* max-width seul (pas de width:100% explicite) : en grille (desktop),
+   .auth-card est un item de grid-template-columns qui s'étire déjà à sa
+   colonne de 380px par défaut (justify-self:stretch, implicite) ; en flex
+   colonne (mobile, voir media query 760px), un item flex column s'étire
+   déjà sur l'axe transverse par défaut (align-items:stretch, implicite)
+   — cette règle ne fait donc que plafonner une largeur qui, sans elle,
+   grandirait trop sur un mobile large/une tablette. */
+.auth-hero .auth-card{max-width:420px;}
 .auth-card-foot{
   margin-top:16px;
   font-size:11.5px;
@@ -2524,24 +2296,15 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   .toolbar-search{width:100%; min-width:0;}
   .toolbar-actions{width:100%; justify-content:space-between;}
 
-  /* Vitrine de connexion : la grille 2 colonnes (texte + .auth-side, voir
-     plus haut) ne tient plus côte à côte — repasse en flex empilé, carte
-     en premier pour que le geste "se connecter" reste immédiat sur
-     mobile, suivi d'un aperçu du produit puis de l'argumentaire complet.
-     Deux column-reverse imbriqués (v2.0.10, un pour chaque niveau) pour
-     reconstituer cet ordre visuel carte→vitrine→texte avec la structure
-     à 2 enfants directs (.auth-pitch, .auth-side) : le premier inverse
-     .auth-pitch/.auth-side (donc .auth-side passe en premier), le second
-     inverse À L'INTÉRIEUR de .auth-side son propre ordre DOM
-     vitrine/carte (donc la carte y passe en premier) — sans quoi la carte
-     resterait juste après le texte, sous la vitrine, au lieu d'être le
-     tout premier élément visible. La vitrine reste visible (juste
-     rétrécie) plutôt que masquée : une version encore plus ancienne la
-     cachait sous 760px, ce qui laissait justement le mobile — l'écran le
-     plus consulté — sans aucun élément visuel. */
+  /* Vitrine de connexion : la grille 2 colonnes ne tient plus côte à côte
+     — repasse en flex empilé. column-reverse sur les 2 enfants directs
+     (.auth-pitch, .auth-card) : la carte de connexion passe en premier
+     pour que le geste "se connecter" reste immédiat sur mobile, suivie de
+     la démo jouable puis de l'argumentaire — plus simple qu'avant
+     (v2.0.10-v2.0.15) : sans la vitrine de cartes factices à réordonner
+     séparément, un seul column-reverse suffit désormais. */
   #authContainer{padding:32px 0;}
   .auth-hero{display:flex; flex-direction:column-reverse; gap:28px; margin:0 auto;}
-  .auth-side{flex-direction:column-reverse;}
 }
 
 @media (max-width:600px){

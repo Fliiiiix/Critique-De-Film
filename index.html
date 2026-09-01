@@ -28,7 +28,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=41">
+<link rel="stylesheet" href="css/style.css?v=42">
 </head>
 <body>
 
@@ -145,123 +145,67 @@
   </div>
 </div>
 
-<!-- Écran de connexion (lien magique par email) — v2.0.12 : les 4 tags et
-     la liste de 3 features juste en dessous répétaient la même info
-     ("7 critères" en tag, puis reformulé juste en dessous, idem pour
-     "Amis & groupes") — retour utilisateur direct. Liste supprimée ; les
-     4 tags deviennent de vrais boutons qui déroulent leur propre
-     description (une seule fois, nulle part ailleurs) dans
-     #authShowcasePanel au survol/focus (voir toggleAuthTagPanel() dans
-     js/auth.js) — quand aucun n'est actif, ce panneau affiche à la place
-     un visuel purement décoratif (.auth-hero-visual, cadran + notes,
-     mêmes motifs que le logo et .counter) plutôt qu'un espace vide.
+<!-- Écran de connexion (lien magique par email) — v2.0.16 : refonte du
+     signature element. Retour utilisateur répété malgré 3 tours de
+     retouches (v2.0.9 SVG, v2.0.11 suppression des carrés, v2.0.12-13
+     tags interactifs) : "toujours trop générique / IA". Diagnostic — le
+     PROBLÈME n'a jamais été un détail visuel, mais la STRUCTURE elle-même :
+     eyebrow + titre + sous-titre + tags de features + fausses cartes de
+     preview + formulaire, c'est le squelette exact de n'importe quelle
+     landing page SaaS générée par IA, aussi propres que soient les icônes
+     dessus. Un vrai site "generic-proof" a un signature element qui ne
+     pourrait décrire QUE ce produit précis (voir la compétence
+     frontend-design : "the hero is a thesis... an interactive moment").
+     Ici : la grille à 7 critères EST le produit — alors elle devient
+     l'élément central, jouable avant même de se connecter (curseurs +
+     note qui se recalcule en direct, voir setupAuthDemo() dans
+     js/auth.js), plutôt que décrite en prose à côté d'icônes. Les fausses
+     cartes de catalogue (.auth-showcase, v2.0.5-v2.0.13) disparaissent :
+     avec un vrai bout du produit qu'on peut manipuler, une preview figée
+     à côté n'ajoutait plus rien — "spend your boldness in one place".
      #authEmail/#authSendBtn/#authStatus gardent exactement leurs ids,
      js/auth.js n'a rien à changer côté connexion. -->
 <div class="container" id="authContainer" style="display:none;">
   <!-- Texture de fond plein écran (.auth-pattern, en CSS pur — voir
-       style.css) : contrairement à .auth-showcase ci-dessous, un motif
-       répétable n'a pas de coordonnées à caler, il couvre TOUT écran
-       (mobile compris) sans jamais déborder ni laisser de vide, quelle
-       que soit la taille réelle de l'appareil. -->
+       style.css) : couvre TOUT écran (mobile compris) sans jamais
+       déborder ni laisser de vide, quelle que soit la taille réelle de
+       l'appareil. -->
   <div class="auth-pattern" aria-hidden="true"></div>
   <div class="auth-hero">
     <div class="auth-pitch">
       <div class="eyebrow">Bienvenue sur Kinet</div>
       <h2 class="auth-headline">Ta grille, tes films, tes séries.</h2>
-      <p class="auth-pitch-sub">Une vraie grille de notation, pas une étoile balancée à l'instinct — touche un point ci-dessous pour le détail.</p>
-      <!-- li en display:contents (voir style.css) : le bouton devient
-           directement l'item flex de .auth-tags, aucun changement de
-           layout par rapport à l'ancienne version non-interactive. -->
-      <ul class="auth-tags" id="authTags" aria-label="Ce que propose Kinet">
-        <li><button type="button" class="auth-tag" data-tag="critere">7 critères</button></li>
-        <li><button type="button" class="auth-tag" data-tag="films-series">Films &amp; séries</button></li>
-        <li><button type="button" class="auth-tag" data-tag="prochainement">Prochaines sorties</button></li>
-        <li><button type="button" class="auth-tag" data-tag="amis">Amis &amp; groupes</button></li>
-      </ul>
-      <div class="auth-showcase-panel" id="authShowcasePanel">
-        <!-- Visuel par défaut (aucun tag actif) : lueur + cadran du logo
-             agrandi + notes et posters qui flottent doucement, purement
-             décoratif — voir js/auth.js pour ce qui bascule l'affichage
-             selon le tag survolé/tapé. -->
-        <div class="auth-hero-visual" aria-hidden="true">
-          <div class="auth-hero-glow"></div>
-          <svg class="auth-hero-dial" viewBox="0 0 40 40">
-            <circle class="brand-mark-track" cx="20" cy="20" r="16"></circle>
-            <circle class="brand-mark-arc" cx="20" cy="20" r="16"></circle>
-          </svg>
-          <span class="counter rate-mid auth-hero-badge auth-hero-badge-1">4.0</span>
-          <span class="counter rate-high auth-hero-badge auth-hero-badge-2">4.5</span>
-          <span class="counter rate-low auth-hero-badge auth-hero-badge-3">2.5</span>
-          <span class="auth-hero-poster auth-hero-poster-1"></span>
-          <span class="auth-hero-poster auth-hero-poster-2"></span>
+      <p class="auth-pitch-sub">Une vraie grille de notation, pas une étoile balancée à l'instinct.</p>
+      <!-- Démo jouable (v2.0.16) : curseurs générés depuis CRITERIA
+           (js/data.js — même source que le vrai formulaire de notation,
+           voir js/app.js) par setupAuthDemo() (js/auth.js), qui recalcule
+           la note en direct avec computeNote()/noteColorClass() — les
+           MÊMES fonctions que le catalogue, pas une simulation à part.
+           aria-hidden : décoratif (rien n'est sauvegardé), mais chaque
+           <input type="range"> reste un vrai contrôle utilisable au
+           clavier/à la souris — pas de piège au tabulateur pour autant. -->
+      <div class="auth-demo">
+        <div class="auth-demo-head">
+          <div>
+            <div class="eyebrow">Essaie la grille</div>
+            <p class="auth-demo-hint">Bouge les curseurs — la note se recalcule toute seule.</p>
+          </div>
+          <div class="counter auth-demo-counter" id="authDemoCounter">2.5</div>
         </div>
-        <!-- Chaque description vient avec un petit visuel qui lui est
-             propre (barres, posters, frise, avatars) plutôt que du texte
-             seul — même vocabulaire que le reste de la page (dégradés de
-             .auth-mock-poster-*, cercles façon .user-avatar), aucune
-             icône. -->
-        <div class="auth-tag-desc" data-panel="critere">
-          <div class="auth-tag-visual auth-tag-visual-bars" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
-          <p>Scénario, mise en scène, jeu d'acteur, musique, rythme, émotion, originalité. La moyenne des 7 fait la note — ou tranche toi-même, film par film.</p>
-        </div>
-        <div class="auth-tag-desc" data-panel="films-series">
-          <div class="auth-tag-visual auth-tag-visual-split" aria-hidden="true"><span></span><span></span></div>
-          <p>Ton catalogue de films notés d'un côté, tes séries suivies épisode par épisode de l'autre : deux sections séparées, chacune à son rythme.</p>
-        </div>
-        <div class="auth-tag-desc" data-panel="prochainement">
-          <div class="auth-tag-visual auth-tag-visual-timeline" aria-hidden="true"><span></span><span></span><span class="is-next"></span></div>
-          <p>Les films de ta watchlist qui sortent bientôt et les prochains épisodes de tes séries en cours, réunis au même endroit.</p>
-        </div>
-        <div class="auth-tag-desc" data-panel="amis">
-          <div class="auth-tag-visual auth-tag-visual-avatars" aria-hidden="true"><span></span><span></span><span></span></div>
-          <p>Compare tes notes à celles de tes amis, propose un film à un groupe, vote pour la prochaine séance.</p>
-        </div>
+        <div class="auth-demo-sliders" id="authDemoSliders"></div>
       </div>
+      <p class="auth-pitch-foot">Séries suivies épisode par épisode, prochaines sorties, amis &amp; groupes — le reste t'attend après connexion.</p>
     </div>
-    <!-- Colonne de droite (v2.0.10) : vitrine + carte de connexion,
-         regroupées ici pour former la 2e colonne de la grille .auth-hero
-         (voir style.css) — avant, ces deux blocs étaient enfants directs
-         de .auth-hero et .auth-showcase forçait un retour à la ligne
-         pleine largeur, ce qui empilait tout verticalement sous le texte
-         au lieu d'utiliser la largeur de l'écran. -->
-    <div class="auth-side">
-      <!-- Aperçu produit : 3 cartes façon catalogue en éventail, chacune
-           avec un vrai .counter/.rate-* (mêmes classes que le catalogue).
-           Poster en dégradé plutôt qu'icône ou aplat uni (v2.0.11) : la
-           couleur du dégradé reprend celle du cadran juste à côté (gold/
-           green/coral, comme .counter.rate-*) — un vrai détail de
-           direction artistique plutôt qu'un pictogramme générique.
-           Empilées par le flux normal (chevauchement en marge négative)
-           plutôt qu'en coordonnées absolues : reste correct à n'importe
-           quelle largeur/hauteur d'écran. -->
-      <div class="auth-showcase" aria-hidden="true">
-        <div class="auth-mock-card auth-mock-1">
-          <div class="film-poster auth-mock-poster auth-mock-poster-gold"></div>
-          <div class="auth-mock-lines"><div class="auth-mock-line" style="width:78%;"></div><div class="auth-mock-line short"></div></div>
-          <div class="counter rate-mid">3.5</div>
-        </div>
-        <div class="auth-mock-card auth-mock-2">
-          <div class="film-poster auth-mock-poster auth-mock-poster-green"></div>
-          <div class="auth-mock-lines"><div class="auth-mock-line" style="width:62%;"></div><div class="auth-mock-line short"></div></div>
-          <div class="counter rate-high">4.5</div>
-        </div>
-        <div class="auth-mock-card auth-mock-3">
-          <div class="film-poster auth-mock-poster auth-mock-poster-coral"></div>
-          <div class="auth-mock-lines"><div class="auth-mock-line" style="width:85%;"></div><div class="auth-mock-line short"></div></div>
-          <div class="counter rate-low">2.0</div>
-        </div>
+    <div class="auth-card">
+      <h2>Connexion</h2>
+      <p class="auth-intro">Entre ton email : tu recevras un lien de connexion, sans mot de passe.</p>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="authEmail" placeholder="toi@example.com" autocomplete="email">
       </div>
-      <div class="auth-card">
-        <h2>Connexion</h2>
-        <p class="auth-intro">Entre ton email : tu recevras un lien de connexion, sans mot de passe.</p>
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="authEmail" placeholder="toi@example.com" autocomplete="email">
-        </div>
-        <button class="btn" id="authSendBtn">Envoyer le lien magique</button>
-        <div class="auth-status" id="authStatus"></div>
-        <p class="auth-card-foot">Sans mot de passe, sans pub, juste ton catalogue.</p>
-      </div>
+      <button class="btn" id="authSendBtn">Envoyer le lien magique</button>
+      <div class="auth-status" id="authStatus"></div>
+      <p class="auth-card-foot">Sans mot de passe, sans pub, juste ton catalogue.</p>
     </div>
   </div>
 </div>
@@ -943,61 +887,61 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=41"></script>
-<script src="js/tmdbConfig.js?v=41"></script>
-<script src="js/data.js?v=41"></script>
-<script src="js/happenings.js?v=41"></script>
+<script src="js/supabaseConfig.js?v=42"></script>
+<script src="js/tmdbConfig.js?v=42"></script>
+<script src="js/data.js?v=42"></script>
+<script src="js/happenings.js?v=42"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=41"></script>
+<script src="js/ui.js?v=42"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=41"></script>
-<script src="js/app.js?v=41"></script>
-<script src="js/tmdb.js?v=41"></script>
-<script src="js/stats.js?v=41"></script>
-<script src="js/achievements.js?v=41"></script>
-<script src="js/journal.js?v=41"></script>
+<script src="js/offline.js?v=42"></script>
+<script src="js/app.js?v=42"></script>
+<script src="js/tmdb.js?v=42"></script>
+<script src="js/stats.js?v=42"></script>
+<script src="js/achievements.js?v=42"></script>
+<script src="js/journal.js?v=42"></script>
 <!-- Après app.js (showToast) — appelée par js/profile.js juste après. -->
-<script src="js/pwa.js?v=41"></script>
-<script src="js/profile.js?v=41"></script>
+<script src="js/pwa.js?v=42"></script>
+<script src="js/profile.js?v=42"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=41"></script>
-<script src="js/router.js?v=41"></script>
-<script src="js/publicProfile.js?v=41"></script>
-<script src="js/top.js?v=41"></script>
-<script src="js/friends.js?v=41"></script>
+<script src="js/admin.js?v=42"></script>
+<script src="js/router.js?v=42"></script>
+<script src="js/publicProfile.js?v=42"></script>
+<script src="js/top.js?v=42"></script>
+<script src="js/friends.js?v=42"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=41"></script>
-<script src="js/watchlist.js?v=41"></script>
+<script src="js/activity.js?v=42"></script>
+<script src="js/watchlist.js?v=42"></script>
 <!-- Après watchlist.js : js/upcoming.js réutilise le tableau watchlist déjà
      chargé (voir plus bas). -->
-<script src="js/series.js?v=41"></script>
+<script src="js/series.js?v=42"></script>
 <!-- Après watchlist.js ET series.js — a besoin des deux tableaux chargés
      (loadWatchlist()/loadTrackedShows()), voir js/upcoming.js. -->
-<script src="js/upcoming.js?v=41"></script>
-<script src="js/groups.js?v=41"></script>
-<script src="js/proposals.js?v=41"></script>
+<script src="js/upcoming.js?v=42"></script>
+<script src="js/groups.js?v=42"></script>
+<script src="js/proposals.js?v=42"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=41"></script>
+<script src="js/invites.js?v=42"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=41"></script>
-<script src="js/auth.js?v=41"></script>
+<script src="js/activityState.js?v=42"></script>
+<script src="js/auth.js?v=42"></script>
 </body>
 </html>
