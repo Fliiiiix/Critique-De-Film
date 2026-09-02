@@ -35,7 +35,7 @@ function renderTopFilms(){
     return;
   }
   list.innerHTML = topFilms.map((f, i) => `
-    <div class="wl-row top-row">
+    <div class="wl-row top-row" data-tmdb-id="${f.tmdb_id}">
       <div class="top-rank">${i + 1}</div>
       ${f.poster_url
         ? `<img class="film-poster" src="${f.poster_url}" alt="" loading="lazy">`
@@ -47,6 +47,10 @@ function renderTopFilms(){
       <div class="counter ${noteColorClass(Number(f.avg_note))}">${Number(f.avg_note).toFixed(1)}</div>
     </div>
   `).join('');
+  // Fiche film (v2.1, retour utilisateur) — voir js/filmDetail.js.
+  list.querySelectorAll('[data-tmdb-id]').forEach(row => {
+    row.addEventListener('click', () => goToFilmDetail(parseInt(row.dataset.tmdbId, 10)));
+  });
 }
 
 // Page top films — appelée par le routeur (#/top).

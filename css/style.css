@@ -532,10 +532,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-size:16px;
   opacity:0.6;
 }
-/* Catalogue d'un ami : même carte que les films perso mais non cliquable
-   (lecture seule) — pas de curseur pointeur ni d'effet de survol interactif. */
+/* Catalogue d'un ami : même carte que les films perso, mais en lecture
+   seule par défaut (pas de curseur pointeur ni de survol interactif) —
+   SAUF si elle a une fiche TMDB (v2.1, retour utilisateur : ouvre la
+   fiche film, voir js/filmDetail.js et js/friends.js), auquel cas elle
+   redevient cliquable comme une carte normale. */
 .friend-film-row{cursor:default;}
 .friend-film-row:hover{border-color:var(--line); transform:none; box-shadow:none;}
+.friend-film-row[data-tmdb-id]{cursor:pointer;}
+.friend-film-row[data-tmdb-id]:hover{border-color:var(--violet-dim); transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,0.35);}
 
 .pagination{
   display:flex;
@@ -758,6 +763,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   flex:none;
 }
 .top-row:nth-child(-n+3) .top-rank{color:var(--gold); font-size:19px;}
+/* Cliquable vers la fiche film (v2.1, retour utilisateur) — voir
+   js/filmDetail.js et js/top.js. Chaque ligne du Top a forcément un
+   tmdb_id (get_global_top_films/get_friends_top_films les exclut sinon,
+   voir migrations/015), donc jamais besoin d'un garde-fou conditionnel
+   ici contrairement au catalogue d'un ami. */
+.top-row{cursor:pointer; transition:border-color .15s, transform .15s, box-shadow .15s;}
+.top-row:hover{border-color:var(--violet-dim); transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,0.35);}
 
 .rewatch-badge{
   display:inline-block;
@@ -2449,6 +2461,18 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   font-size:13px;
   color:var(--text-muted);
 }
+/* Fiche film (v2.1) — voir js/filmDetail.js et #filmDetailNotes,
+   index.html. Un .counter par ligne (note moyenne Kinet, puis "Ta note"
+   si tu l'as déjà notée) — même badge que partout ailleurs dans l'app. */
+.film-detail-note-row{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:10px;
+}
+.film-detail-note-row:last-child{margin-bottom:0;}
+.film-detail-note-row .counter{flex:none;}
+#filmDetailLikeBtn.active{border-color:var(--coral-dim); color:var(--coral);}
 /* Statut TMDB, coloré comme .rate-* mais avec un vocabulaire différent :
    ici il ne s'agit pas d'un barème de qualité, juste de savoir si la
    série reviendra ou non — vert (en cours) / gris (terminée), jamais de

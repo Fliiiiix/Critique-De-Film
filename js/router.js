@@ -34,7 +34,7 @@
 // le reste, et js/auth.js → initAuth() qui la laisse passer avant même de
 // vérifier la session Supabase.
 
-const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage', 'seriesPage', 'seriesDetailPage', 'upcomingPage', 'amisPage', 'topPage', 'publicProfilePage', 'invitePage'];
+const PAGE_IDS = ['appContainer', 'groupsListPage', 'groupDetailPage', 'proposalDetailPage', 'watchlistPage', 'seriesPage', 'seriesDetailPage', 'upcomingPage', 'amisPage', 'topPage', 'publicProfilePage', 'invitePage', 'filmDetailPage'];
 
 // null cache tout (utile pour l'écran de connexion / maintenance, qui gère
 // sa propre visibilité par ailleurs).
@@ -79,6 +79,11 @@ function goToUpcoming(){ location.hash = '#/prochainement'; }
 function goToAmis(){ location.hash = '#/amis'; }
 function goToTop(){ location.hash = '#/top'; }
 function goToPublicProfile(userId){ location.hash = `#/u/${userId}`; }
+// Fiche film (v2.1) — voir js/filmDetail.js. Un changement de hash ne
+// ferme jamais tout seul une modale déjà ouverte (profil d'ami...) : à
+// chaque site d'appel de fermer la sienne avant de naviguer ici, sinon
+// elle resterait visuellement par-dessus la nouvelle page.
+function goToFilmDetail(tmdbId){ location.hash = `#/film/${tmdbId}`; }
 
 function parseRoute(){
   const hash = location.hash.replace(/^#\/?/, '');
@@ -88,6 +93,11 @@ function parseRoute(){
   if(parts[0] === 'series' && parts.length === 2){
     const showId = parseInt(parts[1], 10);
     if(Number.isFinite(showId)) return { name: 'seriesDetail', showId };
+    return { name: 'home' };
+  }
+  if(parts[0] === 'film' && parts.length === 2){
+    const tmdbId = parseInt(parts[1], 10);
+    if(Number.isFinite(tmdbId)) return { name: 'filmDetail', tmdbId };
     return { name: 'home' };
   }
   if(parts[0] === 'prochainement' && parts.length === 1) return { name: 'upcoming' };
@@ -155,6 +165,9 @@ async function renderRoute(){
   }else if(route.name === 'seriesDetail'){
     showOnlyPage('seriesDetailPage');
     await openShowDetail(route.showId);
+  }else if(route.name === 'filmDetail'){
+    showOnlyPage('filmDetailPage');
+    await openFilmDetail(route.tmdbId);
   }else if(route.name === 'upcoming'){
     showOnlyPage('upcomingPage');
     await openUpcoming();

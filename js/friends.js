@@ -416,8 +416,12 @@ async function openFriendProfile(userId){
         .sort((a, b) => (getDisplayNote(b) || 0) - (getDisplayNote(a) || 0))
         .map(f => {
           const note = getDisplayNote(f);
+          // Cliquable seulement si le film a une fiche TMDB (v2.1, retour
+          // utilisateur : ouvre sa fiche — voir js/filmDetail.js) — un film
+          // ajouté à la main, sans recherche, n'a pas de tmdb_id pour
+          // retrouver résumé/genre/etc.
           return `
-            <div class="film-row friend-film-row">
+            <div class="film-row friend-film-row"${f.tmdbId ? ` data-tmdb-id="${f.tmdbId}"` : ''}>
               ${f.posterUrl
                 ? `<img class="film-poster" src="${f.posterUrl}" alt="" loading="lazy">`
                 : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
@@ -446,6 +450,12 @@ async function openFriendProfile(userId){
   listWrap.className = 'stats-section';
   listWrap.innerHTML = `<div class="stats-section-title">Catalogue (${friendFilms.length})</div>${listHtml}`;
   content.appendChild(listWrap);
+  listWrap.querySelectorAll('[data-tmdb-id]').forEach(row => {
+    row.addEventListener('click', () => {
+      closeFriendProfile(); // sinon la modale reste visible par-dessus la fiche film
+      goToFilmDetail(parseInt(row.dataset.tmdbId, 10));
+    });
+  });
 }
 
 // Amis est une page (pas une modal, voir plus haut) : la refermer suffit,

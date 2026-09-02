@@ -370,7 +370,13 @@ function updateLiveScore(){
   document.getElementById('liveScore').textContent = (note !== null && !isNaN(note)) ? note.toFixed(1) : '—';
 }
 
-function openModal(id){
+// prefillTmdb (v2.1) : lancer une nouvelle fiche déjà pré-remplie depuis un
+// film pas encore noté — "Noter ce film" sur la fiche film (voir
+// js/filmDetail.js), même forme que tmdbSelected (tmdb_id/poster_url/
+// overview/release_year/title/genre_ids). Ignoré si id est fourni (édition
+// d'un film déjà enregistré, qui a forcément sa propre fiche TMDB à
+// reprendre — voir plus bas).
+function openModal(id, prefillTmdb){
   if(blockIfOffline()) return; // js/offline.js — lecture seule hors ligne
   editingId = id || null;
   // Repart d'une conversion watchlist propre à chaque ouverture — seule
@@ -380,7 +386,7 @@ function openModal(id){
   const manualNote = film && film.manualNote != null ? film.manualNote : null;
 
   document.getElementById('modalTitle').textContent = film ? 'Modifier le film' : 'Nouveau film';
-  document.getElementById('titleInput').value = film ? film.title : '';
+  document.getElementById('titleInput').value = film ? film.title : (prefillTmdb ? prefillTmdb.title : '');
   document.getElementById('deleteBtn').style.display = film ? 'inline-block' : 'none';
 
   document.getElementById('manualToggle').checked = manualNote !== null;
@@ -401,7 +407,7 @@ function openModal(id){
     // Reconduit tel quel (voir handleSave()) : sans lui, ré-enregistrer un
     // film déjà noté sans retoucher sa fiche TMDB effacerait son genre.
     genre_ids: film.genreIds || []
-  } : null;
+  } : (prefillTmdb || null);
   document.getElementById('tmdbResults').innerHTML = '';
   updateTmdbSelectedUI();
 
@@ -512,6 +518,14 @@ async function handleSave(){
   // toast déjà là — peut ne rien trouver (film sur une autre page de la
   // pagination), pulseElement() ignore alors simplement l'appel.
   pulseElement(document.querySelector(`.film-row[data-id="${pulseId}"] .counter`));
+  // Fiche film (v2.1) : si on vient de noter CE film-là depuis sa propre
+  // fiche ("Noter ce film"), ses boutons/sa note affichée restent sinon
+  // périmés en dessous jusqu'à la revisiter — voir js/filmDetail.js.
+  if(typeof currentFilmTmdbId !== 'undefined' && currentFilmTmdbId === tmdbFields.tmdb_id
+     && document.getElementById('filmDetailPage').style.display !== 'none'){
+    updateFilmDetailActionButtons();
+    renderFilmDetailNotes();
+  }
   showToast('Film enregistré');
 }
 

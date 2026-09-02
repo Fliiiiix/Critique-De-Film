@@ -55,6 +55,20 @@ async function searchTmdbTv(query){
   return searchTmdbGeneric(query, 'tv');
 }
 
+// Détail d'un film — résumé complet + genres, pour la fiche film (v2.1,
+// js/filmDetail.js). Un film cliqué chez un ami/dans le Top n'est pas
+// forcément dans notre propre catalogue/watchlist : toujours rappelé en
+// direct plutôt que de dépendre d'une donnée déjà en mémoire.
+// https://developer.themoviedb.org/reference/movie-details
+async function fetchMovieDetails(tmdbId){
+  const url = `https://api.themoviedb.org/3/movie/${tmdbId}?language=fr-FR`;
+  const res = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${TMDB_API_KEY}`, 'Accept': 'application/json' }
+  });
+  if(!res.ok) throw new Error(`Erreur TMDB (${res.status})`);
+  return res.json();
+}
+
 // Détail d'une série — statut TMDB, saisons, prochain/dernier épisode.
 // Jamais stocké tel quel côté Supabase au-delà de l'instantané pris à
 // l'ajout (voir js/series.js) : toujours rappelé en direct pour rester à
