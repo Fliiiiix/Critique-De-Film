@@ -83,12 +83,31 @@ async function hasUnread(category){
   return (data || []).length > 0;
 }
 
+// Une demande d'ami reçue n'était encore signalée nulle part (retour
+// utilisateur) : activity_events (scope 'friend') ne loggue que ce que fait
+// un ami DÉJÀ accepté (noter un film...), jamais la demande elle-même — voir
+// migrations/021. Pas besoin d'un "vu"/"pas vu" dédié comme last_seen_amis :
+// une demande en attente est par nature non traitée tant qu'elle n'est pas
+// acceptée/refusée (elle disparaît alors de la table), donc juste compter
+// les lignes 'pending' où on est destinataire suffit.
+async function hasPendingIncomingFriendRequest(){
+  const { count, error } = await supabaseClient
+    .from('friendships')
+    .select('id', { count: 'exact', head: true })
+    .eq('addressee_id', currentUser.id)
+    .eq('status', 'pending');
+  if(error){ console.error(error); return false; }
+  return (count || 0) > 0;
+}
+
 // Un seul point, sur 👥 : la page Amis contient l'accès Groupes (voir
 // index.html), pas d'icône séparée dans l'entête pour porter un 2e badge.
 async function refreshActivityBadge(){
   if(!currentUser) return;
-  const [amis, groupes] = await Promise.all([hasUnread('amis'), hasUnread('groupes')]);
-  document.getElementById('friendsBtn').classList.toggle('has-unread', amis || groupes);
+  const [amis, groupes, pendingRequest] = await Promise.all([
+    hasUnread('amis'), hasUnread('groupes'), hasPendingIncomingFriendRequest()
+  ]);
+  document.getElementById('friendsBtn').classList.toggle('has-unread', amis || groupes || pendingRequest);
 }
 
 // Plafonné aux 14 derniers jours OU 20 événements (le plus petit des deux)

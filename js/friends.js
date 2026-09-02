@@ -90,6 +90,23 @@ function friendRowHtml(userId, actionsHtml, subLabel){
   `;
 }
 
+// Clic sur une ligne (recherche, suggestions, demandes reçues/envoyées,
+// amis) → aperçu du profil public (js/publicProfile.js), sans attendre
+// d'être ami (retour utilisateur : impossible jusqu'ici de voir qui on
+// ajoute avant d'envoyer/accepter une demande). Reste silencieux si le
+// profil n'est pas public — renderPublicProfilePage() l'affiche déjà
+// clairement ("n'existe pas ou n'est pas public"). Les boutons d'action
+// (Ajouter/Accepter/Voir...) gardent leur propre clic, jamais volé par la
+// ligne — voir le garde-fou .wl-actions ci-dessous.
+function wireFriendRowClicks(container){
+  container.querySelectorAll('.wl-row[data-user-id]').forEach(row => {
+    row.addEventListener('click', (e) => {
+      if(e.target.closest('.wl-actions')) return;
+      goToPublicProfile(row.dataset.userId);
+    });
+  });
+}
+
 function renderFriendsPage(){
   const incoming = friendships.filter(f => f.status === 'pending' && f.addresseeId === currentUser.id);
   const outgoing = friendships.filter(f => f.status === 'pending' && f.requesterId === currentUser.id);
@@ -123,6 +140,7 @@ function renderFriendsPage(){
     el.querySelectorAll('button[data-action]').forEach(btn => {
       btn.addEventListener('click', () => handleFriendAction(btn.dataset.action, parseInt(btn.dataset.id, 10)));
     });
+    wireFriendRowClicks(el);
   });
 }
 
@@ -133,6 +151,11 @@ async function handleFriendAction(action, friendshipId){
   else if(action === 'decline') await respondToRequest(friendshipId, false);
   else if(action === 'cancel' || action === 'remove') await removeFriendship(friendshipId);
   else if(action === 'view') await openFriendProfile(otherUserId(f));
+  // Accepter/refuser change le nombre de demandes en attente (voir
+  // hasPendingIncomingFriendRequest(), js/activityState.js) — le badge 👥
+  // doit s'éteindre immédiatement si c'était la dernière, pas seulement au
+  // prochain login/reload.
+  if(action === 'accept' || action === 'decline') refreshActivityBadge();
 }
 
 async function respondToRequest(id, accept){
@@ -194,6 +217,7 @@ function renderFriendSearchResults(){
   wrap.querySelectorAll('button[data-add]').forEach(btn => {
     btn.addEventListener('click', () => sendFriendRequest(btn.dataset.add));
   });
+  wireFriendRowClicks(wrap);
 }
 
 async function handleFriendSearch(query){
@@ -311,6 +335,7 @@ function renderFriendSuggestions(suggestions){
       openFriendsSideSections();
     });
   });
+  wireFriendRowClicks(wrap);
 }
 
 async function loadFriendRecommendations(){
@@ -407,7 +432,7 @@ async function openFriendProfile(userId){
 
   const friendFilms = data.map(rowToFilm);
   const statsEl = document.createElement('div');
-  renderStatsInto(statsEl, friendFilms);
+  renderStatsInto(statsEl, friendFilms, 'friendProfileOverlay');
 
   const listHtml = friendFilms.length === 0
     ? `<div class="empty-state">Aucun film noté pour l'instant.</div>`

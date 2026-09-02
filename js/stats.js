@@ -48,26 +48,98 @@ function monthLabel(key){
 
 // items: [{label, count}] — une seule barre porte sa valeur en direct (le max),
 // les autres se lisent au survol (title natif) pour éviter le bruit visuel.
-function renderBarChart(items){
+// opts.clickable (v2.2, retour utilisateur : voir la liste des films
+// derrière une barre, ex. "notés 4") — seules les barres non vides le
+// deviennent, cliquer une barre vide n'aurait rien à montrer.
+function renderBarChart(items, opts = {}){
   const max = Math.max(1, ...items.map(i => i.count));
+  const clickable = !!opts.clickable;
   return `
     <div class="bar-chart">
-      ${items.map(i => `
-        <div class="bar-col" title="${escapeHtml(i.label)} : ${i.count}">
+      ${items.map((i, idx) => {
+        const active = clickable && i.count > 0;
+        return `
+        <div class="bar-col${active ? ' bar-col-clickable' : ''}" data-index="${idx}" title="${escapeHtml(i.label)} : ${i.count}"${active ? ' role="button" tabindex="0"' : ''}>
           <div class="bar-track">
             <div class="bar-fill" style="height:${(i.count / max * 100).toFixed(1)}%">${i.count > 0 && i.count === max ? `<span class="bar-value">${i.count}</span>` : ''}</div>
           </div>
           <div class="bar-label">${escapeHtml(i.label)}</div>
         </div>
-      `).join('')}
+      `;
+      }).join('')}
     </div>
   `;
+}
+
+// Ligne d'un film dans le détail derrière une barre — même gabarit que la
+// liste du profil d'ami (openFriendProfile(), js/friends.js), dupliqué ici
+// plutôt que factorisé : les deux endroits divergent légèrement (celui-ci
+// n'a jamais de sous-titre année manquant à gérer différemment) et ce n'est
+// que quelques lignes, cohérent avec la duplication déjà assumée ailleurs
+// dans ce fichier (recherche TMDB, voir js/tmdb.js).
+function statsFilmRowHtml(f){
+  const note = getDisplayNote(f);
+  return `
+    <div class="film-row friend-film-row"${f.tmdbId ? ` data-tmdb-id="${f.tmdbId}"` : ''}>
+      ${f.posterUrl
+        ? `<img class="film-poster" src="${f.posterUrl}" alt="" loading="lazy">`
+        : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
+      <div class="film-main">
+        <div class="film-title">${escapeHtml(f.title)}</div>
+        <div class="film-sub">${f.releaseYear || ''}</div>
+      </div>
+      <div class="counter ${noteColorClass(note)}">${note !== null ? note.toFixed(1) : '—'}</div>
+    </div>
+  `;
+}
+
+// closeOverlayId : quelle modale refermer avant d'ouvrir la fiche film (la
+// page fiche film se rend derrière une modale encore ouverte, invisible tant
+// qu'on ne l'a pas fermée à la main sinon) — "statsOverlay" pour ses propres
+// stats, "friendProfileOverlay" quand ces stats sont imbriquées dans le
+// profil d'un ami (voir openFriendProfile()).
+function wireStatsDistribution(content, list, distribution, closeOverlayId){
+  const section = content.querySelector('.stats-section-dist');
+  if(!section) return;
+  const drilldown = section.querySelector('.stats-drilldown');
+  let openValue = null;
+
+  section.querySelectorAll('.bar-col-clickable').forEach(col => {
+    const activate = () => {
+      const value = distribution[parseInt(col.dataset.index, 10)].value;
+      section.querySelectorAll('.bar-col').forEach(c => c.classList.remove('bar-col-active'));
+      if(openValue === value){
+        openValue = null;
+        drilldown.hidden = true;
+        drilldown.innerHTML = '';
+        return;
+      }
+      openValue = value;
+      col.classList.add('bar-col-active');
+      const matches = list.filter(f => getDisplayNote(f) === value);
+      drilldown.innerHTML = `
+        <div class="stats-drilldown-title">Notés ${value.toFixed(1)} (${matches.length})</div>
+        ${matches.map(statsFilmRowHtml).join('')}
+      `;
+      drilldown.hidden = false;
+      drilldown.querySelectorAll('.friend-film-row[data-tmdb-id]').forEach(row => {
+        row.addEventListener('click', () => {
+          if(closeOverlayId) closeOverlay(closeOverlayId);
+          goToFilmDetail(parseInt(row.dataset.tmdbId, 10));
+        });
+      });
+    };
+    col.addEventListener('click', activate);
+    col.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); activate(); }
+    });
+  });
 }
 
 // Factorisée pour être réutilisée par le profil (lecture seule) d'un ami —
 // voir openFriendProfile() dans js/friends.js — avec un autre conteneur et
 // la liste de films de cet ami plutôt que la sienne.
-function renderStatsInto(content, list = films){
+function renderStatsInto(content, list = films, closeOverlayId = null){
   const s = computeStats(list);
 
   if(s.total === 0){
@@ -87,9 +159,10 @@ function renderStatsInto(content, list = films){
       <div class="stat-tile"><div class="stat-value">${s.manualCount}</div><div class="stat-label">Note manuelle</div></div>
     </div>
 
-    <div class="stats-section">
+    <div class="stats-section stats-section-dist">
       <div class="stats-section-title">Distribution des notes</div>
-      ${renderBarChart(distItems)}
+      ${renderBarChart(distItems, { clickable: true })}
+      <div class="stats-drilldown" hidden></div>
     </div>
 
     ${activityItems.length > 1 ? `
@@ -123,10 +196,12 @@ function renderStatsInto(content, list = films){
       </div>` : ''}
     </div>
   `;
+
+  wireStatsDistribution(content, list, s.distribution, closeOverlayId);
 }
 
 function renderStats(){
-  renderStatsInto(document.getElementById('statsContent'));
+  renderStatsInto(document.getElementById('statsContent'), films, 'statsOverlay');
 }
 
 function openStats(){

@@ -541,6 +541,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .friend-film-row:hover{border-color:var(--line); transform:none; box-shadow:none;}
 .friend-film-row[data-tmdb-id]{cursor:pointer;}
 .friend-film-row[data-tmdb-id]:hover{border-color:var(--violet-dim); transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,0.35);}
+/* Ligne d'une personne (recherche/suggestions/demandes/amis) → aperçu du
+   profil public au clic (v2.2, retour utilisateur), même langage visuel que
+   .friend-film-row ci-dessus — voir wireFriendRowClicks(), js/friends.js. */
+.wl-row[data-user-id]{cursor:pointer; transition:border-color .15s, transform .15s, box-shadow .15s;}
+.wl-row[data-user-id]:hover{border-color:var(--violet-dim); transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,0.35);}
 
 .pagination{
   display:flex;
@@ -1245,14 +1250,20 @@ input[type="number"].crit-val{
   width:52px;
   text-align:right;
   background:none;
-  border:1px solid transparent;
+  /* v2.2, retour utilisateur ("les curseurs c'est galère") persistant même
+     après le thumb agrandi/le champ éditable ci-dessus : la bordure ne
+     devenait visible qu'au survol (border transparent par défaut), donc
+     invisible au tactile qui n'a pas de survol — rien n'indiquait qu'on
+     pouvait taper une valeur précise plutôt que de viser le curseur. Bordure
+     toujours visible (discrète), plus marquée au survol/focus. */
+  border:1px solid var(--line);
   border-radius:6px;
   padding:3px 6px;
   -moz-appearance:textfield;
 }
 input[type="number"].crit-val::-webkit-inner-spin-button,
 input[type="number"].crit-val::-webkit-outer-spin-button{-webkit-appearance:none; margin:0;}
-input[type="number"].crit-val:hover{border-color:var(--line);}
+input[type="number"].crit-val:hover{border-color:var(--violet-dim);}
 input[type="number"].crit-val:focus{border-color:var(--violet-dim); background:var(--surface); outline:none;}
 .crit-def{
   font-size:12.5px;
@@ -1612,6 +1623,28 @@ input[type="range"]::-moz-range-thumb{
   color:var(--text-muted);
   margin-top:6px;
   white-space:nowrap;
+}
+/* Barre cliquable (v2.2, retour utilisateur : voir les films derrière une
+   barre, ex. "notés 4") — seules les barres non vides le sont (voir
+   renderBarChart(), js/stats.js), le curseur "default" hérité de .bar-col
+   resterait sinon trompeur sur celles qui n'ont rien à montrer. */
+.bar-col-clickable{cursor:pointer;}
+.bar-col-clickable .bar-label{color:var(--text);}
+.bar-col-clickable:focus-visible{outline:2px solid var(--violet-dim); outline-offset:2px; border-radius:3px;}
+.bar-col-active .bar-fill{background:var(--violet);}
+.bar-col-active .bar-label{color:var(--violet-dim); font-weight:700;}
+.stats-drilldown{
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+}
+.stats-drilldown-title{
+  font-family:'Space Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.04em;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  margin-bottom:10px;
 }
 .stats-extremes{
   display:grid;
