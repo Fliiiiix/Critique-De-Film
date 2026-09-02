@@ -62,6 +62,7 @@ async function showApp(){
   refreshActivityBadge();
   maybeShowDigest();
   initChangelog();
+  loadSuggestions(); // js/suggestions.js — plusieurs appels TMDB, jamais sur le chemin critique
 }
 
 function handleSession(session){
