@@ -81,6 +81,7 @@ function setAdminTab(tab){
   });
   if(tab === 'achievements') renderAdminAchievementsTab();
   else if(tab === 'happenings') renderAdminHappeningsTab();
+  else if(tab === 'changelog') renderAdminChangelogTab();
   else if(tab === 'feedback') renderAdminFeedbackTab();
   else renderAdminStatsTab();
 }
@@ -355,6 +356,168 @@ function renderAdminHappeningsTab(){
     render();
     renderAdminHappeningsTab();
     showToast('Happening créé');
+  });
+}
+
+// --- Onglet Nouveautés (v2.1+) ---
+// Contrairement à Succès/Happenings (écarts stockés dans admin_config,
+// visibles du seul propriétaire), une Nouveauté doit être lisible par tous
+// une fois publiée : vraie table + policies RLS (migrations/028), comme
+// Avis juste en dessous, pas un blob JSON réutilisé. Brouillon
+// (published = false) tant que ce n'est pas confirmé publiable — voir
+// js/changelog.js côté lecture publique.
+let adminChangelogEntries = [];
+let adminChangelogLoaded = false;
+let editingChangelogId = null;
+
+function rowToAdminChangelogEntry(row){
+  return {
+    id: row.id,
+    version: row.version,
+    title: row.title,
+    body: row.body,
+    published: row.published,
+    publishedAt: row.published_at
+  };
+}
+
+async function loadAdminChangelogEntries(){
+  const { data, error } = await supabaseClient
+    .from('changelog_entries')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if(error){
+    console.error(error);
+    adminChangelogEntries = [];
+  }else{
+    adminChangelogEntries = data.map(rowToAdminChangelogEntry);
+  }
+  adminChangelogLoaded = true;
+}
+
+function renderAdminChangelogTab(){
+  const wrap = document.getElementById('adminContent');
+  if(!adminChangelogLoaded){
+    wrap.innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
+    loadAdminChangelogEntries().then(renderAdminChangelogTab);
+    return;
+  }
+
+  const editing = editingChangelogId ? adminChangelogEntries.find(e => e.id === editingChangelogId) : null;
+
+  const rows = adminChangelogEntries.map(e => `
+    <div class="wl-row admin-row${e.published ? '' : ' admin-row-disabled'}">
+      <div class="wl-main">
+        <div class="wl-title">v${escapeHtml(e.version)} — ${escapeHtml(e.title)} ${e.published ? `<span class="status-badge ongoing">Publiée</span>` : `<span class="status-badge ended">Brouillon</span>`}</div>
+        <div class="wl-note">${escapeHtml(e.body)}</div>
+      </div>
+      <div class="wl-actions">
+        <button class="btn secondary admin-changelog-toggle" data-id="${e.id}" type="button">${e.published ? 'Dépublier' : 'Publier'}</button>
+        <button class="btn secondary admin-changelog-edit" data-id="${e.id}" type="button">Modifier</button>
+        <button class="btn secondary admin-changelog-delete" data-id="${e.id}" type="button" title="Supprimer">🗑</button>
+      </div>
+    </div>
+  `).join('');
+
+  wrap.innerHTML = `
+    <div class="stats-section">
+      <div class="stats-section-title">Entrées (${adminChangelogEntries.length})</div>
+      ${rows || `<div class="tmdb-empty">Aucune pour l'instant.</div>`}
+    </div>
+    <div class="stats-section">
+      <div class="stats-section-title">${editing ? "Modifier l'entrée" : 'Nouvelle entrée (brouillon)'}</div>
+      <form id="adminChangelogForm">
+        <div class="field">
+          <label>Version</label>
+          <input type="text" id="adminChangelogVersion" placeholder="Ex. 2.1" value="${editing ? escapeHtml(editing.version) : ''}" required>
+        </div>
+        <div class="field">
+          <label>Titre</label>
+          <input type="text" id="adminChangelogTitle" placeholder="Ex. Suivi des séries" value="${editing ? escapeHtml(editing.title) : ''}" required>
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea id="adminChangelogBody" placeholder="Ce qui a changé…" rows="4" required>${editing ? escapeHtml(editing.body) : ''}</textarea>
+        </div>
+        <button class="btn" type="submit">${editing ? 'Enregistrer' : 'Créer en brouillon'}</button>
+        ${editing ? `<button class="btn secondary" id="adminChangelogCancelEdit" type="button">Annuler</button>` : ''}
+      </form>
+    </div>
+  `;
+
+  wrap.querySelectorAll('.admin-changelog-toggle').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = Number(e.currentTarget.dataset.id);
+      const entry = adminChangelogEntries.find(x => x.id === id);
+      if(!entry) return;
+      const nowPublished = !entry.published;
+      const payload = nowPublished
+        ? { published: true, published_at: new Date().toISOString() }
+        : { published: false };
+      const { error } = await supabaseClient.from('changelog_entries').update(payload).eq('id', id);
+      if(error){ showToast('Erreur, réessaie'); console.error(error); return; }
+      entry.published = nowPublished;
+      if(nowPublished) entry.publishedAt = payload.published_at;
+      renderAdminChangelogTab();
+      // Rafraîchit tout de suite le cache public (js/changelog.js) : sans
+      // ça l'admin ne verrait sa propre publication qu'à la prochaine
+      // connexion, comme n'importe quel autre utilisateur.
+      loadChangelogEntries().then(updateVersionTag);
+      showToast(nowPublished ? 'Nouveauté publiée' : 'Nouveauté dépubliée');
+    });
+  });
+
+  wrap.querySelectorAll('.admin-changelog-edit').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      editingChangelogId = Number(e.currentTarget.dataset.id);
+      renderAdminChangelogTab();
+    });
+  });
+
+  wrap.querySelectorAll('.admin-changelog-delete').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      if(!confirm('Supprimer cette entrée ?')) return;
+      const id = Number(e.currentTarget.dataset.id);
+      const { error } = await supabaseClient.from('changelog_entries').delete().eq('id', id);
+      if(error){ showToast('Erreur, réessaie'); console.error(error); return; }
+      adminChangelogEntries = adminChangelogEntries.filter(x => x.id !== id);
+      if(editingChangelogId === id) editingChangelogId = null;
+      renderAdminChangelogTab();
+      showToast('Nouveauté supprimée');
+    });
+  });
+
+  const cancelBtn = wrap.querySelector('#adminChangelogCancelEdit');
+  if(cancelBtn) cancelBtn.addEventListener('click', () => { editingChangelogId = null; renderAdminChangelogTab(); });
+
+  wrap.querySelector('#adminChangelogForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const version = document.getElementById('adminChangelogVersion').value.trim();
+    const title = document.getElementById('adminChangelogTitle').value.trim();
+    const body = document.getElementById('adminChangelogBody').value.trim();
+    if(!version || !title || !body){ showToast('Complète tous les champs'); return; }
+
+    if(editingChangelogId){
+      const { error } = await supabaseClient
+        .from('changelog_entries')
+        .update({ version, title, body })
+        .eq('id', editingChangelogId);
+      if(error){ showToast('Erreur, réessaie'); console.error(error); return; }
+      const entry = adminChangelogEntries.find(x => x.id === editingChangelogId);
+      if(entry){ entry.version = version; entry.title = title; entry.body = body; }
+      editingChangelogId = null;
+      showToast('Nouveauté modifiée');
+    }else{
+      const { data, error } = await supabaseClient
+        .from('changelog_entries')
+        .insert({ version, title, body })
+        .select()
+        .single();
+      if(error){ showToast('Erreur de sauvegarde, réessaie'); console.error(error); return; }
+      adminChangelogEntries.unshift(rowToAdminChangelogEntry(data));
+      showToast('Brouillon créé');
+    }
+    renderAdminChangelogTab();
   });
 }
 

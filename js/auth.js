@@ -54,11 +54,13 @@ async function showApp(){
   // avant la connexion — on le consomme ici, une fois l'app pleinement
   // chargée, pour rejoindre le groupe et y rediriger.
   await consumePendingInviteIfAny();
-  // Badge 👥 + digest de retour (js/activityState.js) : jamais attendus,
-  // pour ne pas allonger le chemin critique déjà chargé de 4-5 allers-
-  // retours — ils se posent tout seuls une fois prêts.
+  // Badge 👥 + digest de retour (js/activityState.js) + Nouveautés
+  // (js/changelog.js) : jamais attendus, pour ne pas allonger le chemin
+  // critique déjà chargé de 4-5 allers-retours — ils se posent tout seuls
+  // une fois prêts.
   refreshActivityBadge();
   maybeShowDigest();
+  initChangelog();
 }
 
 function handleSession(session){

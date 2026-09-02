@@ -1928,6 +1928,54 @@ input[type="range"]::-moz-range-thumb{
   text-transform:capitalize;
 }
 
+/* Nouveautés (v2.1+) — voir js/changelog.js. Même gabarit de modale que le
+   Journal juste au-dessus (.journal-modal), une entrée par mise à jour
+   plutôt qu'un tableau : le contenu (texte libre, longueur variable) s'y
+   prête mieux qu'une rangée .wl-row pensée pour poster/titre/actions. */
+.changelog-entry{
+  border-bottom:1px solid var(--line-soft);
+  padding:16px 0;
+}
+.changelog-entry:first-child{padding-top:0;}
+.changelog-entry:last-child{border-bottom:none; padding-bottom:0;}
+.changelog-entry-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:8px;
+}
+.changelog-version{
+  display:inline-block;
+  font-family:'Space Mono', monospace;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:0.04em;
+  color:var(--violet);
+  background:var(--violet-wash);
+  border:1px solid var(--violet-dim);
+  border-radius:999px;
+  padding:3px 10px;
+}
+.changelog-date{
+  font-family:'Space Mono', monospace;
+  font-size:11px;
+  color:var(--text-muted);
+  text-transform:capitalize;
+}
+.changelog-title{
+  font-family:'Bricolage Grotesque', sans-serif;
+  font-weight:700;
+  font-size:16px;
+  margin-bottom:4px;
+}
+.changelog-body{
+  color:var(--text-muted);
+  font-size:14px;
+  line-height:1.55;
+  white-space:pre-line;
+}
+
 /* Discrète par construction (v2.1, demande explicite) : même traitement
    visuel que .version-tag (Space Mono, petite taille, opacité réduite) —
    une signature, pas un élément qui réclame l'attention. */

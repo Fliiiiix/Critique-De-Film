@@ -27,7 +27,10 @@ async function loadActivityState(){
     activityState = data;
   }else{
     const now = new Date().toISOString();
-    const fresh = { user_id: currentUser.id, last_seen_amis: now, last_seen_groupes: now, last_digest_at: now };
+    // last_seen_changelog (migrations/028) : même logique que les 3 autres
+    // colonnes — un compte tout neuf part de "tout ce qui existe déjà est
+    // vu", pas de mur de Nouveautés passées à l'ouverture.
+    const fresh = { user_id: currentUser.id, last_seen_amis: now, last_seen_groupes: now, last_digest_at: now, last_seen_changelog: now };
     const { data: inserted, error: insErr } = await supabaseClient
       .from('user_activity_state')
       .upsert(fresh, { onConflict: 'user_id' })
