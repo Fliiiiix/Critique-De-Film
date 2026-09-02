@@ -203,7 +203,11 @@ function render(){
     const row = document.createElement('div');
     row.className = 'film-row';
     row.dataset.id = f.id; // cible du pulse de sauvegarde (voir handleSave()) et du pulse favori ci-dessous
-    const sub = (isManual ? 'Note manuelle · ancien référentiel' : '7 critères notés') + (f.releaseYear ? ` · ${f.releaseYear}` : '');
+    // Genres visibles direct sur la fiche (v2.1, retour utilisateur, avant
+    // même le filtre #genreFilter) — 2 maximum, assez pour situer le film
+    // sans allonger la ligne indéfiniment (certains en ont 4-5 sur TMDB).
+    const genres = (f.genreIds || []).map(id => GENRE_MAP[id]).filter(Boolean).slice(0, 2).join(', ');
+    const sub = (isManual ? 'Note manuelle · ancien référentiel' : '7 critères notés') + (f.releaseYear ? ` · ${f.releaseYear}` : '') + (genres ? ` · ${genres}` : '');
     row.innerHTML = `
       <div class="holes"><span></span><span></span><span></span></div>
       ${f.posterUrl
