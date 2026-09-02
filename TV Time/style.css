@@ -1,0 +1,66 @@
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  background-color: light-dark(#ffffff, #000000);
+}
+
+iframe {
+  pointer-events: none;
+}
+
+.flutter-loader {
+  display: none;
+}
+@keyframes ldio-ssu0t9hiiao {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+.ldio-ssu0t9hiiao div {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border: 4px solid #ffd400;
+  border-top-color: transparent;
+  border-radius: 50%;
+}
+.ldio-ssu0t9hiiao div {
+  animation: ldio-ssu0t9hiiao 1s linear infinite;
+  top: 50px;
+  left: 50px;
+}
+.loadingio-spinner-rolling-655pcm80dhq {
+  width: 100px;
+  height: 100px;
+  display: inline-block;
+  overflow: hidden;
+  background: none;
+}
+.ldio-ssu0t9hiiao {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform: translateZ(0) scale(1);
+  backface-visibility: hidden;
+  transform-origin: 0 0; /* see note above */
+}
+.ldio-ssu0t9hiiao div {
+  box-sizing: content-box;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}

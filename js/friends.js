@@ -480,16 +480,38 @@ async function openFriendProfile(userId){
     content.appendChild(compatEl);
   }
   content.appendChild(statsEl);
-  const listWrap = document.createElement('div');
-  listWrap.className = 'stats-section';
-  listWrap.innerHTML = `<div class="stats-section-title">Catalogue (${friendFilms.length})</div>${listHtml}`;
-  content.appendChild(listWrap);
-  listWrap.querySelectorAll('[data-tmdb-id]').forEach(row => {
-    row.addEventListener('click', () => {
-      closeFriendProfile(); // sinon la modale reste visible par-dessus la fiche film
-      goToFilmDetail(parseInt(row.dataset.tmdbId, 10));
+
+  // Catalogue complet replié par défaut (v2.5, retour utilisateur : les
+  // stats suffisent d'un coup d'œil — leur barre de distribution cliquable
+  // (voir wireStatsDistribution(), js/stats.js) montre déjà les films
+  // derrière une note précise ; défiler la liste ENTIÈRE en plus était de
+  // trop). Bouton dédié pour qui veut vraiment tout voir.
+  if(friendFilms.length > 0){
+    const listWrap = document.createElement('div');
+    listWrap.className = 'stats-section';
+    listWrap.hidden = true;
+    listWrap.innerHTML = `<div class="stats-section-title">Catalogue (${friendFilms.length})</div>${listHtml}`;
+    listWrap.querySelectorAll('[data-tmdb-id]').forEach(row => {
+      row.addEventListener('click', () => {
+        closeFriendProfile(); // sinon la modale reste visible par-dessus la fiche film
+        goToFilmDetail(parseInt(row.dataset.tmdbId, 10));
+      });
     });
-  });
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'btn secondary friend-films-toggle';
+    toggleBtn.textContent = `Voir tous les films notés (${friendFilms.length})`;
+    toggleBtn.addEventListener('click', () => {
+      listWrap.hidden = !listWrap.hidden;
+      toggleBtn.textContent = listWrap.hidden
+        ? `Voir tous les films notés (${friendFilms.length})`
+        : 'Masquer la liste';
+    });
+
+    content.appendChild(toggleBtn);
+    content.appendChild(listWrap);
+  }
 }
 
 // Amis est une page (pas une modal, voir plus haut) : la refermer suffit,

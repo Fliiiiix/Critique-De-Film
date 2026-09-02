@@ -1542,6 +1542,10 @@ input[type="range"]::-moz-range-thumb{
   margin-top:4px;
 }
 .stats-section{margin-bottom:28px;}
+/* Bouton "Voir tous les films notés" (v2.5) — révèle le catalogue complet
+   d'un ami, replié par défaut sous ses stats. Voir openFriendProfile(),
+   js/friends.js. */
+.friend-films-toggle{width:100%; margin-bottom:16px;}
 /* Bandeau "Séance élue" (js/proposals.js, migrations/020) — même famille
    que .ach-summary (accent or) mais en bandeau plein-largeur plutôt qu'un
    bloc centré, pour rester visible sans dominer la page. */
