@@ -13,4 +13,14 @@
 const SUPABASE_URL = 'https://ethhacnngepckeakhsch.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0aGhhY25uZ2VwY2tlYWtoc2NoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNjQwODQsImV4cCI6MjEwMjg0MDA4NH0.PhrFiRZ8TSRJoIBsk4iKw7E5Ra227ptijBpBTBxkPMU';
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// flowType 'implicit' (v2.1, retour utilisateur) : le flux PKCE, par défaut
+// depuis supabase-js v2, stocke un "code verifier" dans le localStorage de
+// l'appareil qui DEMANDE le lien magique — un lien demandé sur PC échoue
+// silencieusement s'il est ouvert depuis le téléphone (et inversement),
+// sans message d'erreur clair. Pas de flux OAuth/redirection tiers à
+// protéger ici (email uniquement) : l'implicite (jetons directement dans
+// l'URL du lien, comme avant l'introduction de PKCE) n'a pas ce défaut et
+// reste le choix standard pour un simple lien de connexion par email.
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { flowType: 'implicit' }
+});

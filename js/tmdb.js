@@ -5,7 +5,7 @@
 // séparés. Choisir un résultat renseigne aussi le titre. Résultat choisi
 // stocké dans tmdbSelected, lu par handleSave() (js/app.js) à l'enregistrement.
 
-let tmdbSelected = null; // { tmdb_id, poster_url, overview, release_year, title, original_title }
+let tmdbSelected = null; // { tmdb_id, poster_url, overview, release_year, title, original_title, genre_ids }
 let tmdbSearchTimer = null;
 
 // Point d'entrée générique films/séries — /search/movie et /search/tv ne
@@ -37,7 +37,11 @@ async function searchTmdbGeneric(query, mediaType){
       release_date: dateStr || null,
       release_year: dateStr ? parseInt(dateStr.slice(0, 4), 10) : null,
       poster_path: r.poster_path || null,
-      overview: r.overview || null
+      overview: r.overview || null,
+      // Ids bruts TMDB (voir GENRE_MAP, js/data.js) — /search/movie les
+      // renvoie déjà, aucun appel supplémentaire nécessaire. Non pertinent
+      // côté séries (taxonomie TMDB différente, jamais utilisé pour elles).
+      genre_ids: r.genre_ids || []
     };
   });
 }
@@ -115,7 +119,8 @@ function selectTmdbResult(r){
     // Titre en langue d'origine (déjà renvoyé par /search/movie, pas d'appel
     // TMDB supplémentaire) — permet à la recherche du catalogue de matcher
     // le titre FR ou VO indifféremment, voir getSearchTerms() dans app.js.
-    original_title: r.original_title && r.original_title !== r.title ? r.original_title : null
+    original_title: r.original_title && r.original_title !== r.title ? r.original_title : null,
+    genre_ids: r.genre_ids || []
   };
   document.getElementById('titleInput').value = r.title;
   document.getElementById('tmdbResults').innerHTML = '';

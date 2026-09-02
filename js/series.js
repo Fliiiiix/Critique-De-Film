@@ -113,6 +113,11 @@ function renderTrackedShows(){
           <div class="wl-title">${escapeHtml(show.title)}${show.firstAirYear ? ` <span class="wl-year">(${show.firstAirYear})</span>` : ''}</div>
           <div class="wl-note">${progress}${show.status ? ` · <span class="status-badge ${isShowEnded(show.status) ? 'ended' : 'ongoing'}">${escapeHtml(showStatusLabel(show.status))}</span>` : ''}</div>
         </div>
+        <!-- Note visible direct sur la liste (v2.1, retour utilisateur :
+             fallait ouvrir la série pour la voir) — même badge .counter que
+             le catalogue films, même repli '—' tant qu'aucune note
+             manuelle n'a été donnée (voir handleSaveSeriesNote()). -->
+        <div class="counter ${noteColorClass(show.manualNote)}">${show.manualNote !== null ? show.manualNote.toFixed(1) : '—'}</div>
         <div class="wl-actions">
           <button class="btn secondary" data-action="open" data-id="${show.id}" type="button">Ouvrir</button>
           <button class="btn danger" data-action="remove" data-id="${show.id}" type="button">Retirer</button>
@@ -552,6 +557,60 @@ async function unmarkSeasonWatched(seasonNumber){
   showToast('Saison marquée non vue');
 }
 
+// --- Marquer TOUTE la série d'un coup (v2.1, retour utilisateur) ---
+// currentShowSeasons (métadonnées TMDB, chargées par refreshShowMeta() à
+// l'ouverture de la page) donne le nombre d'épisodes de CHAQUE saison sans
+// avoir à déplier son accordéon — un seul upsert groupé couvrant toutes
+// les saisons plutôt que N appels réseau (un par saison).
+async function markAllSeasonsWatched(){
+  if(blockIfOffline()) return;
+  if(currentShowSeasons.length === 0) return;
+  if(!confirm('Marquer tous les épisodes de toutes les saisons comme vus ?')) return;
+  const rows = [];
+  currentShowSeasons.forEach(s => {
+    for(let ep = 1; ep <= s.episode_count; ep++){
+      rows.push({ tv_show_id: currentShowId, season_number: s.season_number, episode_number: ep, watched_at: Date.now() });
+    }
+  });
+  const { error } = await supabaseClient
+    .from('tv_episodes_watched')
+    .upsert(rows, { onConflict: 'user_id,tv_show_id,season_number,episode_number', ignoreDuplicates: true });
+  if(error){
+    showToast('Erreur, réessaie');
+    console.error(error);
+    return;
+  }
+  currentShowSeasons.forEach(s => {
+    for(let ep = 1; ep <= s.episode_count; ep++) watchedEpisodeSet.add(`${s.season_number}-${ep}`);
+    updateSeasonProgressUI(s.season_number, s.episode_count);
+    // Rafraîchit aussi les cases à cocher des saisons déjà dépliées.
+    if(loadedSeasonEpisodes[s.season_number]) renderSeasonEpisodes(s.season_number);
+  });
+  watchedEpisodeCounts[currentShowId] = watchedEpisodeSet.size;
+  showToast('Série entière marquée vue');
+}
+
+async function unmarkAllSeasonsWatched(){
+  if(blockIfOffline()) return;
+  if(!confirm('Retirer tous les épisodes vus de cette série ?')) return;
+  const { error } = await supabaseClient
+    .from('tv_episodes_watched')
+    .delete()
+    .eq('tv_show_id', currentShowId);
+  if(error){
+    showToast('Erreur, réessaie');
+    console.error(error);
+    return;
+  }
+  watchedEpisodeSet.clear();
+  currentShowSeasons.forEach(s => {
+    updateSeasonProgressUI(s.season_number, s.episode_count);
+    if(loadedSeasonEpisodes[s.season_number]) renderSeasonEpisodes(s.season_number);
+  });
+  watchedEpisodeCounts[currentShowId] = 0;
+  showToast('Épisodes vus retirés');
+}
+
 async function handleSaveSeriesNote(){
   if(blockIfOffline()) return;
   const note = parseFloat(document.getElementById('seriesNoteSlider').value);
@@ -603,3 +662,5 @@ document.getElementById('seriesNoteSlider').addEventListener('input', (e) => {
   document.getElementById('seriesNoteVal').textContent = parseFloat(e.target.value).toFixed(2);
 });
 document.getElementById('seriesRemoveBtn').addEventListener('click', () => handleRemoveShow(currentShowId, true));
+document.getElementById('seriesMarkAllBtn').addEventListener('click', markAllSeasonsWatched);
+document.getElementById('seriesUnmarkAllBtn').addEventListener('click', unmarkAllSeasonsWatched);

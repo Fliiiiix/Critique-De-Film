@@ -100,23 +100,17 @@ header{
 }
 .brand-link:hover{opacity:0.82;}
 .brand-link:focus-visible{outline:2px solid var(--violet-dim); outline-offset:4px; border-radius:2px;}
-/* Logo (v2.0.8) : un cadran, pas une lettre — reprend directement le
-   composant .counter (badge circulaire coloré par barème), déjà désigné
-   comme "signature visuelle de Kinet" ailleurs dans ce fichier, plutôt
-   qu'un monogramme sans lien avec ce que l'app fait vraiment. L'arc violet
-   ne fait jamais le tour complet (~72%) : Kinet n'est jamais "fini", on y
-   ajoute toujours un film ou une série. */
+/* Logo (v2.0.8, revu v2.1) : un cadran, pas une lettre — reprend
+   directement le composant .counter (badge circulaire coloré par
+   barème), déjà désigné comme "signature visuelle de Kinet" ailleurs
+   dans ce fichier, plutôt qu'un monogramme sans lien avec ce que l'app
+   fait vraiment. Anneau complet + aiguille (pas un arc partiel — voir le
+   commentaire dans index.html : lu comme un spinner de chargement,
+   retour utilisateur). */
 .brand-mark{width:34px; height:34px; flex:none;}
 .brand-mark-track{fill:none; stroke:var(--line); stroke-width:3.5;}
-.brand-mark-arc{
-  fill:none;
-  stroke:var(--violet);
-  stroke-width:3.5;
-  stroke-linecap:round;
-  stroke-dasharray:72 101;
-  transform:rotate(-90deg);
-  transform-origin:20px 20px;
-}
+.brand-mark-needle{stroke:var(--violet); stroke-width:3.5; stroke-linecap:round;}
+.brand-mark-pivot{fill:var(--violet);}
 .user-bar{
   position:absolute;
   top:14px;
@@ -163,6 +157,16 @@ header{
   background:var(--coral);
   border:1.5px solid var(--ink);
 }
+/* Avatar + pseudo comme UN item flex (v2.1, retour utilisateur) — voir le
+   commentaire sur .user-identity dans index.html pour le pourquoi
+   (empêche le pseudo de se détacher de la photo sous flex-wrap mobile). */
+.user-identity{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:none;
+}
+#userDisplayName{white-space:nowrap;}
 /* Photo de profil : bien visible (elle sert aussi de bouton d'accès au
    profil, voir js/profile.js) — plus de bouton "Profil" ni "Déconnexion"
    séparés dans le header (déconnexion déplacée dans la modale profil, voir
@@ -354,6 +358,10 @@ h1{
    fréquentes que le reste — sorties du flux principal de la barre. */
 .menu-wrap{position:relative;}
 .btn.icon-only{padding:10px 13px; font-size:15px; line-height:1;}
+/* Icône SVG (v2.1, #moreMenuBtn) plutôt qu'un glyphe texte comme "⋯" —
+   sans taille explicite un <svg> sans width/height s'affiche à sa taille
+   intrinsèque par défaut du navigateur (bien trop grande dans un bouton). */
+.btn.icon-only svg{width:16px; height:16px; display:block;}
 .dropdown-menu{
   display:none;
   flex-direction:column;
@@ -423,7 +431,7 @@ h1{
 }
 .fab:hover{transform:scale(1.06);}
 .fab:active{transform:scale(0.92);}
-input[type="text"], input[type="number"], select, textarea{
+input[type="text"], input[type="email"], input[type="number"], select, textarea{
   background:var(--surface);
   border:1px solid var(--line);
   color:var(--text);
@@ -434,7 +442,12 @@ input[type="text"], input[type="number"], select, textarea{
   outline:none;
 }
 input[type="text"]{flex:1; min-width:180px;}
-input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus{border-color:var(--violet-dim);}
+/* input[type="email"] manquait ici (v2.1, retour utilisateur) : sans lui
+   dans cette liste, #authEmail (le seul champ email de l'app, écran de
+   connexion) restait un input natif du navigateur — non stylé, minuscule à
+   côté du reste de la carte. */
+.field input[type="email"]{width:100%;}
+input[type="text"]:focus, input[type="email"]:focus, input[type="number"]:focus, select:focus, textarea:focus{border-color:var(--violet-dim);}
 textarea{width:100%; resize:vertical; line-height:1.5; font-family:'Instrument Sans', sans-serif;}
 select{cursor:pointer;}
 /* Upload d'avatar (js/profile.js) — ::file-selector-button plutôt que
@@ -787,22 +800,22 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background:linear-gradient(165deg, var(--surface) 0%, var(--surface-2) 200%);
   border:1px solid var(--line);
   border-radius:14px;
-  padding:28px;
+  padding:34px; /* v2.1, retour utilisateur : texte un peu tassé à 28px */
 }
 #maintenanceContainer .auth-card{max-width:420px; margin:60px auto;}
 .auth-card h2{
   font-family:'Bricolage Grotesque', sans-serif;
   font-weight:700;
   font-size:22px;
-  margin-bottom:10px;
+  margin-bottom:12px;
 }
 .auth-intro{
   font-size:13px;
   color:var(--text-muted);
-  line-height:1.6;
-  margin-bottom:18px;
+  line-height:1.65;
+  margin-bottom:22px;
 }
-.auth-card .field{margin-bottom:14px;}
+.auth-card .field{margin-bottom:18px;}
 .auth-card .btn{width:100%;}
 .auth-status{
   margin-top:14px;
@@ -1158,13 +1171,33 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   letter-spacing:0.05em;
 }
 .crit-label .num{color:var(--violet-dim); margin-right:6px;}
-.crit-val{
+/* Éditable (v2.1, retour utilisateur : le drag seul manque de précision,
+   même avec la molette — voir js/ui.js) : un chiffre qu'on peut taper
+   directement, en plus du curseur, plutôt qu'une simple valeur affichée.
+   Repris en <input type="number"> mais habillé pour rester discret comme
+   avant (pas de bordure/fond visibles hors focus) — voir aussi
+   updateCritValInput()/updateCritSliderFromInput(), js/app.js. */
+/* input[type="number"].crit-val (pas juste .crit-val) : sans l'attribut de
+   type en plus de la classe, la règle générique input[type="number"]{...}
+   plus haut (padding/bordure/fond permanents) l'emporterait à specificité
+   égale — voir le commentaire au-dessus de .crit-val. */
+input[type="number"].crit-val{
   font-family:'Space Mono', monospace;
-  font-size:12px;
+  font-size:13px;
+  font-weight:600;
   color:var(--gold);
-  min-width:34px;
+  width:52px;
   text-align:right;
+  background:none;
+  border:1px solid transparent;
+  border-radius:6px;
+  padding:3px 6px;
+  -moz-appearance:textfield;
 }
+input[type="number"].crit-val::-webkit-inner-spin-button,
+input[type="number"].crit-val::-webkit-outer-spin-button{-webkit-appearance:none; margin:0;}
+input[type="number"].crit-val:hover{border-color:var(--line);}
+input[type="number"].crit-val:focus{border-color:var(--violet-dim); background:var(--surface); outline:none;}
 .crit-def{
   font-size:12.5px;
   color:var(--text-muted);
@@ -1177,12 +1210,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   align-items:center;
   gap:10px;
   margin-top:10px;
+  /* Un peu d'air vertical en plus (v2.1) pour le thumb agrandi à 20px
+     (voir input[type="range"]::-webkit-slider-thumb plus bas). */
+  padding:6px 0;
 }
 input[type="range"]{
   flex:1;
   -webkit-appearance:none;
   appearance:none;
-  height:3px;
+  height:4px;
   background:var(--line);
   border-radius:2px;
   outline:none;
@@ -1202,16 +1238,21 @@ input[type="range"]:focus-visible{
   outline:2px solid var(--violet-dim);
   outline-offset:2px;
 }
+/* 20px (au lieu de 14px) — v2.1, retour utilisateur : trop petit pour viser
+   précisément au doigt sur mobile. Zone de clic réellement plus grande
+   (pas juste visuellement) : c'est cette taille de thumb qui définit la
+   zone interactive d'un slider natif, contrairement à un bouton normal où
+   du padding suffirait. */
 input[type="range"]::-webkit-slider-thumb{
   -webkit-appearance:none;
-  width:14px;height:14px;
+  width:20px;height:20px;
   border-radius:50%;
   background:var(--gold);
   cursor:pointer;
   border:2px solid var(--ink);
 }
 input[type="range"]::-moz-range-thumb{
-  width:14px;height:14px;
+  width:20px;height:20px;
   border-radius:50%;
   background:var(--gold);
   cursor:pointer;
@@ -1426,7 +1467,7 @@ input[type="range"]::-moz-range-thumb{
   background:linear-gradient(120deg, var(--violet-wash) 0%, var(--surface) 65%);
   border:1px solid var(--violet-dim);
   border-radius:10px;
-  padding:14px 20px;
+  padding:18px 24px; /* v2.1, retour utilisateur : un peu serré à 14px 20px */
   margin:16px auto;
 }
 .install-banner-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
@@ -2466,12 +2507,16 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   flex:none;
 }
 
-/* Tablette : la barre d'outils passe en deux rangées pleine largeur avant
-   que les libellés des boutons ne disparaissent (voir 600px ci-dessous). */
+/* Tablette (v2.1, retour utilisateur : recherche/filtre/grille doivent
+   rester sur la même ligne) : .toolbar garde son flex-wrap de base
+   (voir plus haut) plutôt qu'un flex-direction:column forcé qui séparait
+   systématiquement recherche+tri d'un côté et vue grille/liste de
+   l'autre — recherche/tri rétrécissent (min-width:0) au lieu d'imposer
+   100% de la largeur, laissant la rangée grille/liste tenir juste à côté
+   tant qu'il reste la place ; ne bascule sur sa propre ligne qu'en
+   dernier recours, comme n'importe quel flex-wrap normal. */
 @media (max-width:760px){
-  .toolbar{flex-direction:column; align-items:stretch;}
-  .toolbar-search{width:100%; min-width:0;}
-  .toolbar-actions{width:100%; justify-content:space-between;}
+  .toolbar-search{min-width:0; flex:1 1 200px;}
 
   /* Vitrine de connexion : la grille 2 colonnes ne tient plus côte à côte
      — repasse en flex empilé. column-reverse sur les 2 enfants directs
@@ -2514,10 +2559,13 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   body[data-view-mode="list"] #seriesList .film-poster-placeholder,
   body[data-view-mode="list"] #topList .film-poster-placeholder{width:46px; height:68px;}
 
-  /* Recherche/tri en pleine largeur, "+ Ajouter" quitte la barre pour le
-     bouton flottant (.fab). */
-  .toolbar-search{flex-direction:column; align-items:stretch;}
-  .toolbar-search select{width:100%;}
+  /* Recherche + tri restent côte à côte (v2.1, retour utilisateur), tous
+     les deux rétrécis pour laisser la rangée grille/liste juste à côté
+     sur la même ligne — voir le commentaire sur .toolbar-search à 760px
+     ci-dessus. "+ Ajouter" quitte la barre pour le bouton flottant
+     (.fab) : un item de moins à caser sur cette ligne serrée. */
+  .toolbar-search input[type="text"]{min-width:0; flex:1 1 90px;}
+  .toolbar-search select{flex:0 1 auto; max-width:132px;}
   #openAddBtn{display:none;}
   .fab{display:flex;}
 

@@ -24,6 +24,9 @@ create table public.films (
   -- recherche matche indifféremment "créatures féroces" ou "fierce creatures"
   -- sans traduction automatique (voir migrations/008).
   original_title text,
+  -- Genres TMDB (v2.1, migrations/029) — id numérique brut (pas le libellé,
+  -- traduit côté client via GENRE_MAP dans js/data.js).
+  genre_ids integer[],
   created_at timestamptz not null default now()
 );
 

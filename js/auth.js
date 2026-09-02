@@ -47,6 +47,7 @@ async function showApp(){
   if(isAdmin()) await loadAdminConfig();
   await loadFilms();
   await loadViewings();
+  buildGenreFilterOptions(); // js/app.js — avant render(), pour que le select soit déjà rempli au 1er affichage
   render();
   await renderRoute(); // gère un lien direct vers une page Groupes (F5, etc.)
   // Après renderRoute() : un lien d'invitation ouvert sans session (voir

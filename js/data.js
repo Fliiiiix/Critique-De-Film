@@ -52,6 +52,19 @@ const FEEDBACK_CATEGORIES = [
 ];
 const TV_PLACEHOLDER_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg>';
 
+// Genres films TMDB (v2.1, filtre par genre) — id -> libellé FR, liste
+// officielle /genre/movie/list, stable depuis des années côté TMDB. Les
+// films stockent les ids bruts (films.genre_ids, migrations/029), jamais
+// le libellé traduit — un seul endroit à mettre à jour si TMDB en ajoute
+// un jour un nouveau.
+const GENRE_MAP = {
+  28: 'Action', 12: 'Aventure', 16: 'Animation', 35: 'Comédie', 80: 'Crime',
+  99: 'Documentaire', 18: 'Drame', 10751: 'Familial', 14: 'Fantastique',
+  36: 'Histoire', 27: 'Horreur', 10402: 'Musique', 9648: 'Mystère',
+  10749: 'Romance', 878: 'Science-fiction', 10770: 'Téléfilm', 53: 'Thriller',
+  10752: 'Guerre', 37: 'Western'
+};
+
 // Films importés depuis l'Excel d'origine.
 // Ordre des valeurs c[] dans l'ancien référentiel :
 // [impression, scenario, realisation, jeu, image, son, musique]

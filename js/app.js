@@ -35,7 +35,8 @@ function rowToFilm(row){
     posterUrl: row.poster_url || null,
     overview: row.overview || null,
     releaseYear: row.release_year || null,
-    originalTitle: row.original_title || null
+    originalTitle: row.original_title || null,
+    genreIds: row.genre_ids || []
   };
 }
 
@@ -114,6 +115,26 @@ function buildSortOptions(){
     .join('');
 }
 
+// Options de #genreFilter (v2.1, retour utilisateur), reconstruites à
+// chaque mutation du catalogue (chargement, ajout/édition/suppression,
+// import) — seulement les genres RÉELLEMENT présents (pas la liste TMDB
+// complète, voir GENRE_MAP dans js/data.js) : pas la peine de proposer
+// "Western" à quelqu'un qui n'a aucun film de ce genre. Sélection
+// existante restaurée si le genre choisi est toujours représenté.
+function buildGenreFilterOptions(){
+  const sel = document.getElementById('genreFilter');
+  const current = sel.value;
+  const present = new Set();
+  films.forEach(f => (f.genreIds || []).forEach(id => present.add(id)));
+  const options = Array.from(present)
+    .filter(id => GENRE_MAP[id])
+    .sort((a, b) => GENRE_MAP[a].localeCompare(GENRE_MAP[b], 'fr'))
+    .map(id => `<option value="${id}">${escapeHtml(GENRE_MAP[id])}</option>`)
+    .join('');
+  sel.innerHTML = `<option value="">Tous les genres</option>${options}`;
+  if(current && present.has(Number(current))) sel.value = current;
+}
+
 // Sens du tri par critère (#sortAdvancedRow) — bouton-bascule plutôt qu'un
 // 2e select, voir setSortDir() plus bas.
 let sortDir = 'desc';
@@ -126,10 +147,18 @@ function render(){
   const isAdvanced = sortBy === 'advanced';
   const critKey = isAdvanced ? document.getElementById('sortCriterion').value : null;
   const critFilterMin = isAdvanced ? parseFloat(document.getElementById('critFilterMin').value) : 0;
+  const genreFilter = document.getElementById('genreFilter').value;
 
   // Matche le titre FR ou le titre VO (ex. "créatures féroces" trouve aussi
   // "Fierce Creatures"), accents/casse ignorés — voir getSearchTerms().
   let filtered = films.filter(f => !search || getSearchTerms(f).some(t => t.includes(search)));
+
+  // Filtre genre (v2.1, retour utilisateur) — voir buildGenreFilterOptions()
+  // plus haut et GENRE_MAP (js/data.js).
+  if(genreFilter){
+    const genreId = Number(genreFilter);
+    filtered = filtered.filter(f => (f.genreIds || []).includes(genreId));
+  }
 
   // Seuil sur le critère en cours de tri (voir #sortAdvancedRow) — un film
   // noté en note manuelle n'a pas cette valeur (crit vide) et sort donc du
@@ -152,7 +181,7 @@ function render(){
     return 0;
   });
 
-  const isFiltered = !!search || (isAdvanced && critFilterMin > 0);
+  const isFiltered = !!search || !!genreFilter || (isAdvanced && critFilterMin > 0);
   countLine.textContent = `${filtered.length} film${filtered.length>1?'s':''} ${isFiltered ? '(filtré)' : 'au catalogue'}`;
 
   if(filtered.length === 0){
@@ -259,7 +288,11 @@ function buildCriteriaInputs(critObj){
     block.innerHTML = `
       <div class="crit-head">
         <div class="crit-label"><span class="num">0${idx+1}</span>${c.label}</div>
-        <div class="crit-val" id="val-${c.key}">${val.toFixed(2)}</div>
+        <!-- Éditable (v2.1, retour utilisateur : le curseur seul manque de
+             précision) — voir js/ui.js pour le réglage à la molette,
+             complémentaire, et la note en tête de fichier sur .crit-val
+             (css/style.css) pour la spécificité CSS. -->
+        <input type="number" class="crit-val" id="val-${c.key}" data-key="${c.key}" min="0" max="1" step="0.05" value="${val.toFixed(2)}" inputmode="decimal">
       </div>
       <div class="crit-def">${escapeHtml(c.def)}</div>
       <div class="crit-slider-row">
@@ -273,9 +306,27 @@ function buildCriteriaInputs(critObj){
 
   wrap.querySelectorAll('input[type="range"]').forEach(input => {
     input.addEventListener('input', () => {
-      document.getElementById('val-' + input.dataset.key).textContent = parseFloat(input.value).toFixed(2);
+      document.getElementById('val-' + input.dataset.key).value = parseFloat(input.value).toFixed(2);
       updateLiveScore();
     });
+  });
+  // Synchro depuis le chiffre tapé à la main (v2.1, retour utilisateur) :
+  // 'input' (à chaque frappe) répercute en direct sur le curseur SANS
+  // recadrer ce qui est tapé (sinon "0.6" en cours de frappe se ferait
+  // écraser avant même la fin) ; 'change' (au blur/Entrée) arrondit et
+  // recadre l'affichage une fois la saisie terminée.
+  wrap.querySelectorAll('.crit-val').forEach(input => {
+    const slider = () => document.getElementById('slider-' + input.dataset.key);
+    const sync = (clampDisplay) => {
+      let v = parseFloat(input.value);
+      if(isNaN(v)) v = parseFloat(slider().value);
+      v = Math.min(1, Math.max(0, v));
+      if(clampDisplay) input.value = v.toFixed(2);
+      slider().value = v;
+      updateLiveScore();
+    };
+    input.addEventListener('input', () => sync(false));
+    input.addEventListener('change', () => sync(true));
   });
   wrap.querySelectorAll('.crit-help-toggle').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -342,7 +393,10 @@ function openModal(id){
     poster_url: film.posterUrl,
     overview: film.overview,
     release_year: film.releaseYear,
-    title: film.title
+    title: film.title,
+    // Reconduit tel quel (voir handleSave()) : sans lui, ré-enregistrer un
+    // film déjà noté sans retoucher sa fiche TMDB effacerait son genre.
+    genre_ids: film.genreIds || []
   } : null;
   document.getElementById('tmdbResults').innerHTML = '';
   updateTmdbSelectedUI();
@@ -389,8 +443,8 @@ async function handleSave(){
   const manualNote = manual ? parseFloat(document.getElementById('manualScoreSlider').value) : null;
   const review = document.getElementById('reviewInput').value.trim() || null;
   const tmdbFields = tmdbSelected
-    ? { tmdb_id: tmdbSelected.tmdb_id, poster_url: tmdbSelected.poster_url, overview: tmdbSelected.overview, release_year: tmdbSelected.release_year, original_title: tmdbSelected.original_title }
-    : { tmdb_id: null, poster_url: null, overview: null, release_year: null, original_title: null };
+    ? { tmdb_id: tmdbSelected.tmdb_id, poster_url: tmdbSelected.poster_url, overview: tmdbSelected.overview, release_year: tmdbSelected.release_year, original_title: tmdbSelected.original_title, genre_ids: tmdbSelected.genre_ids || [] }
+    : { tmdb_id: null, poster_url: null, overview: null, release_year: null, original_title: null, genre_ids: [] };
 
   // Capturé avant closeModal() : son extraCleanup (js/ui.js) remet
   // editingId à null, mais seulement une fois l'animation de fermeture
@@ -418,6 +472,7 @@ async function handleSave(){
     film.overview = tmdbFields.overview;
     film.releaseYear = tmdbFields.release_year;
     film.originalTitle = tmdbFields.original_title;
+    film.genreIds = tmdbFields.genre_ids;
   }else{
     const { data, error } = await supabaseClient
       .from('films')
@@ -447,6 +502,7 @@ async function handleSave(){
     }
   }
   closeModal();
+  buildGenreFilterOptions(); // le film enregistré peut introduire un genre inédit au catalogue
   render();
   // Pulse silencieux sur la note qui vient d'être enregistrée, en plus du
   // toast déjà là — peut ne rien trouver (film sur une autre page de la
@@ -466,6 +522,7 @@ async function handleDelete(){
   films = films.filter(f => f.id !== editingId);
   viewings = viewings.filter(v => v.filmId !== editingId); // supprimés en cascade côté base
   closeModal();
+  buildGenreFilterOptions(); // le genre supprimé peut ne plus être représenté au catalogue
   render();
   showToast('Film supprimé');
 }
@@ -543,7 +600,8 @@ function importFilms(file){
       poster_url: f.posterUrl || null,
       overview: f.overview || null,
       release_year: f.releaseYear || null,
-      original_title: f.originalTitle || null
+      original_title: f.originalTitle || null,
+      genre_ids: f.genreIds || []
     }));
 
     const { data: inserted, error: insError } = await supabaseClient.from('films').insert(rows).select();
@@ -556,6 +614,7 @@ function importFilms(file){
     inserted.forEach(row => films.push(rowToFilm(row)));
     // Premier visionnage automatique pour chaque film importé, daté de son "added".
     await Promise.all(inserted.map(row => addViewing(row.id, row.added)));
+    buildGenreFilterOptions();
     render();
     showToast(replace ? 'Catalogue remplacé' : 'Films ajoutés');
   };
@@ -674,6 +733,7 @@ document.getElementById('sortBy').addEventListener('change', () => {
   render();
 });
 document.getElementById('sortCriterion').addEventListener('change', () => { currentPage = 1; render(); });
+document.getElementById('genreFilter').addEventListener('change', () => { currentPage = 1; render(); });
 function setSortDir(dir){
   sortDir = dir;
   document.getElementById('sortDirDesc').classList.toggle('active', dir === 'desc');
