@@ -979,6 +979,46 @@ revisionnage — l'app ne garde qu'une note par film, pas une par
 visionnage, copier la même note sur plusieurs entrées de journal aurait
 été plus trompeur qu'utile.
 
+## Import depuis Letterboxd (v2.2)
+
+Sens inverse de la section précédente. Bouton **🎬 Importer depuis
+Letterboxd (CSV)** (même menu "⋯") : lit un CSV du "Exporter vos données"
+Letterboxd (réglages du compte → télécharge un `.zip`) — extraire le zip
+localement et déposer un seul CSV à la fois, pas de dézippage automatique
+côté app (aucune dépendance externe ajoutée, l'app reste 100% vanilla).
+Fichier reconnu par son nom exact (`ratings.csv`, `diary.csv`,
+`reviews.csv`, `watchlist.csv`), colonnes en repli s'il a été renommé.
+
+- `ratings.csv` / `diary.csv` / `reviews.csv` → importés dans le catalogue
+  noté, avec recherche TMDB automatique par titre + année (±1 an toléré,
+  Letterboxd affiche parfois l'année de sortie US/festival plutôt que la
+  sortie France que TMDB retient par défaut) pour récupérer affiche/
+  résumé/genres, exactement comme un ajout manuel. Note copiée dans
+  `manual_note` (même échelle 0.5-5.0), commentaire dans `review` si
+  présent. `diary.csv` : les revisionnages d'un même film sont regroupés
+  en une seule fiche (note la plus récente) mais chaque date devient une
+  entrée de journal séparée (`viewings`), alimentant le badge "revu ×N"
+  comme n'importe quel visionnage ajouté depuis l'app.
+- `watchlist.csv` → importé dans la Watchlist (même correspondance TMDB).
+- `watched.csv` (liste des films vus sans note) volontairement refusé avec
+  un message explicite : l'app n'a pas de notion de "film vu sans note",
+  importer ces lignes créerait des fiches vides trompeuses — utiliser
+  `ratings.csv`/`diary.csv` à la place.
+
+Films déjà présents dans le catalogue (par `tmdb_id`) ou déjà dans la
+watchlist (par titre) : ignorés silencieusement plutôt que dupliqués — le
+récapitulatif final (toast) donne le détail (importés / déjà présents /
+introuvables sur TMDB). Recherches TMDB faites 4 à la fois (assez rapide
+sur un gros catalogue sans bombarder l'API).
+
+**TV Time et Trakt** : chantier suivant. TV Time n'a pas d'export fichier
+au format confirmé au moment où ceci est écrit — son parseur sera ajusté
+sur un vrai export une fois disponible plutôt que deviné à l'avance. Trakt
+n'a pas d'export fichier du tout, seulement une API OAuth : nécessite une
+appli Trakt enregistrée par l'utilisateur propriétaire du site (client_id
+propre, gratuit, sur `trakt.tv/oauth/applications`) avant de pouvoir coder
+cette partie.
+
 ## Prochaines étapes possibles
 
 - D'autres happenings (voir la section ci-dessus pour ceux déjà en place)
