@@ -812,7 +812,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background:linear-gradient(165deg, var(--surface) 0%, var(--surface-2) 200%);
   border:1px solid var(--line);
   border-radius:14px;
-  padding:30px; /* 28px à l'origine, 34px un temps (retour "trop tassé"), retassé un peu depuis l'ajout du bouton Google (retour "bloc droit trop haut") */
+  padding:30px;
+  /* Centre son propre contenu verticalement (v2.1) — utile seulement sur
+     l'écran de connexion, où .auth-hero l'étire maintenant à la hauteur
+     de la vitrine à gauche (voir .auth-hero) ; sur l'écran de maintenance
+     (#maintenanceContainer, pas dans cette grille) la boîte reste à sa
+     hauteur naturelle, donc sans effet visible là-bas. */
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 #maintenanceContainer .auth-card{max-width:420px; margin:60px auto;}
 .auth-card h2{
@@ -920,7 +928,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .auth-hero{
   display:grid;
   grid-template-columns:minmax(0,1fr) 380px;
-  align-items:start;
+  /* stretch (v2.1, retour utilisateur : les deux blocs doivent être au
+     même niveau) plutôt que start — la carte de connexion s'étire
+     maintenant à la hauteur de la vitrine à gauche (measure vérifiée :
+     492px vs 371px sans ça), .auth-card centre alors son propre contenu
+     dans cet espace en plus (voir plus bas) au lieu de rester collée en
+     haut d'une boîte devenue plus grande qu'elle. */
+  align-items:stretch;
   gap:48px;
   max-width:1180px;
   margin:0 auto;
