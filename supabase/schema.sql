@@ -58,7 +58,16 @@ create table public.profiles (
   -- plus bas et migrations/016. false par défaut : personne n'est exposé
   -- sans l'avoir explicitement choisi.
   public_profile boolean not null default false,
-  created_at timestamptz not null default now()
+  -- Top films perso (v2.3, retour utilisateur : "un top films comme
+  -- Letterboxd, mis en avant par choix pas par note") — tmdb_id choisis à la
+  -- main, dans l'ordre voulu, au plus 4 ; résolu par get_public_profile()
+  -- plus bas en rejoignant le catalogue déjà noté du propriétaire (jamais
+  -- interrogé seul, pas la granularité qui justifierait une table à part —
+  -- même raisonnement que films.genre_ids, migrations/029).
+  top_films integer[] not null default '{}',
+  created_at timestamptz not null default now(),
+  constraint profiles_top_films_max4
+    check (array_length(top_films, 1) is null or array_length(top_films, 1) <= 4)
 );
 
 alter table public.profiles enable row level security;
@@ -611,48 +620,60 @@ grant execute on function public.get_friends_top_films(int) to authenticated;
 -- js/publicProfile.js, migrations/016), SANS connexion requise — seule
 -- fonction de tout ce fichier accordée à `anon`. Lue par n'importe qui,
 -- mais renvoie uniquement pseudo/avatar + un résumé du catalogue
--- (titre/affiche/année/note/favori), jamais l'email ni review, et rien du
--- tout si public_profile est resté à false (0 ligne, sans distinguer
--- "profil inexistant" de "profil privé").
+-- (tmdb_id/titre/affiche/année/note/favori — tmdb_id ajouté en migrations/
+-- 032, rien de sensible, permet de rendre les lignes cliquables vers leur
+-- fiche), jamais l'email ni review, et rien du tout si public_profile est
+-- resté à false (0 ligne, sans distinguer "profil inexistant" de "profil
+-- privé"). Chaque colonne est sa propre sous-requête corrélée plutôt qu'un
+-- group by commun (migrations/032) : `films` (tri par note) et `top_films`
+-- (tri par l'ordre choisi par l'utilisateur, voir profiles.top_films)
+-- n'ont pas le même tri, les mélanger dans un seul jsonb_agg groupé était
+-- plus verbeux que deux sous-requêtes indépendantes.
 create or replace function public.get_public_profile(p_user_id uuid)
 returns table(
   display_name text,
   avatar_url text,
-  films jsonb
+  films jsonb,
+  top_films jsonb
 )
 language sql
 security definer
 set search_path = public
 stable
 as $$
-  with prof as (
-    select display_name, avatar_url
-    from public.profiles
-    where user_id = p_user_id and public_profile = true
-  ),
-  scored as (
-    select
-      f.title, f.poster_url, f.release_year, f.fav,
-      coalesce(f.manual_note, (
-        select round(avg(v.value::numeric) * 10) / 2
-        from jsonb_each_text(f.crit) as v
-      )) as note
-    from public.films f
-    where f.user_id = p_user_id and exists (select 1 from prof)
-  )
   select
-    prof.display_name,
-    prof.avatar_url,
-    coalesce(jsonb_agg(jsonb_build_object(
-      'title', scored.title,
-      'poster_url', scored.poster_url,
-      'release_year', scored.release_year,
-      'note', scored.note,
-      'fav', scored.fav
-    ) order by scored.note desc nulls last) filter (where scored.title is not null), '[]'::jsonb) as films
-  from prof
-  left join scored on true
-  group by prof.display_name, prof.avatar_url;
+    p.display_name,
+    p.avatar_url,
+    coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'tmdb_id', f.tmdb_id,
+        'title', f.title,
+        'poster_url', f.poster_url,
+        'release_year', f.release_year,
+        'note', coalesce(f.manual_note, (
+          select round(avg(v.value::numeric) * 10) / 2
+          from jsonb_each_text(f.crit) as v
+        )),
+        'fav', f.fav
+      ) order by coalesce(f.manual_note, (
+          select round(avg(v.value::numeric) * 10) / 2
+          from jsonb_each_text(f.crit) as v
+        )) desc nulls last)
+      from public.films f
+      where f.user_id = p.user_id
+    ), '[]'::jsonb) as films,
+    coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'tmdb_id', f.tmdb_id,
+        'title', f.title,
+        'poster_url', f.poster_url,
+        'release_year', f.release_year
+      ) order by ord.pos)
+      from unnest(p.top_films) with ordinality as ord(tmdb_id, pos)
+      join public.films f on f.tmdb_id = ord.tmdb_id and f.user_id = p.user_id
+    ), '[]'::jsonb) as top_films
+  from public.profiles p
+  where p.user_id = p_user_id and p.public_profile = true;
 $$;
 
 revoke all on function public.get_public_profile(uuid) from public;

@@ -38,6 +38,7 @@ async function renderPublicProfilePage(userId){
   }
 
   const films = row.films || [];
+  const topFilms = row.top_films || [];
   const notes = films.map(f => f.note).filter(n => typeof n === 'number');
   const avgNote = notes.length ? notes.reduce((a, b) => a + b, 0) / notes.length : null;
   const favCount = films.filter(f => f.fav).length;
@@ -46,6 +47,27 @@ async function renderPublicProfilePage(userId){
   const listHtml = films.length === 0
     ? `<div class="empty-state">Aucun film noté pour l'instant.</div>`
     : films.map(publicProfileFilmRowHtml).join('');
+
+  // Cliquable vers la fiche film seulement si connecté (v2.3) — la fiche
+  // film (js/filmDetail.js) n'est pas de la poignée de pages accessibles
+  // sans session (voir le commentaire en tête de fichier), inutile de
+  // proposer un clic qui renverrait un visiteur anonyme droit sur l'écran
+  // de connexion.
+  const topFilmsHtml = topFilms.length === 0 ? '' : `
+    <div class="stats-section">
+      <div class="stats-section-title">Top films</div>
+      <div class="top-films-showcase">
+        ${topFilms.map(f => `
+          <div class="top-films-showcase-item"${currentUser && f.tmdb_id ? ` data-tmdb-id="${f.tmdb_id}"` : ''}>
+            ${f.poster_url
+              ? `<img src="${f.poster_url}" alt="">`
+              : `<div class="film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
+            <div class="top-films-showcase-title">${escapeHtml(f.title)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
 
   content.innerHTML = `
     <div class="public-profile-header">
@@ -59,11 +81,16 @@ async function renderPublicProfilePage(userId){
       <div class="stat-tile"><div class="stat-value">${avgNote !== null ? avgNote.toFixed(2) : '—'}</div><div class="stat-label">Note moyenne</div></div>
       <div class="stat-tile"><div class="stat-value">${favCount}</div><div class="stat-label">Favoris</div></div>
     </div>
+    ${topFilmsHtml}
     <div class="stats-section">
       <div class="stats-section-title">Catalogue (${films.length})</div>
       ${listHtml}
     </div>
   `;
+
+  content.querySelectorAll('.top-films-showcase-item[data-tmdb-id]').forEach(item => {
+    item.addEventListener('click', () => goToFilmDetail(parseInt(item.dataset.tmdbId, 10)));
+  });
 }
 
 // Retour : vers l'accueil si connecté, vers l'écran de connexion sinon —

@@ -99,37 +99,39 @@ function renderTrackedShows(){
     list.innerHTML = `<div class="empty-state">Rien pour l'instant. Cherche une série ci-dessus pour commencer à suivre ses épisodes.</div>`;
     return;
   }
+  // v2.3, retour utilisateur : la tuile grille (poster + titre + progression
+  // + pastille de statut + note + 2 boutons Ouvrir/Retirer) empilait 5
+  // traitements visuels différents pour une seule série — "pas assez
+  // symétrique ou cohérent". Alignée sur le gabarit de la tuile film
+  // (poster, titre, UNE sous-ligne discrète, note) : toute la ligne ouvre
+  // désormais la série au clic (comme .film-row, js/app.js), Retirer
+  // rejoint "Retirer cette série" déjà présent sur la fiche détail plutôt
+  // que de vivre en double ici — le même principe que la suppression d'un
+  // film, qui vit dans sa fiche/modale, jamais sur la carte du catalogue.
   list.innerHTML = trackedShows.map(show => {
     const watchedCount = watchedEpisodeCounts[show.id] || 0;
     const progress = show.numberOfEpisodes
       ? `${watchedCount}/${show.numberOfEpisodes} épisode${show.numberOfEpisodes > 1 ? 's' : ''} vus`
       : `${watchedCount} épisode${watchedCount > 1 ? 's' : ''} vus`;
     return `
-      <div class="wl-row">
+      <div class="wl-row" data-id="${show.id}">
         ${show.posterUrl
           ? `<img class="film-poster" src="${show.posterUrl}" alt="" loading="lazy">`
           : `<div class="film-poster film-poster-placeholder">${TV_PLACEHOLDER_SVG}</div>`}
         <div class="wl-main">
           <div class="wl-title">${escapeHtml(show.title)}${show.firstAirYear ? ` <span class="wl-year">(${show.firstAirYear})</span>` : ''}</div>
-          <div class="wl-note">${progress}${show.status ? ` · <span class="status-badge ${isShowEnded(show.status) ? 'ended' : 'ongoing'}">${escapeHtml(showStatusLabel(show.status))}</span>` : ''}</div>
+          <div class="wl-note">${progress}${show.status ? ` · ${escapeHtml(showStatusLabel(show.status))}` : ''}</div>
         </div>
         <!-- Note visible direct sur la liste (v2.1, retour utilisateur :
              fallait ouvrir la série pour la voir) — même badge .counter que
              le catalogue films, même repli '—' tant qu'aucune note
              manuelle n'a été donnée (voir handleSaveSeriesNote()). -->
         <div class="counter ${noteColorClass(show.manualNote)}">${show.manualNote !== null ? show.manualNote.toFixed(1) : '—'}</div>
-        <div class="wl-actions">
-          <button class="btn secondary" data-action="open" data-id="${show.id}" type="button">Ouvrir</button>
-          <button class="btn danger" data-action="remove" data-id="${show.id}" type="button">Retirer</button>
-        </div>
       </div>
     `;
   }).join('');
-  list.querySelectorAll('[data-action="open"]').forEach(btn => {
-    btn.addEventListener('click', () => goToSeriesDetail(parseInt(btn.dataset.id, 10)));
-  });
-  list.querySelectorAll('[data-action="remove"]').forEach(btn => {
-    btn.addEventListener('click', () => handleRemoveShow(parseInt(btn.dataset.id, 10), false));
+  list.querySelectorAll('.wl-row[data-id]').forEach(row => {
+    row.addEventListener('click', () => goToSeriesDetail(parseInt(row.dataset.id, 10)));
   });
 }
 

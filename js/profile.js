@@ -4,6 +4,7 @@
 
 let currentProfile = null;
 let profileLoadPromise = null;
+let topFilmsSelection = []; // tmdb_id choisis pour le top films, dans l'ordre — état local de la modale profil, voir renderTopFilmsPicker()
 
 // Supabase peut déclencher plusieurs événements de session en cascade au
 // chargement (getSession() + onAuthStateChange), ce qui appelait cette
@@ -103,6 +104,10 @@ function openProfileModal(){
   setAvatarSourceTab('file');
   document.getElementById('publicProfileToggle').checked = !!(currentProfile && currentProfile.public_profile);
   updatePublicProfileLinkVisibility();
+  topFilmsSelection = (currentProfile && Array.isArray(currentProfile.top_films)) ? currentProfile.top_films.slice() : [];
+  document.getElementById('topFilmsSearch').value = '';
+  document.getElementById('topFilmsResults').innerHTML = '';
+  renderTopFilmsPicker();
   // Bouton Admin (js/admin.js) : masqué pour tout le monde sauf ADMIN_EMAIL.
   document.getElementById('adminBtn').style.display = isAdmin() ? '' : 'none';
   // Installation en app (js/pwa.js) : reconstruit à chaque ouverture — le
@@ -238,6 +243,105 @@ document.getElementById('avatarFilmSearch').addEventListener('input', (e) => {
   renderAvatarFilmResults(e.target.value);
 });
 
+// --- Top films (v2.3, retour utilisateur) ---
+// Jusqu'à 4 films du catalogue déjà noté, choisis à la main (pas triés par
+// note) et réordonnables — mis en avant sur le profil public
+// (js/publicProfile.js). État local (topFilmsSelection, un tableau de
+// tmdb_id) écrasé à l'ouverture de la modale par currentProfile.top_films,
+// persisté seulement au clic sur "Enregistrer" comme le reste du formulaire
+// profil — voir handleSaveProfile().
+
+function renderTopFilmsPicker(){
+  const wrap = document.getElementById('topFilmsPicker');
+  if(topFilmsSelection.length === 0){
+    wrap.innerHTML = `<div class="tmdb-empty">Aucun film choisi pour l'instant.</div>`;
+  }else{
+    // Un tmdb_id choisi avant que le film correspondant soit retiré du
+    // catalogue (suppression depuis) n'a plus de match ici — ignoré à
+    // l'affichage, disparaît pour de bon au prochain "Enregistrer" (le
+    // tableau sauvegardé ne contient que ce qui reste rendu).
+    wrap.innerHTML = topFilmsSelection.map((tmdbId, idx) => {
+      const f = films.find(x => x.tmdbId === tmdbId);
+      if(!f) return '';
+      return `
+        <div class="top-film-chip" data-tmdb-id="${tmdbId}">
+          ${f.posterUrl
+            ? `<img src="${f.posterUrl}" alt="">`
+            : `<div class="tmdb-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
+          <div class="tmdb-result-info">
+            <div class="tmdb-result-title">${escapeHtml(f.title)}</div>
+            ${f.releaseYear ? `<div class="tmdb-result-year">${f.releaseYear}</div>` : ''}
+          </div>
+          <div class="top-film-chip-actions">
+            <button type="button" data-action="up" ${idx === 0 ? 'disabled' : ''} title="Monter" aria-label="Monter">↑</button>
+            <button type="button" data-action="down" ${idx === topFilmsSelection.length - 1 ? 'disabled' : ''} title="Descendre" aria-label="Descendre">↓</button>
+            <button type="button" data-action="remove" title="Retirer" aria-label="Retirer">✕</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  document.getElementById('topFilmsSearch').placeholder = topFilmsSelection.length >= 4
+    ? 'Maximum 4 films — retire-en un pour en ajouter un autre'
+    : 'Chercher un film déjà noté…';
+  wrap.querySelectorAll('.top-film-chip').forEach(chip => {
+    const tmdbId = parseInt(chip.dataset.tmdbId, 10);
+    chip.querySelectorAll('button[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = topFilmsSelection.indexOf(tmdbId);
+        if(btn.dataset.action === 'remove'){
+          topFilmsSelection.splice(idx, 1);
+        }else if(btn.dataset.action === 'up' && idx > 0){
+          [topFilmsSelection[idx - 1], topFilmsSelection[idx]] = [topFilmsSelection[idx], topFilmsSelection[idx - 1]];
+        }else if(btn.dataset.action === 'down' && idx < topFilmsSelection.length - 1){
+          [topFilmsSelection[idx + 1], topFilmsSelection[idx]] = [topFilmsSelection[idx], topFilmsSelection[idx + 1]];
+        }
+        renderTopFilmsPicker();
+      });
+    });
+  });
+}
+
+function renderTopFilmsResults(query){
+  const wrap = document.getElementById('topFilmsResults');
+  if(topFilmsSelection.length >= 4){ wrap.innerHTML = ''; return; }
+  const q = normalizeSearch(query.trim());
+  // tmdbId requis (pas juste une affiche, contrairement au choix d'avatar
+  // ci-dessus) : top_films (migrations/032) ne stocke que des tmdb_id, un
+  // film ajouté à la main sans recherche TMDB n'a rien à stocker.
+  const candidates = films.filter(f => f.tmdbId && !topFilmsSelection.includes(f.tmdbId) && (!q || getSearchTerms(f).some(t => t.includes(q))));
+
+  if(candidates.length === 0){
+    wrap.innerHTML = q ? `<div class="tmdb-empty">Aucun film ne correspond.</div>` : '';
+    return;
+  }
+
+  wrap.innerHTML = '';
+  candidates.slice(0, 20).forEach(f => {
+    const item = document.createElement('div');
+    item.className = 'tmdb-result';
+    item.innerHTML = `
+      ${f.posterUrl ? `<img src="${f.posterUrl}" alt="">` : `<div class="tmdb-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
+      <div class="tmdb-result-info">
+        <div class="tmdb-result-title">${escapeHtml(f.title)}</div>
+        ${f.releaseYear ? `<div class="tmdb-result-year">${f.releaseYear}</div>` : ''}
+      </div>
+    `;
+    item.addEventListener('click', () => {
+      if(topFilmsSelection.length >= 4) return;
+      topFilmsSelection.push(f.tmdbId);
+      document.getElementById('topFilmsSearch').value = '';
+      wrap.innerHTML = '';
+      renderTopFilmsPicker();
+    });
+    wrap.appendChild(item);
+  });
+}
+
+document.getElementById('topFilmsSearch').addEventListener('input', (e) => {
+  renderTopFilmsResults(e.target.value);
+});
+
 function closeProfileModal(){
   closeOverlay('profileOverlay');
 }
@@ -246,10 +350,13 @@ async function handleSaveProfile(){
   const display_name = document.getElementById('displayNameInput').value.trim() || null;
   const avatar_url = document.getElementById('avatarUrlInput').value.trim() || null;
   const public_profile = document.getElementById('publicProfileToggle').checked;
+  // Ne garde que les tmdb_id qui ont effectivement un film derrière (voir le
+  // commentaire dans renderTopFilmsPicker()) — jamais de trou côté base.
+  const top_films = topFilmsSelection.filter(tmdbId => films.some(f => f.tmdbId === tmdbId));
 
   const { data, error } = await supabaseClient
     .from('profiles')
-    .update({ display_name, avatar_url, public_profile })
+    .update({ display_name, avatar_url, public_profile, top_films })
     .eq('user_id', currentUser.id)
     .select()
     .single();

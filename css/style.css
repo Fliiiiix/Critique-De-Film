@@ -1149,6 +1149,35 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-style:italic;
   padding:6px 2px;
 }
+/* Top films (v2.3) — chaque film choisi réutilise le gabarit .tmdb-result
+   (poster + titre + année) mais sans son survol cliquable-en-bloc, remplacé
+   par 3 actions dédiées (monter/descendre/retirer) — voir
+   renderTopFilmsPicker(), js/profile.js. */
+.top-films-picker{display:flex; flex-direction:column; gap:4px;}
+.top-film-chip{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:6px;
+  border-radius:8px;
+  background:var(--surface-2);
+}
+.top-film-chip img, .top-film-chip .tmdb-poster-placeholder{width:32px; height:48px; object-fit:cover; border-radius:5px; flex:none;}
+.top-film-chip-actions{display:flex; gap:4px; flex:none;}
+.top-film-chip-actions button{
+  width:26px; height:26px;
+  border:1px solid var(--line);
+  background:var(--surface);
+  color:var(--text-muted);
+  border-radius:6px;
+  cursor:pointer;
+  font-size:12px;
+  display:flex; align-items:center; justify-content:center;
+  transition:border-color .15s, color .15s;
+}
+.top-film-chip-actions button:hover:not(:disabled){border-color:var(--violet-dim); color:var(--text);}
+.top-film-chip-actions button:disabled{opacity:0.3; cursor:default;}
+.top-film-chip-actions button[data-action="remove"]:hover:not(:disabled){border-color:var(--coral-dim); color:var(--coral);}
 .tmdb-selected{
   display:flex;
   align-items:center;
@@ -1450,6 +1479,39 @@ input[type="range"]::-moz-range-thumb{
   font-family:'Bricolage Grotesque', sans-serif;
   font-weight:700;
   font-size:20px;
+}
+/* Top films (v2.3) — vitrine façon Letterboxd, distincte de la liste
+   .stats-section en dessous (triée par note) : ceux-ci sont un choix
+   personnel, affichés dans l'ordre voulu par le propriétaire du profil.
+   Voir renderPublicProfilePage(), js/publicProfile.js. */
+.top-films-showcase{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(90px, 1fr));
+  gap:14px;
+}
+.top-films-showcase-item{display:flex; flex-direction:column; gap:6px;}
+.top-films-showcase-item img,
+.top-films-showcase-item .film-poster-placeholder{
+  width:100%;
+  aspect-ratio:2/3;
+  height:auto;
+  object-fit:cover;
+  border-radius:8px;
+  border:1px solid var(--line);
+  transition:border-color .15s, transform .15s;
+}
+.top-films-showcase-item[data-tmdb-id]{cursor:pointer;}
+.top-films-showcase-item[data-tmdb-id]:hover img,
+.top-films-showcase-item[data-tmdb-id]:hover .film-poster-placeholder{
+  border-color:var(--violet-dim);
+  transform:translateY(-2px);
+}
+.top-films-showcase-title{
+  font-size:12px;
+  font-weight:600;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .stat-tiles{
   display:grid;
@@ -1894,6 +1956,12 @@ input[type="range"]::-moz-range-thumb{
   margin-bottom:8px;
   position:relative;
 }
+/* Série suivie (v2.3) : toute la ligne ouvre la fiche détail au clic (comme
+   .film-row) — voir renderTrackedShows(), js/series.js. Scopé à #seriesList
+   seul : #wlList/#topList gardent leurs propres boutons d'action, pas de
+   clic sur la ligne entière chez eux. */
+#seriesList .wl-row{cursor:pointer; transition:border-color .15s, transform .15s, box-shadow .15s;}
+#seriesList .wl-row:hover{border-color:var(--violet-dim); transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,0.35);}
 .wl-main{flex:1; min-width:0;}
 .wl-title{
   font-family:'Bricolage Grotesque', sans-serif;
@@ -2412,10 +2480,11 @@ body[data-view-mode="grid"] #topList .wl-note{
   -webkit-line-clamp:2;
   overflow:hidden;
 }
-body[data-view-mode="grid"] #wlList .wl-actions,
-body[data-view-mode="grid"] #seriesList .wl-actions{margin-top:2px;}
-body[data-view-mode="grid"] #wlList .wl-actions .btn,
-body[data-view-mode="grid"] #seriesList .wl-actions .btn{flex:1;}
+/* #seriesList retiré de ces deux règles (v2.3) : la tuile série n'a plus de
+   .wl-actions du tout (Ouvrir/Retirer), voir renderTrackedShows() dans
+   js/series.js — la ligne entière ouvre la série au clic, comme .film-row. */
+body[data-view-mode="grid"] #wlList .wl-actions{margin-top:2px;}
+body[data-view-mode="grid"] #wlList .wl-actions .btn{flex:1;}
 /* Rang du top 3 (js/top.js, .top-row) : en carte il devient un badge posé
    sur le coin de l'affiche plutôt qu'une ligne à part qui casserait la
    carte — voir le mode liste plus bas pour son traitement en ligne. */
@@ -2475,10 +2544,8 @@ body[data-view-mode="list"] #seriesList .wl-title,
 body[data-view-mode="list"] #topList .wl-title{
   font-size:17px;
 }
-body[data-view-mode="list"] #wlList .wl-actions,
-body[data-view-mode="list"] #seriesList .wl-actions{flex:none;}
-body[data-view-mode="list"] #wlList .wl-actions .btn,
-body[data-view-mode="list"] #seriesList .wl-actions .btn{flex:none;}
+body[data-view-mode="list"] #wlList .wl-actions{flex:none;}
+body[data-view-mode="list"] #wlList .wl-actions .btn{flex:none;}
 body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
 
 /* --- Détail d'une série (#/series/:id, js/series.js) --- */
@@ -2673,8 +2740,7 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   .overlay{padding:20px 12px;}
   .modal{padding:20px;}
   .ach-tier-grid, .ach-hidden-grid{grid-template-columns:1fr 1fr;}
-  body[data-view-mode="grid"] #wlList .wl-actions,
-  body[data-view-mode="grid"] #seriesList .wl-actions{width:100%;}
+  body[data-view-mode="grid"] #wlList .wl-actions{width:100%;}
   .journal-row{flex-wrap:wrap;}
   .journal-date{margin-left:auto;}
 

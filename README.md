@@ -261,6 +261,12 @@ nombre de films, note moyenne, favoris, répartition grille/note manuelle,
 distribution des notes, activité par mois, film le mieux et le moins bien
 noté.
 
+Barres de la distribution des notes cliquables (v2.3, retour utilisateur) :
+clique une barre non vide (ex. "4.0") pour voir la liste des films concernés
+juste en dessous, cliquable à son tour vers leur fiche (js/filmDetail.js).
+Fonctionne aussi bien sur ses propres statistiques que sur celles (lecture
+seule) d'un ami — voir `wireStatsDistribution()` dans `js/stats.js`.
+
 ## Succès
 
 Dans la modale profil, **🏆 Succès** (section "Mon activité") ouvre une page
@@ -316,7 +322,15 @@ l'**épisode près**, pas juste un statut par saison :
   temps) : une case à cocher par épisode, plus **Tout marquer vu** / **Tout
   marquer non vu** pour la saison entière.
 - **Retirer une série** supprime aussi tous ses épisodes cochés (suppression
-  en cascade côté base).
+  en cascade côté base) — depuis la fiche détail (bouton "Retirer cette
+  série"), pas depuis la liste (v2.3, voir ci-dessous).
+
+Liste (`#/series`, vue grille ou liste) simplifiée en v2.3 (retour
+utilisateur : la carte grille empilait poster/titre/progression/pastille de
+statut/note/2 boutons — "pas assez symétrique ou cohérent"). Alignée sur le
+gabarit de la tuile film : poster, titre, une seule sous-ligne discrète
+(progression + statut), note — toute la carte ouvre la fiche détail au clic,
+plus de boutons Ouvrir/Retirer sur la carte elle-même.
 
 Nécessite `supabase/migrations/024_add_tv_shows.sql`.
 
@@ -401,6 +415,15 @@ sur ses films (modale ouverte par-dessus la page, qui se retrouve dessous
 telle quelle une fois cette modale refermée). Une demande croisée (vous
 demandez à quelqu'un qui vous avait déjà demandé) est acceptée
 automatiquement plutôt que de créer un doublon.
+
+**Aperçu avant d'ajouter** (v2.3, retour utilisateur) : cliquer sur une
+personne dans la recherche, les suggestions, ou les demandes reçues/envoyées
+ouvre l'aperçu de son **profil public** (`#/u/:userId`, voir plus bas) sans
+attendre d'être ami — reste silencieux (page "profil non public") si elle
+n'a pas activé cette option. Le badge de notification 👥 (voir "Digest de
+retour & badges de notification" plus bas) s'allume désormais aussi pour une
+demande d'ami **reçue** en attente, pas seulement pour l'activité d'amis
+déjà acceptés/de groupes.
 
 Techniquement : table `friendships` (une ligne par relation, statut
 pending/accepted/declined) + une policy RLS qui ouvre la lecture de `films`
@@ -616,6 +639,15 @@ page publique montre pseudo, avatar, quelques tuiles (films notés / note
 moyenne / favoris) et le catalogue trié par note — jamais l'email ni les
 commentaires (`review`), désactivé par défaut (opt-in).
 
+**Top films** (v2.3, retour utilisateur : "un top films comme Letterboxd,
+mis en avant par choix pas par note") : dans la modale profil, sous la case
+"Profil public", jusqu'à 4 films **choisis à la main** dans son propre
+catalogue déjà noté (recherche + boutons monter/descendre/retirer),
+affichés en haut de la page publique dans l'ordre choisi — distincts du
+catalogue trié par note juste en dessous. Cliquables vers leur fiche film
+uniquement si le visiteur est connecté (la fiche film n'est pas accessible
+sans session, contrairement à cette page).
+
 **Comment le vérifier soi-même** : cocher la case, "Enregistrer", copier le
 lien affiché (bouton "Copier"), puis l'ouvrir dans une fenêtre privée/
 navigation invitée (pas juste un nouvel onglet du même navigateur, qui
@@ -633,7 +665,9 @@ privé") tant que `public_profile` n'est pas passé à `true`. Vérifié en
 conditions réelles (v2.0.9) : la fonction RPC répond correctement en
 anonyme, et un clic à froid sur un lien `#/u/:userId` (cas réel d'usage —
 un proche qui reçoit le lien) affiche la page sans jamais passer par
-l'écran de connexion.
+l'écran de connexion. Colonne `profiles.top_films` (tableau de `tmdb_id`,
+au plus 4) et champ `top_films` de `get_public_profile()` ajoutés par
+`supabase/migrations/032_add_profile_top_films.sql`.
 
 **Bug trouvé et corrigé (v2.0.9)** : `renderRoute()` (js/router.js) gérait
 `#/u/:userId` et `#/invite/:token` correctement au tout premier chargement,

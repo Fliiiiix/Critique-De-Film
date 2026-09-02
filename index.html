@@ -926,6 +926,17 @@
       </div>
     </div>
 
+    <!-- Top films (v2.3, retour utilisateur : "un top films comme
+         Letterboxd, mis en avant par choix pas par note") — jusqu'à 4,
+         choisis dans le catalogue déjà noté, mis en avant sur le profil
+         public ci-dessus (voir js/publicProfile.js, migrations/032). -->
+    <div class="field">
+      <label>Top films (jusqu'à 4, mis en avant sur ton profil public)</label>
+      <div class="top-films-picker" id="topFilmsPicker"></div>
+      <input type="text" id="topFilmsSearch" placeholder="Chercher un film déjà noté…" style="margin-top:8px;">
+      <div class="tmdb-results" id="topFilmsResults"></div>
+    </div>
+
     <div class="profile-activity-section">
       <div class="stats-section-title">Mon activité</div>
       <div class="profile-activity-links">
