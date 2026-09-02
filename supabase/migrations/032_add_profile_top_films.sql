@@ -5,6 +5,9 @@
 -- interrogé seul, pas la granularité qui justifierait une table à part —
 -- même raisonnement que films.genre_ids, migrations/029).
 alter table public.profiles add column if not exists top_films integer[] not null default '{}';
+-- drop d'abord : rejoue proprement si la contrainte est déjà passée lors
+-- d'une tentative précédente (voir la remarque drop/create plus bas).
+alter table public.profiles drop constraint if exists profiles_top_films_max4;
 alter table public.profiles add constraint profiles_top_films_max4
   check (array_length(top_films, 1) is null or array_length(top_films, 1) <= 4);
 
@@ -17,7 +20,12 @@ alter table public.profiles add constraint profiles_top_films_max4
 -- (tri par position choisie) n'ont pas le même tri, les mélanger dans un
 -- seul jsonb_agg groupé aurait été plus verbeux que deux sous-requêtes
 -- indépendantes.
-create or replace function public.get_public_profile(p_user_id uuid)
+--
+-- drop avant le create : `create or replace` refuse de changer la forme des
+-- paramètres OUT d'une fonction existante (ajout de `top_films` ici) —
+-- Postgres exige de la supprimer d'abord plutôt que de la remplacer.
+drop function if exists public.get_public_profile(uuid);
+create function public.get_public_profile(p_user_id uuid)
 returns table(
   display_name text,
   avatar_url text,
