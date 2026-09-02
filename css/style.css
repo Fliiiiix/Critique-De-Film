@@ -75,19 +75,37 @@
    halo plus marqué propre à cet écran (voir plus bas) — pas de doublon
    visuel gênant, elle vient juste renforcer ce que le corps de page fait
    déjà partout. */
+/* Aurore (v2.9, "Halation" — retour utilisateur : "on s'ennuie, c'est
+   toujours monochrome") : 4 lueurs (violet/or/plum/bronze) qui dérivent
+   très lentement (55s, quasi imperceptible seconde par seconde), plutôt
+   que les 2 taches à 9%/5% d'opacité d'avant — celles-ci ne se voyaient
+   quasiment plus une fois le contenu posé dessus. Le quadrillage de points
+   reste fixe (dernière position de la liste, jamais animée) : seules les
+   couleurs bougent, la texture reste nette. Cartes/lignes gardent leur
+   propre fond opaque par-dessus (.film-row, etc.) — la densité du
+   catalogue n'en souffre pas, c'est le VIDE entre les éléments qui prend
+   vie. */
 body{
   background:
-    radial-gradient(900px 560px at 88% 0%, rgba(140,124,255,0.09), transparent 60%),
-    radial-gradient(760px 480px at 6% 60%, rgba(231,178,76,0.05), transparent 55%),
+    radial-gradient(1100px 800px at 8% -12%, rgba(140,124,255,0.28), transparent 55%),
+    radial-gradient(950px 720px at 92% 6%, rgba(231,178,76,0.22), transparent 55%),
+    radial-gradient(1000px 750px at 45% 100%, rgba(58,31,82,0.45), transparent 58%),
+    radial-gradient(750px 580px at 96% 85%, rgba(217,170,103,0.16), transparent 52%),
     radial-gradient(rgba(242,238,230,0.04) 1px, transparent 1px) 0 0/26px 26px,
     var(--ink);
   background-attachment:fixed;
+  background-position:0 0, 0 0, 0 0, 0 0, 0 0;
+  animation:auroraDrift 55s ease-in-out infinite alternate;
   color:var(--text);
   font-family:'Instrument Sans', sans-serif;
   min-height:100vh;
   padding:0 0 80px 0;
   position:relative;
 }
+@keyframes auroraDrift{
+  to{background-position:3% 4%, -3% 3%, 2% -2%, -3% -2%, 0 0;}
+}
+@media (prefers-reduced-motion: reduce){body{animation:none;}}
 /* Grain argentique (v2.7) — texture fine sur tout le fond, comme une
    pellicule plutôt qu'un filtre : se sent plus qu'il ne se voit (2.5%
    d'opacité). Fixed + pointer-events:none, jamais devant le contenu
@@ -302,10 +320,13 @@ header{
 .primary-tab svg{width:17px; height:17px; flex:none;}
 .primary-tab:hover{background:var(--surface-2); color:var(--text);}
 .primary-tab:active{transform:scale(0.98);}
+/* v2.9, "Halation" : léger halo sur l'onglet actif — visible en
+   permanence (pas juste au survol), signale "c'est ici" sans mot. */
 .primary-tab[aria-selected="true"]{
   color:var(--ink);
   background:var(--violet);
   border-color:var(--violet);
+  box-shadow:0 0 20px 2px rgba(140,124,255,0.35);
 }
 .primary-tab[aria-selected="true"]:hover{background:var(--violet);}
 .eyebrow{
@@ -431,6 +452,9 @@ h1{
    sans taille explicite un <svg> sans width/height s'affiche à sa taille
    intrinsèque par défaut du navigateur (bien trop grande dans un bouton). */
 .btn.icon-only svg{width:16px; height:16px; display:block;}
+/* v2.9, "Halation" : flotte au-dessus du catalogue, candidat naturel au
+   verre (contrairement à l'entête, qui ne défile pas au-dessus de rien —
+   pas de flou sans mouvement derrière à révéler). */
 .dropdown-menu{
   display:none;
   flex-direction:column;
@@ -438,8 +462,10 @@ h1{
   position:absolute;
   top:calc(100% + 8px);
   right:0;
-  background:var(--surface);
-  border:1px solid var(--line);
+  background:rgba(27,24,38,0.72);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border:1px solid rgba(242,238,230,0.09);
   border-radius:10px;
   padding:6px;
   min-width:190px;
@@ -498,7 +524,7 @@ h1{
   z-index:40;
   transition:transform .15s ease;
 }
-.fab:hover{transform:scale(1.06);}
+.fab:hover{transform:scale(1.06); box-shadow:0 10px 28px rgba(140,124,255,0.35), 0 0 32px 6px rgba(231,178,76,0.3);}
 .fab:active{transform:scale(0.92);}
 input[type="text"], input[type="email"], input[type="number"], select, textarea{
   background:var(--surface);
@@ -516,7 +542,13 @@ input[type="text"]{flex:1; min-width:180px;}
    connexion) restait un input natif du navigateur — non stylé, minuscule à
    côté du reste de la carte. */
 .field input[type="email"]{width:100%;}
-input[type="text"]:focus, input[type="email"]:focus, input[type="number"]:focus, select:focus, textarea:focus{border-color:var(--violet-dim);}
+/* v2.9, "Halation" : un halo discret au focus plutôt qu'un simple
+   changement de bordure — répond au geste (on vient de cliquer dedans),
+   cohérent avec les boutons plus bas. */
+input[type="text"]:focus, input[type="email"]:focus, input[type="number"]:focus, select:focus, textarea:focus{
+  border-color:var(--violet-dim);
+  box-shadow:0 0 0 3px rgba(140,124,255,0.16);
+}
 textarea{width:100%; resize:vertical; line-height:1.5; font-family:'Instrument Sans', sans-serif;}
 select{cursor:pointer;}
 /* Upload d'avatar (js/profile.js) — ::file-selector-button plutôt que
@@ -552,9 +584,12 @@ input[type="file"]::file-selector-button:hover{color:var(--text); border-color:v
   cursor:pointer;
   font-weight:600;
   white-space:nowrap;
-  transition:background .15s, transform .1s;
+  transition:background .15s, transform .1s, box-shadow .2s;
 }
-.btn:hover{background:#a297ff;}
+/* v2.9, "Halation" : un vrai halo au survol, pas juste un changement de
+   teinte — la lueur qu'un point actif dégage, voir la section Le style de
+   la page de référence pour le principe complet. */
+.btn:hover{background:#a297ff; box-shadow:0 0 0 1px rgba(140,124,255,0.35), 0 0 24px 4px rgba(140,124,255,0.35);}
 .btn:active{transform:scale(0.96);}
 .btn:disabled{opacity:0.35; cursor:default; transform:none;}
 .btn.secondary{
@@ -1151,9 +1186,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* Modal */
+/* v2.9, "Halation" : la modale devient une vitre dépolie plutôt qu'un
+   panneau opaque — l'aurore du fond (voir body plus haut) se devine à
+   travers, floutée. Le voile derrière (.overlay) s'éclaircit un peu
+   (0.78→0.55) et se floute lui aussi : c'est le flou qui sépare le
+   contenu du dessous, pas juste l'obscurité. */
 .overlay{
   position:fixed; inset:0;
-  background:rgba(6,5,10,0.78);
+  background:rgba(6,5,10,0.55);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
   display:none;
   align-items:flex-start;
   justify-content:center;
@@ -1168,8 +1210,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .overlay.closing{display:flex; animation:overlayOut .15s ease-in forwards;}
 .overlay.closing .modal{animation:modalOut .15s ease-in forwards;}
 .modal{
-  background:linear-gradient(160deg, var(--surface) 0%, var(--surface-2) 220%);
-  border:1px solid var(--line);
+  background:rgba(27,24,38,0.74);
+  backdrop-filter:blur(26px) saturate(160%);
+  -webkit-backdrop-filter:blur(26px) saturate(160%);
+  border:1px solid rgba(242,238,230,0.09);
   border-radius:16px;
   width:100%;
   max-width:640px;
@@ -1615,10 +1659,13 @@ input[type="range"]::-moz-range-thumb{
   transition:border-color .15s, transform .15s;
 }
 .top-films-showcase-item[data-tmdb-id]{cursor:pointer;}
+/* v2.9, "Halation" : halo à deux teintes au survol, plutôt qu'un simple
+   changement de bordure — un top film mérite bien ça. */
 .top-films-showcase-item[data-tmdb-id]:hover img,
 .top-films-showcase-item[data-tmdb-id]:hover .film-poster-placeholder{
-  border-color:var(--violet-dim);
+  border-color:var(--gold);
   transform:translateY(-2px);
+  box-shadow:0 0 0 1px rgba(231,178,76,0.3), 0 0 26px 4px rgba(231,178,76,0.3), 0 0 50px 10px rgba(140,124,255,0.16);
 }
 .top-films-showcase-title{
   font-size:12px;
@@ -1654,6 +1701,16 @@ input[type="range"]::-moz-range-thumb{
 .stat-tile.accent-violet .stat-value{color:var(--violet);}
 .stat-tile.accent-gold .stat-value{color:var(--gold);}
 .stat-tile.accent-bronze .stat-value{color:var(--bronze);}
+/* v2.9, "Halation" : la note moyenne EST un mélange (toutes les notes
+   confondues) — seul chiffre à mériter un dégradé plutôt qu'une teinte
+   unique, texte comme le reste de la règle "dégradé = ça parle
+   vraiment de couleur/mélange", pas décoratif au hasard. */
+.stat-tile.accent-gradient .stat-value{
+  background:linear-gradient(100deg, var(--violet), var(--gold));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
 .stat-label{
   font-family:'Space Mono', monospace;
   font-size:10.5px;
@@ -1893,12 +1950,27 @@ input[type="range"]::-moz-range-thumb{
    sont deux moments "à part" (pas une donnée du quotidien comme une ligne
    de catalogue), le bloc de couleur les distingue au premier coup d'œil. */
 .ach-summary{
+  position:relative;
   background:linear-gradient(155deg, var(--plum) 0%, var(--plum-2) 100%);
-  border:1px solid var(--plum-2);
+  border:1px solid transparent;
   border-radius:10px;
   padding:16px 18px;
   text-align:center;
   margin-bottom:28px;
+}
+/* v2.9, "Halation" : filet dégradé plutôt qu'une bordure plate — technique
+   par masque (le pseudo-élément ne couvre QUE l'épaisseur de la bordure,
+   jamais l'intérieur de la carte). */
+.ach-summary::before{
+  content:'';
+  position:absolute; inset:0;
+  border-radius:inherit;
+  padding:1.5px;
+  background:linear-gradient(120deg, var(--violet), var(--gold), var(--bronze));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  pointer-events:none;
 }
 .ach-summary-count{
   font-family:'Bricolage Grotesque', sans-serif;

@@ -78,7 +78,7 @@ async function renderPublicProfilePage(userId){
     </div>
     <div class="stat-tiles">
       <div class="stat-tile accent-violet"><div class="stat-value">${films.length}</div><div class="stat-label">Films notés</div></div>
-      <div class="stat-tile accent-gold"><div class="stat-value">${avgNote !== null ? avgNote.toFixed(2) : '—'}</div><div class="stat-label">Note moyenne</div></div>
+      <div class="stat-tile accent-gradient"><div class="stat-value">${avgNote !== null ? avgNote.toFixed(2) : '—'}</div><div class="stat-label">Note moyenne</div></div>
       <div class="stat-tile accent-bronze"><div class="stat-value">${favCount}</div><div class="stat-label">Favoris</div></div>
     </div>
     ${topFilmsHtml}
