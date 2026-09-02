@@ -88,6 +88,9 @@ async function openWatchlist(){
   document.getElementById('wlList').innerHTML = `<div class="empty-state">Chargement…</div>`;
   await loadWatchlist();
   renderWatchlist();
+  // Suggestions (v2.1, js/suggestions.js) : plusieurs appels TMDB, jamais
+  // attendu — la page watchlist s'affiche sans attendre ce complément.
+  loadSuggestions();
 }
 
 async function handleAddToWatchlist(){
