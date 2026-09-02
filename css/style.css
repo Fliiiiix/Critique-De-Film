@@ -159,9 +159,22 @@ header{
   50%{transform:scale(1) rotate(-8deg);}
 }
 .brand-mark-gold.idle{animation:brandMarkFlicker 3.4s ease-in-out infinite;}
+/* v2.8 : clin d'œil au survol (retour utilisateur — "ce serait cool
+   d'avoir l'animation quand on passe la souris dessus"). Spécificité
+   .brand-link:hover .brand-mark-gold (0,3,0) > .brand-mark-gold.idle
+   (0,2,0) : gagne pendant le survol sans rien désactiver en JS, l'oscillation
+   .idle reprend d'elle-même à la sortie. */
+.brand-link:hover .brand-mark-gold{animation:brandMarkWink 0.5s ease-out;}
+@keyframes brandMarkWink{
+  0%{transform:scale(1) rotate(-12deg);}
+  35%{transform:scale(1.18) rotate(-24deg);}
+  65%{transform:scale(1.05) rotate(-4deg);}
+  100%{transform:scale(1) rotate(-12deg);}
+}
 @media (prefers-reduced-motion: reduce){
   .brand-mark-violet, .brand-mark-gold{animation:none;}
   .brand-mark-gold{transform:rotate(-12deg);}
+  .brand-link:hover .brand-mark-gold{animation:none;}
 }
 .user-bar{
   position:absolute;
@@ -192,9 +205,13 @@ header{
   width:38px; height:38px;
   border-radius:10px;
   cursor:pointer;
-  transition:background .15s, color .15s, border-color .15s;
+  transition:background .15s, color .15s, border-color .15s, transform .15s;
 }
-.header-nav-btn:hover{background:var(--surface-2); border-color:var(--line); color:var(--text);}
+/* v2.8 : or plutôt que --text au survol (retour utilisateur — "où est la
+   couleur ?", l'entête entière restait grise/violette) — présent sur
+   TOUTE page (entête persistante), plus le petit coup de zoom qui va
+   avec pour que ce ne soit pas qu'un changement de teinte statique. */
+.header-nav-btn:hover{background:var(--surface-2); border-color:var(--gold-dim); color:var(--gold); transform:scale(1.08);}
 /* SVG (v2.0.14) plutôt qu'un emoji — voir le commentaire au-dessus de
    #primaryTabs dans index.html pour le pourquoi. */
 .header-nav-btn svg{width:18px; height:18px;}
@@ -633,11 +650,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   padding:14px 16px;
   margin-bottom:8px;
   cursor:pointer;
+  perspective:500px; /* v2.8 : vraie profondeur pour la bascule de .counter, voir counterFlip plus haut */
   transition:border-color .15s, transform .12s, box-shadow .12s;
   position:relative;
 }
 .film-row:hover{border-color:var(--violet-dim); transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,0.35);}
 .film-row:active{transform:translateY(0); box-shadow:none;}
+/* v2.8 : lueur or pendant l'inclinaison (voir js/ui.js, mousemove délégué)
+   — plus marquée que le survol simple, pour que "la carte réagit au
+   curseur" se voie aussi en couleur, pas juste en mouvement. */
+.film-row.tilting, .wl-row.tilting{
+  border-color:var(--gold-dim);
+  box-shadow:0 16px 32px rgba(0,0,0,0.4), 0 0 28px rgba(231,178,76,0.14);
+}
 /* Perforations façon pellicule à l'intérieur de chaque ligne : motif de
    l'ancien thème cinéma, retiré en v2.0 (voir aussi les .sprockets des
    bords, supprimées d'index.html/js/app.js). Élément gardé dans le DOM
@@ -703,6 +728,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin-top:3px;
   letter-spacing:0.03em;
 }
+/* v2.8 : le genre sort du gris muet — voir render() dans js/app.js. */
+.film-sub-genre{color:var(--bronze); font-weight:600;}
 .star-btn{
   grid-area:star;
   flex:none;
@@ -756,21 +783,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .counter.rate-low{color:var(--coral); border-color:var(--coral-dim); background:rgba(255,107,87,0.08);}
 .counter.rate-mid{color:var(--gold); border-color:var(--gold-dim); background:var(--gold-wash);}
 .counter.rate-high{color:var(--green); border-color:var(--green-dim); background:var(--green-wash);}
-/* v2.7 : le glow existant (savePulse) reste, + une vraie bascule
-   (counterFlip) — le cadran tourne sur lui-même comme un compteur
-   mécanique plutôt que de juste clignoter. Deux animations, deux
-   propriétés différentes (box-shadow / transform), aucun conflit.
-   Pas d'exception prefers-reduced-motion ici (comme starPulse plus haut) :
-   retour direct d'un clic de sauvegarde, jamais une animation autonome —
-   même règle déjà appliquée partout ailleurs dans ce fichier. */
-.counter.pulse{animation:savePulse .5s ease-out, counterFlip .4s ease-out;}
+/* v2.8 : bascule franchement plus marquée (retour utilisateur — "j'ai pas
+   vu" sur la v2.7, un simple quart de tour de 0.4s passait inaperçu) : un
+   tour complet (360°) avec un coup de zoom au passage, en perspective
+   réelle (voir .film-row/.wl-row/.friend-film-row plus bas) pour un vrai
+   effet 3D plutôt qu'un aplatissement horizontal. Le glow existant
+   (savePulse) reste en plus. Pas d'exception prefers-reduced-motion ici
+   (comme starPulse plus haut) : retour direct d'un clic de sauvegarde,
+   jamais une animation autonome — même règle déjà appliquée partout
+   ailleurs dans ce fichier. */
+.counter.pulse{animation:savePulse .5s ease-out, counterFlip .6s cubic-bezier(.34,1.56,.64,1);}
 @keyframes savePulse{
   0%{box-shadow:0 0 0 0 rgba(231,178,76,0.55);}
   100%{box-shadow:0 0 0 8px rgba(231,178,76,0);}
 }
 @keyframes counterFlip{
-  0%{transform:rotateY(90deg);}
-  100%{transform:rotateY(0deg);}
+  0%{transform:rotateY(0) scale(1);}
+  35%{transform:rotateY(180deg) scale(1.2);}
+  70%{transform:rotateY(360deg) scale(1.2);}
+  100%{transform:rotateY(360deg) scale(1);}
 }
 
 /* "Manuel" reste signalé UNIQUEMENT ici (petit texte à côté du titre) —
@@ -2052,6 +2083,7 @@ input[type="range"]::-moz-range-thumb{
   padding:12px 14px;
   margin-bottom:8px;
   position:relative;
+  perspective:500px; /* v2.8 : vraie profondeur pour la bascule de .counter, voir counterFlip plus haut */
 }
 /* Série suivie (v2.3) : toute la ligne ouvre la fiche détail au clic (comme
    .film-row) — voir renderTrackedShows(), js/series.js. Scopé à #seriesList

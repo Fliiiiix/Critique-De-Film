@@ -207,7 +207,10 @@ function render(){
     // même le filtre #genreFilter) — 2 maximum, assez pour situer le film
     // sans allonger la ligne indéfiniment (certains en ont 4-5 sur TMDB).
     const genres = (f.genreIds || []).map(id => GENRE_MAP[id]).filter(Boolean).slice(0, 2).join(', ');
-    const sub = (isManual ? 'Note manuelle · ancien référentiel' : '7 critères notés') + (f.releaseYear ? ` · ${f.releaseYear}` : '') + (genres ? ` · ${genres}` : '');
+    // Genre en bronze (v2.8, retour utilisateur — "où est la couleur ?") :
+    // seul segment de .film-sub à sortir du gris muet, sur la ligne la
+    // plus vue de toute l'app (le catalogue).
+    const sub = (isManual ? 'Note manuelle · ancien référentiel' : '7 critères notés') + (f.releaseYear ? ` · ${f.releaseYear}` : '') + (genres ? ` · <span class="film-sub-genre">${genres}</span>` : '');
     row.innerHTML = `
       <div class="holes"><span></span><span></span><span></span></div>
       ${f.posterUrl
