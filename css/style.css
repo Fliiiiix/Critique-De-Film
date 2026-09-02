@@ -45,6 +45,19 @@
   --green:#6ad18b;
   --green-dim:#3f7a52;
   --green-wash:rgba(106,209,139,0.1);
+  /* Bronze et plum (v2.7, DA élargie — retour utilisateur : "trop
+     monochrome") : le bronze n'est PAS choisi à la main, c'est la vraie
+     transparence de l'or posé sur le violet dans le mark (voir
+     .brand-mark-gold plus bas) — devenu 3e couleur, réservée aux moments
+     rares (succès, mise en avant). Plum : un violet profond et saturé,
+     pas juste "surface plus sombre", pour de vrais blocs de couleur
+     (voir .top-films-showcase, .ach-summary) plutôt que du violet plat
+     sur fond noir partout. */
+  --bronze:#d9aa67;
+  --bronze-dim:#8f6a3a;
+  --bronze-wash:rgba(217,170,103,0.12);
+  --plum:#3a1f52;
+  --plum-2:#4d2a68;
 }
 *{box-sizing:border-box; margin:0; padding:0;}
 /* Fond de page : le violet du header seul ne suffisait pas (retour
@@ -73,6 +86,20 @@ body{
   font-family:'Instrument Sans', sans-serif;
   min-height:100vh;
   padding:0 0 80px 0;
+  position:relative;
+}
+/* Grain argentique (v2.7) — texture fine sur tout le fond, comme une
+   pellicule plutôt qu'un filtre : se sent plus qu'il ne se voit (2.5%
+   d'opacité). Fixed + pointer-events:none, jamais devant le contenu
+   interactif ni les affiches (qui ont déjà leur propre grain). */
+body::after{
+  content:'';
+  position:fixed; inset:0;
+  pointer-events:none;
+  z-index:2000;
+  opacity:0.025;
+  mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 header{
@@ -100,17 +127,42 @@ header{
 }
 .brand-link:hover{opacity:0.82;}
 .brand-link:focus-visible{outline:2px solid var(--violet-dim); outline-offset:4px; border-radius:2px;}
-/* Logo (v2.0.8, revu v2.1) : un cadran, pas une lettre — reprend
-   directement le composant .counter (badge circulaire coloré par
-   barème), déjà désigné comme "signature visuelle de Kinet" ailleurs
-   dans ce fichier, plutôt qu'un monogramme sans lien avec ce que l'app
-   fait vraiment. Anneau complet + aiguille (pas un arc partiel — voir le
-   commentaire dans index.html : lu comme un spinner de chargement,
-   retour utilisateur). */
-.brand-mark{width:34px; height:34px; flex:none;}
-.brand-mark-track{fill:none; stroke:var(--line); stroke-width:3.5;}
-.brand-mark-needle{stroke:var(--violet); stroke-width:3.5; stroke-linecap:round;}
-.brand-mark-pivot{fill:var(--violet);}
+/* Logo (v2.7) — deux cadres qui se superposent, voir le commentaire dans
+   index.html pour le concept. Div plutôt que SVG : un essai précédent
+   avec des <rect> SVG animées ne s'affichait tout simplement pas de
+   façon fiable (transform-origin ambigu selon le moteur) — deux div
+   simples, pourcentages, transform-origin par défaut (50% 50% de chaque
+   élément), zéro ambiguïté. */
+.brand-mark{position:relative; width:34px; height:34px; flex:none;}
+.brand-mark-violet, .brand-mark-gold{position:absolute; border-radius:24%; transform-origin:50% 50%;}
+.brand-mark-violet{
+  left:18%; top:18%; width:54%; height:54%;
+  background:var(--violet);
+  animation:brandMarkViolet 0.6s cubic-bezier(.34,1.56,.64,1) both;
+}
+.brand-mark-gold{
+  left:40%; top:40%; width:40%; height:40%;
+  background:var(--gold); opacity:0.85;
+  transform:rotate(-12deg);
+  animation:brandMarkGold 0.6s 0.15s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes brandMarkViolet{
+  from{transform:scale(0);}
+  to{transform:scale(1);}
+}
+@keyframes brandMarkGold{
+  from{transform:scale(0) rotate(-12deg);}
+  to{transform:scale(1) rotate(-12deg);}
+}
+@keyframes brandMarkFlicker{
+  0%, 100%{transform:scale(1) rotate(-12deg);}
+  50%{transform:scale(1) rotate(-8deg);}
+}
+.brand-mark-gold.idle{animation:brandMarkFlicker 3.4s ease-in-out infinite;}
+@media (prefers-reduced-motion: reduce){
+  .brand-mark-violet, .brand-mark-gold{animation:none;}
+  .brand-mark-gold{transform:rotate(-12deg);}
+}
 .user-bar{
   position:absolute;
   top:14px;
@@ -704,10 +756,21 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .counter.rate-low{color:var(--coral); border-color:var(--coral-dim); background:rgba(255,107,87,0.08);}
 .counter.rate-mid{color:var(--gold); border-color:var(--gold-dim); background:var(--gold-wash);}
 .counter.rate-high{color:var(--green); border-color:var(--green-dim); background:var(--green-wash);}
-.counter.pulse{animation:savePulse .5s ease-out;}
+/* v2.7 : le glow existant (savePulse) reste, + une vraie bascule
+   (counterFlip) — le cadran tourne sur lui-même comme un compteur
+   mécanique plutôt que de juste clignoter. Deux animations, deux
+   propriétés différentes (box-shadow / transform), aucun conflit.
+   Pas d'exception prefers-reduced-motion ici (comme starPulse plus haut) :
+   retour direct d'un clic de sauvegarde, jamais une animation autonome —
+   même règle déjà appliquée partout ailleurs dans ce fichier. */
+.counter.pulse{animation:savePulse .5s ease-out, counterFlip .4s ease-out;}
 @keyframes savePulse{
   0%{box-shadow:0 0 0 0 rgba(231,178,76,0.55);}
   100%{box-shadow:0 0 0 8px rgba(231,178,76,0);}
+}
+@keyframes counterFlip{
+  0%{transform:rotateY(90deg);}
+  100%{transform:rotateY(0deg);}
 }
 
 /* "Manuel" reste signalé UNIQUEMENT ici (petit texte à côté du titre) —
@@ -826,8 +889,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   display:flex;
   flex-direction:column;
   justify-content:center;
+  /* v2.7 : même entrée en fondu que .auth-pitch, légèrement décalée —
+     opacity seule, voir la remarque sur l'alignement mesuré au pixel
+     près juste au-dessus de .auth-pitch. */
+  animation:authFadeIn .6s .15s ease-out both;
 }
 #maintenanceContainer .auth-card{max-width:420px; margin:60px auto;}
+@media (prefers-reduced-motion: reduce){
+  .auth-card{animation:none;}
+}
 .auth-card h2{
   font-family:'Bricolage Grotesque', sans-serif;
   font-weight:700;
@@ -945,7 +1015,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin:0 auto;
   padding:0 16px;
 }
-.auth-pitch{min-width:0; max-width:640px;}
+.auth-pitch{min-width:0; max-width:640px; animation:authFadeIn .6s ease-out both;}
+/* v2.7 : entrée en fondu (opacity seule, jamais transform/hauteur) —
+   pas touché à l'alignement des deux blocs, mesuré au pixel près (voir
+   .auth-hero plus haut) : une animation qui déplace/redimensionne
+   pourrait réintroduire le décalage déjà corrigé une fois. Autonome une
+   fois lancée (transition de page) → garde l'exception
+   prefers-reduced-motion, comme .page plus bas. */
+@keyframes authFadeIn{from{opacity:0;} to{opacity:1;}}
+@media (prefers-reduced-motion: reduce){
+  .auth-pitch{animation:none;}
+}
 .auth-pitch .eyebrow{margin-bottom:10px;}
 .auth-headline{
   font-family:'Bricolage Grotesque', sans-serif;
@@ -1497,7 +1577,10 @@ input[type="range"]::-moz-range-thumb{
   height:auto;
   object-fit:cover;
   border-radius:8px;
-  border:1px solid var(--line);
+  /* v2.7 : liseré bronze au repos (choix rare/mérité, voir les tokens en
+     tête de fichier) — distingue ces affiches du catalogue ordinaire même
+     sans survol. */
+  border:1px solid var(--bronze-dim);
   transition:border-color .15s, transform .15s;
 }
 .top-films-showcase-item[data-tmdb-id]{cursor:pointer;}
@@ -1533,6 +1616,13 @@ input[type="range"]::-moz-range-thumb{
   color:var(--gold);
   font-variant-numeric:tabular-nums;
 }
+/* v2.7 : un accent par tuile plutôt que la même couleur partout — voir
+   renderStatsInto() (js/stats.js) et renderPublicProfilePage()
+   (js/publicProfile.js), qui posent .accent-violet/.accent-gold/
+   .accent-bronze en cycle. */
+.stat-tile.accent-violet .stat-value{color:var(--violet);}
+.stat-tile.accent-gold .stat-value{color:var(--gold);}
+.stat-tile.accent-bronze .stat-value{color:var(--bronze);}
 .stat-label{
   font-family:'Space Mono', monospace;
   font-size:10.5px;
@@ -1768,9 +1858,12 @@ input[type="range"]::-moz-range-thumb{
 
 /* Succès */
 .achievements-modal{max-width:760px;}
+/* v2.7 : bloc plum plutôt qu'un fond plat — succès et compatibilité ciné
+   sont deux moments "à part" (pas une donnée du quotidien comme une ligne
+   de catalogue), le bloc de couleur les distingue au premier coup d'œil. */
 .ach-summary{
-  background:var(--ink);
-  border:1px solid var(--line);
+  background:linear-gradient(155deg, var(--plum) 0%, var(--plum-2) 100%);
+  border:1px solid var(--plum-2);
   border-radius:10px;
   padding:16px 18px;
   text-align:center;
@@ -1793,7 +1886,7 @@ input[type="range"]::-moz-range-thumb{
 }
 .ach-summary-bar{
   height:6px;
-  background:var(--surface-2);
+  background:rgba(0,0,0,0.28); /* pas --surface-2 (v2.7) : se distinguait mal sur le nouveau fond plum */
   border-radius:3px;
   overflow:hidden;
   margin-top:12px;

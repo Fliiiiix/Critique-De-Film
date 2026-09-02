@@ -152,11 +152,11 @@ function renderStatsInto(content, list = films, closeOverlayId = null){
 
   content.innerHTML = `
     <div class="stat-tiles">
-      <div class="stat-tile"><div class="stat-value">${s.total}</div><div class="stat-label">Films notés</div></div>
-      <div class="stat-tile"><div class="stat-value">${s.avg !== null ? s.avg.toFixed(2) : '—'}</div><div class="stat-label">Note moyenne</div></div>
-      <div class="stat-tile"><div class="stat-value">${s.favCount}</div><div class="stat-label">Favoris</div></div>
-      <div class="stat-tile"><div class="stat-value">${s.gridCount}</div><div class="stat-label">Grille 7 critères</div></div>
-      <div class="stat-tile"><div class="stat-value">${s.manualCount}</div><div class="stat-label">Note manuelle</div></div>
+      <div class="stat-tile accent-violet"><div class="stat-value">${s.total}</div><div class="stat-label">Films notés</div></div>
+      <div class="stat-tile accent-gold"><div class="stat-value">${s.avg !== null ? s.avg.toFixed(2) : '—'}</div><div class="stat-label">Note moyenne</div></div>
+      <div class="stat-tile accent-bronze"><div class="stat-value">${s.favCount}</div><div class="stat-label">Favoris</div></div>
+      <div class="stat-tile accent-violet"><div class="stat-value">${s.gridCount}</div><div class="stat-label">Grille 7 critères</div></div>
+      <div class="stat-tile accent-gold"><div class="stat-value">${s.manualCount}</div><div class="stat-label">Note manuelle</div></div>
     </div>
 
     <div class="stats-section stats-section-dist">

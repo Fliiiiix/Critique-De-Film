@@ -214,3 +214,39 @@ function noteColorClass(note){
   if(note < 4) return 'rate-mid';
   return 'rate-high';
 }
+
+// --- Mark de l'entête : relai entrée → oscillation continue (v2.7) ---
+// L'entrée (brandMarkGold, voir css/style.css) tourne une fois puis
+// s'arrête (animation non infinite) ; une fois finie, .idle prend le
+// relai pour l'oscillation en boucle — deux animations jamais actives en
+// même temps sur le même élément (la cascade CSS choisit .idle une fois
+// la classe posée), pas de conflit de transform.
+if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  document.querySelectorAll('.brand-mark-gold').forEach(el => {
+    el.addEventListener('animationend', (e) => {
+      if(e.animationName === 'brandMarkGold') el.classList.add('idle');
+    });
+  });
+}
+
+// --- Boutons magnétiques (v2.7, .magnetic) ---
+// Se laissent tirer légèrement vers le curseur qui approche, reviennent
+// avec un petit rebond au départ — réservé aux actions principales
+// (Ajouter un film, Enregistrer), pas à chaque bouton de la page : un
+// bouton "Retirer" qui se dérobe sous le curseur serait plus gênant
+// qu'autre chose. mousemove + transform en JS simple, pas de librairie.
+if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  document.querySelectorAll('.magnetic').forEach(btn => {
+    btn.addEventListener('mousemove', (e) => {
+      const r = btn.getBoundingClientRect();
+      const x = (e.clientX - r.left - r.width / 2) * 0.3;
+      const y = (e.clientY - r.top - r.height / 2) * 0.3;
+      btn.style.transition = 'transform 0.15s ease-out';
+      btn.style.transform = `translate(${x}px, ${y}px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transition = 'transform 0.5s cubic-bezier(.34,1.56,.64,1)';
+      btn.style.transform = 'translate(0,0)';
+    });
+  });
+}

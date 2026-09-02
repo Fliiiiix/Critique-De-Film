@@ -77,9 +77,9 @@ async function renderPublicProfilePage(userId){
       <h3>${escapeHtml(name)}</h3>
     </div>
     <div class="stat-tiles">
-      <div class="stat-tile"><div class="stat-value">${films.length}</div><div class="stat-label">Films notés</div></div>
-      <div class="stat-tile"><div class="stat-value">${avgNote !== null ? avgNote.toFixed(2) : '—'}</div><div class="stat-label">Note moyenne</div></div>
-      <div class="stat-tile"><div class="stat-value">${favCount}</div><div class="stat-label">Favoris</div></div>
+      <div class="stat-tile accent-violet"><div class="stat-value">${films.length}</div><div class="stat-label">Films notés</div></div>
+      <div class="stat-tile accent-gold"><div class="stat-value">${avgNote !== null ? avgNote.toFixed(2) : '—'}</div><div class="stat-label">Note moyenne</div></div>
+      <div class="stat-tile accent-bronze"><div class="stat-value">${favCount}</div><div class="stat-label">Favoris</div></div>
     </div>
     ${topFilmsHtml}
     <div class="stats-section">
