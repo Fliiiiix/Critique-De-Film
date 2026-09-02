@@ -90,19 +90,24 @@ function friendRowHtml(userId, actionsHtml, subLabel){
   `;
 }
 
-// Clic sur une ligne (recherche, suggestions, demandes reçues/envoyées,
-// amis) → aperçu du profil public (js/publicProfile.js), sans attendre
-// d'être ami (retour utilisateur : impossible jusqu'ici de voir qui on
-// ajoute avant d'envoyer/accepter une demande). Reste silencieux si le
-// profil n'est pas public — renderPublicProfilePage() l'affiche déjà
-// clairement ("n'existe pas ou n'est pas public"). Les boutons d'action
-// (Ajouter/Accepter/Voir...) gardent leur propre clic, jamais volé par la
-// ligne — voir le garde-fou .wl-actions ci-dessous.
-function wireFriendRowClicks(container){
+// Clic sur une ligne (recherche, suggestions, demandes reçues/envoyées) →
+// aperçu du profil public (js/publicProfile.js), sans attendre d'être ami
+// (retour utilisateur : impossible jusqu'ici de voir qui on ajoute avant
+// d'envoyer/accepter une demande). onOpen personnalisable (voir
+// renderFriendsPage() ci-dessous) : une fois AMI accepté, cliquer la ligne
+// doit rouvrir le vrai profil en lecture seule (openFriendProfile(), qui lit
+// son catalogue directement — accès garanti par la policy RLS "amis"), pas
+// l'aperçu public qui dépend d'un opt-in séparé et arrive sans raison sur
+// "ce profil n'est pas public" pour quelqu'un déjà ajouté (signalé par
+// l'utilisateur). Reste silencieux si le profil visé n'est pas public
+// (cas non-ami) — renderPublicProfilePage() l'affiche déjà clairement.
+// Les boutons d'action (Ajouter/Accepter/Voir...) gardent leur propre clic,
+// jamais volé par la ligne — voir le garde-fou .wl-actions ci-dessous.
+function wireFriendRowClicks(container, onOpen = goToPublicProfile){
   container.querySelectorAll('.wl-row[data-user-id]').forEach(row => {
     row.addEventListener('click', (e) => {
       if(e.target.closest('.wl-actions')) return;
-      goToPublicProfile(row.dataset.userId);
+      onOpen(row.dataset.userId);
     });
   });
 }
@@ -140,8 +145,12 @@ function renderFriendsPage(){
     el.querySelectorAll('button[data-action]').forEach(btn => {
       btn.addEventListener('click', () => handleFriendAction(btn.dataset.action, parseInt(btn.dataset.id, 10)));
     });
-    wireFriendRowClicks(el);
   });
+  // listEl (amis déjà acceptés) : la ligne ouvre le vrai profil en lecture
+  // seule, pas l'aperçu public — voir le commentaire de wireFriendRowClicks().
+  wireFriendRowClicks(inEl);
+  wireFriendRowClicks(outEl);
+  wireFriendRowClicks(listEl, openFriendProfile);
 }
 
 async function handleFriendAction(action, friendshipId){
