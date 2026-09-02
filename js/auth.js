@@ -90,6 +90,25 @@ async function handleSendMagicLink(){
     : `Lien envoyé à ${email}, vérifie ta boîte mail (et les spams).`;
 }
 
+// Connexion Google (v2.1, retour utilisateur) — en plus du lien magique,
+// pas à sa place : évite l'aller-retour par la boîte mail à chaque
+// nouvel appareil. Redirige vers Google puis revient sur cette même page
+// (emailRedirectTo réutilisé tel quel, même raisonnement que
+// handleSendMagicLink() juste au-dessus) ; handleSession()/onAuthStateChange
+// (voir plus bas) prennent le relais au retour, comme pour n'importe
+// quelle autre connexion.
+async function signInWithGoogle(){
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href.split('#')[0].split('?')[0] }
+  });
+  if(error){
+    document.getElementById('authStatus').textContent = `Erreur : ${error.message}`;
+  }
+  // Pas de else : en cas de succès, le navigateur quitte déjà la page pour
+  // Google avant même que ce code ne s'exécute plus loin.
+}
+
 async function handleLogout(){
   // Le bouton vit maintenant dans la modale profil (voir js/profile.js) —
   // on la referme avant de couper la session, sinon elle resterait ouverte
@@ -102,6 +121,7 @@ document.getElementById('authSendBtn').addEventListener('click', handleSendMagic
 document.getElementById('authEmail').addEventListener('keydown', (e) => {
   if(e.key === 'Enter') handleSendMagicLink();
 });
+document.getElementById('googleSignInBtn').addEventListener('click', signInWithGoogle);
 document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
 // --- Démo jouable de la grille (v2.0.16) ---

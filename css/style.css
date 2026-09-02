@@ -817,6 +817,36 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .auth-card .field{margin-bottom:18px;}
 .auth-card .btn{width:100%;}
+/* Connexion Google (v2.1) : bouton clair volontairement neutre plutôt que
+   .btn violet plein — reste identifiable comme "action tierce" (Google),
+   pas une action de marque Kinet comme "Envoyer le lien magique"
+   juste en dessous. */
+.google-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  background:#fff;
+  color:#3c4043;
+  border:1px solid var(--line);
+}
+.google-btn:hover{background:#f2f2f2;}
+.google-icon{width:18px; height:18px; flex:none;}
+.auth-divider{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:18px 0;
+  font-family:'Space Mono', monospace;
+  font-size:11px;
+  color:var(--text-muted);
+}
+.auth-divider::before, .auth-divider::after{
+  content:'';
+  flex:1;
+  height:1px;
+  background:var(--line);
+}
 .auth-status{
   margin-top:14px;
   font-family:'Space Mono', monospace;
