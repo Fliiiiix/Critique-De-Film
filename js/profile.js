@@ -75,6 +75,13 @@ function renderUserBar(){
   const avatarEl = document.getElementById('userAvatar');
   const fallbackEl = document.getElementById('userAvatarFallback');
   const avatarUrl = currentProfile && currentProfile.avatar_url;
+  // friendProfiles (js/friends.js) ne contenait jamais SON PROPRE profil —
+  // friendDisplayName(currentUser.id) retombait sur "Utilisateur" partout
+  // où on affiche l'auteur d'un like/commentaire/membre de groupe alors
+  // que c'est soi-même (constaté sur la fiche film, js/filmDetail.js).
+  // Caché ici (donnée déjà en main, aucun appel réseau de plus) plutôt que
+  // dans chacun de ces endroits séparément.
+  if(typeof cacheProfile === 'function') cacheProfile(currentUser.id, name, avatarUrl);
   if(avatarUrl){
     avatarEl.src = avatarUrl;
     avatarEl.style.display = '';
