@@ -1,4 +1,4 @@
-// --- Import externe (Letterboxd, TV Time, Trakt) ---
+// --- Import externe (Letterboxd, Trakt) ---
 // Chantier v2.x, retour utilisateur. Contrairement à l'import JSON existant
 // (importFilms(), js/app.js — un fichier déjà au format Kinet), ces imports
 // viennent d'autres services : chaque ligne doit être retrouvée sur TMDB
@@ -10,11 +10,12 @@
 // CSV. Pas de dézippage automatique côté app (pas de dépendance externe,
 // l'app reste 100% vanilla, aucune bibliothèque zip) — l'utilisateur dépose
 // directement le CSV qui l'intéresse une fois le zip extrait localement.
-// TV Time et Trakt suivront (voir README) — TV Time n'a pas d'export
-// fichier officiel documenté au moment où ceci est écrit, à valider sur un
-// vrai export avant de coder son parseur ; Trakt n'a pas d'export fichier du
-// tout, seulement une API OAuth qui nécessite une appli enregistrée sur
-// trakt.tv (client_id/secret propres à l'utilisateur, pas à ce dépôt).
+// Trakt suivra (voir README) — pas d'export fichier du tout chez eux,
+// seulement une API OAuth qui nécessite une appli enregistrée sur trakt.tv
+// (client_id/secret propres à l'utilisateur, pas à ce dépôt). TV Time
+// envisagé un temps, abandonné : leur site est une appli Flutter qui dessine
+// tout sur un <canvas>, aucune donnée récupérable dans le HTML — et
+// l'application elle-même a fermé depuis.
 
 // --- Parseur CSV générique (RFC4180 minimal) ---
 // Gère les champs entre guillemets pouvant contenir virgules, retours à la

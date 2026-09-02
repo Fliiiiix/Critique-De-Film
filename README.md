@@ -1045,13 +1045,14 @@ récapitulatif final (toast) donne le détail (importés / déjà présents /
 introuvables sur TMDB). Recherches TMDB faites 4 à la fois (assez rapide
 sur un gros catalogue sans bombarder l'API).
 
-**TV Time et Trakt** : chantier suivant. TV Time n'a pas d'export fichier
-au format confirmé au moment où ceci est écrit — son parseur sera ajusté
-sur un vrai export une fois disponible plutôt que deviné à l'avance. Trakt
-n'a pas d'export fichier du tout, seulement une API OAuth : nécessite une
-appli Trakt enregistrée par l'utilisateur propriétaire du site (client_id
-propre, gratuit, sur `trakt.tv/oauth/applications`) avant de pouvoir coder
-cette partie.
+**Trakt** : chantier suivant. Pas d'export fichier, seulement une API
+OAuth : nécessite une appli Trakt enregistrée par l'utilisateur propriétaire
+du site (client_id propre, gratuit, sur `trakt.tv/oauth/applications`)
+avant de pouvoir coder cette partie.
+
+(TV Time envisagé un temps, abandonné : le site n'a pas d'export exploitable
+— sa page est une appli Flutter qui dessine tout sur un `<canvas>`, aucune
+donnée récupérable dans le HTML — et l'appli elle-même a fermé depuis.)
 
 ## Prochaines étapes possibles
 
