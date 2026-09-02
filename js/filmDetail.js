@@ -131,9 +131,14 @@ async function toggleFilmLike(){
     if(error){ showToast('Erreur, réessaie'); console.error(error); return; }
     filmDetailLikes = filmDetailLikes.filter(l => l.id !== mine.id);
   }else{
+    // user_id explicite : contrairement à films/watchlist/tv_shows,
+    // film_likes/film_comments (migrations/030) n'ont pas de valeur par
+    // défaut auth.uid() sur cette colonne — sans lui l'insert est rejeté
+    // par la policy RLS ("new row violates row-level security policy"),
+    // constaté en test.
     const { data, error } = await supabaseClient
       .from('film_likes')
-      .insert({ tmdb_id: currentFilmTmdbId })
+      .insert({ tmdb_id: currentFilmTmdbId, user_id: currentUser.id })
       .select()
       .single();
     if(error){ showToast('Erreur, réessaie'); console.error(error); return; }
@@ -184,9 +189,10 @@ async function addFilmComment(){
   const input = document.getElementById('filmDetailCommentInput');
   const body = input.value.trim();
   if(!body) return;
+  // user_id explicite — même raison que toggleFilmLike() plus haut.
   const { data, error } = await supabaseClient
     .from('film_comments')
-    .insert({ tmdb_id: currentFilmTmdbId, body })
+    .insert({ tmdb_id: currentFilmTmdbId, body, user_id: currentUser.id })
     .select()
     .single();
   if(error){ showToast('Erreur, réessaie'); console.error(error); return; }
