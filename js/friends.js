@@ -441,32 +441,16 @@ async function openFriendProfile(userId){
 
   const friendFilms = data.map(rowToFilm);
   const statsEl = document.createElement('div');
-  renderStatsInto(statsEl, friendFilms, 'friendProfileOverlay');
+  renderStatsInto(statsEl, friendFilms);
 
+  // Trie affiché uniquement — statsFilmRowHtml() (js/stats.js) : même
+  // gabarit que la liste derrière une barre de la distribution des notes,
+  // réutilisé tel quel maintenant que les deux ouvrent la même popup au
+  // clic (voir openFilmReviewDetail()) plutôt que de diverger.
+  const sortedFriendFilms = friendFilms.slice().sort((a, b) => (getDisplayNote(b) || 0) - (getDisplayNote(a) || 0));
   const listHtml = friendFilms.length === 0
     ? `<div class="empty-state">Aucun film noté pour l'instant.</div>`
-    : friendFilms
-        .slice()
-        .sort((a, b) => (getDisplayNote(b) || 0) - (getDisplayNote(a) || 0))
-        .map(f => {
-          const note = getDisplayNote(f);
-          // Cliquable seulement si le film a une fiche TMDB (v2.1, retour
-          // utilisateur : ouvre sa fiche — voir js/filmDetail.js) — un film
-          // ajouté à la main, sans recherche, n'a pas de tmdb_id pour
-          // retrouver résumé/genre/etc.
-          return `
-            <div class="film-row friend-film-row"${f.tmdbId ? ` data-tmdb-id="${f.tmdbId}"` : ''}>
-              ${f.posterUrl
-                ? `<img class="film-poster" src="${f.posterUrl}" alt="" loading="lazy">`
-                : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
-              <div class="film-main">
-                <div class="film-title">${escapeHtml(f.title)}</div>
-                <div class="film-sub">${f.releaseYear || ''}</div>
-              </div>
-              <div class="counter ${noteColorClass(note)}">${note !== null ? note.toFixed(1) : '—'}</div>
-            </div>
-          `;
-        }).join('');
+    : sortedFriendFilms.map(statsFilmRowHtml).join('');
 
   content.innerHTML = '';
   if(compat){
@@ -491,10 +475,14 @@ async function openFriendProfile(userId){
     listWrap.className = 'stats-section';
     listWrap.hidden = true;
     listWrap.innerHTML = `<div class="stats-section-title">Catalogue (${friendFilms.length})</div>${listHtml}`;
-    listWrap.querySelectorAll('[data-tmdb-id]').forEach(row => {
+    // Ouvre le détail de la critique par-dessus le profil (voir le
+    // commentaire sur #filmReviewOverlay, index.html) — plus besoin de
+    // fermer ce profil avant, contrairement à l'ancien lien direct vers la
+    // fiche TMDB.
+    listWrap.querySelectorAll('[data-film-id]').forEach(row => {
       row.addEventListener('click', () => {
-        closeFriendProfile(); // sinon la modale reste visible par-dessus la fiche film
-        goToFilmDetail(parseInt(row.dataset.tmdbId, 10));
+        const film = sortedFriendFilms.find(f => f.id === Number(row.dataset.filmId));
+        if(film) openFilmReviewDetail(film);
       });
     });
 

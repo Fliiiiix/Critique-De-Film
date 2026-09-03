@@ -76,11 +76,14 @@ function renderBarChart(items, opts = {}){
 // plutôt que factorisé : les deux endroits divergent légèrement (celui-ci
 // n'a jamais de sous-titre année manquant à gérer différemment) et ce n'est
 // que quelques lignes, cohérent avec la duplication déjà assumée ailleurs
-// dans ce fichier (recherche TMDB, voir js/tmdb.js).
+// dans ce fichier (recherche TMDB, voir js/tmdb.js). data-film-id (pas
+// data-tmdb-id) : la ligne s'ouvre maintenant sur le détail de la critique
+// (voir openFilmReviewDetail() plus bas), qui existe même pour un film
+// ajouté à la main, sans fiche TMDB.
 function statsFilmRowHtml(f){
   const note = getDisplayNote(f);
   return `
-    <div class="film-row friend-film-row"${f.tmdbId ? ` data-tmdb-id="${f.tmdbId}"` : ''}>
+    <div class="film-row friend-film-row" data-film-id="${f.id}">
       ${f.posterUrl
         ? `<img class="film-poster" src="${f.posterUrl}" alt="" loading="lazy">`
         : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
@@ -93,12 +96,7 @@ function statsFilmRowHtml(f){
   `;
 }
 
-// closeOverlayId : quelle modale refermer avant d'ouvrir la fiche film (la
-// page fiche film se rend derrière une modale encore ouverte, invisible tant
-// qu'on ne l'a pas fermée à la main sinon) — "statsOverlay" pour ses propres
-// stats, "friendProfileOverlay" quand ces stats sont imbriquées dans le
-// profil d'un ami (voir openFriendProfile()).
-function wireStatsDistribution(content, list, distribution, closeOverlayId){
+function wireStatsDistribution(content, list, distribution){
   const section = content.querySelector('.stats-section-dist');
   if(!section) return;
   const drilldown = section.querySelector('.stats-drilldown');
@@ -122,10 +120,10 @@ function wireStatsDistribution(content, list, distribution, closeOverlayId){
         ${matches.map(statsFilmRowHtml).join('')}
       `;
       drilldown.hidden = false;
-      drilldown.querySelectorAll('.friend-film-row[data-tmdb-id]').forEach(row => {
+      drilldown.querySelectorAll('.friend-film-row[data-film-id]').forEach(row => {
         row.addEventListener('click', () => {
-          if(closeOverlayId) closeOverlay(closeOverlayId);
-          goToFilmDetail(parseInt(row.dataset.tmdbId, 10));
+          const film = matches.find(f => f.id === Number(row.dataset.filmId));
+          if(film) openFilmReviewDetail(film);
         });
       });
     };
@@ -136,10 +134,75 @@ function wireStatsDistribution(content, list, distribution, closeOverlayId){
   });
 }
 
+// --- Détail d'une critique (v2.1.x, retour utilisateur : "pouvoir voir la
+// critique plus précisément, comment ça a été noté par critère et le
+// commentaire") — popup en lecture seule, ouverte PAR-DESSUS la modale
+// courante (stats propres ou profil d'un ami, jamais refermée pour ça, voir
+// le commentaire sur #filmReviewOverlay dans index.html), pour n'importe
+// quelle ligne de film munie de crit/review, qu'elle ait une fiche TMDB ou
+// non. `film` est déjà l'objet complet (rowToFilm(), js/app.js) — jamais
+// une nouvelle requête réseau ici, la liste qui a produit la ligne cliquée
+// l'a déjà.
+function critReviewRowHtml(label, val){
+  const pct = Math.round(Math.max(0, Math.min(1, val)) * 100);
+  return `
+    <div class="crit-review-row">
+      <div class="crit-review-label">${escapeHtml(label)}</div>
+      <div class="crit-review-bar"><div class="crit-review-fill" style="width:${pct}%"></div></div>
+    </div>
+  `;
+}
+
+function openFilmReviewDetail(film){
+  const content = document.getElementById('filmReviewContent');
+  const note = getDisplayNote(film);
+  const isManual = film.manualNote != null;
+
+  const critHtml = isManual
+    ? `<div class="wl-note">Note manuelle — pas de détail par critère.</div>`
+    : `<div class="crit-review-list">${CRITERIA.map(c => critReviewRowHtml(c.label, (film.crit && typeof film.crit[c.key] === 'number') ? film.crit[c.key] : 0)).join('')}</div>`;
+
+  content.innerHTML = `
+    <div class="film-review-head">
+      ${film.posterUrl
+        ? `<img class="film-poster" src="${film.posterUrl}" alt="" loading="lazy">`
+        : `<div class="film-poster film-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}
+      <div class="film-main">
+        <div class="film-title">${escapeHtml(film.title)}</div>
+        <div class="film-sub">${film.releaseYear || ''}</div>
+      </div>
+      <div class="counter ${noteColorClass(note)}">${note !== null ? note.toFixed(1) : '—'}</div>
+    </div>
+    ${critHtml}
+    <div class="stats-section-title">Commentaire</div>
+    ${film.review ? `<div class="crit-review-comment">${escapeHtml(film.review)}</div>` : `<div class="tmdb-empty">Pas de commentaire.</div>`}
+    ${film.tmdbId ? `<button class="btn secondary film-review-open-detail" type="button" data-tmdb-id="${film.tmdbId}">Voir la fiche du film</button>` : ''}
+  `;
+
+  const detailBtn = content.querySelector('.film-review-open-detail');
+  if(detailBtn){
+    detailBtn.addEventListener('click', () => {
+      closeFilmReview();
+      goToFilmDetail(parseInt(detailBtn.dataset.tmdbId, 10));
+    });
+  }
+
+  openOverlay('filmReviewOverlay');
+}
+
+function closeFilmReview(){
+  closeOverlay('filmReviewOverlay');
+}
+
+document.getElementById('closeFilmReview').addEventListener('click', closeFilmReview);
+document.getElementById('filmReviewOverlay').addEventListener('click', (e) => {
+  if(e.target.id === 'filmReviewOverlay') closeFilmReview();
+});
+
 // Factorisée pour être réutilisée par le profil (lecture seule) d'un ami —
 // voir openFriendProfile() dans js/friends.js — avec un autre conteneur et
 // la liste de films de cet ami plutôt que la sienne.
-function renderStatsInto(content, list = films, closeOverlayId = null){
+function renderStatsInto(content, list = films){
   const s = computeStats(list);
 
   if(s.total === 0){
@@ -197,11 +260,11 @@ function renderStatsInto(content, list = films, closeOverlayId = null){
     </div>
   `;
 
-  wireStatsDistribution(content, list, s.distribution, closeOverlayId);
+  wireStatsDistribution(content, list, s.distribution);
 }
 
 function renderStats(){
-  renderStatsInto(document.getElementById('statsContent'), films, 'statsOverlay');
+  renderStatsInto(document.getElementById('statsContent'), films);
 }
 
 function openStats(){

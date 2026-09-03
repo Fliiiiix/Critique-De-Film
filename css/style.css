@@ -636,15 +636,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-size:16px;
   opacity:0.6;
 }
-/* Catalogue d'un ami : même carte que les films perso, mais en lecture
-   seule par défaut (pas de curseur pointeur ni de survol interactif) —
-   SAUF si elle a une fiche TMDB (v2.1, retour utilisateur : ouvre la
-   fiche film, voir js/filmDetail.js et js/friends.js), auquel cas elle
-   redevient cliquable comme une carte normale. */
+/* Catalogue d'un ami (ou détail de stats) : même carte que les films
+   perso, mais cliquable vers le détail de la critique (v2.1.x, voir
+   openFilmReviewDetail(), js/stats.js) dès qu'elle porte un id de film —
+   c'est-à-dire toujours, contrairement à l'ancien comportement qui exigeait
+   une fiche TMDB (un film ajouté à la main n'en a pas, mais a bien un
+   crit/review à montrer). */
 .friend-film-row{cursor:default;}
 .friend-film-row:hover{border-color:var(--line); transform:none; box-shadow:none;}
-.friend-film-row[data-tmdb-id]{cursor:pointer;}
-.friend-film-row[data-tmdb-id]:hover{border-color:var(--violet-dim); transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,0.35);}
+.friend-film-row[data-film-id]{cursor:pointer;}
+.friend-film-row[data-film-id]:hover{border-color:var(--violet-dim); transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,0.35);}
 /* Ligne d'une personne (recherche/suggestions/demandes/amis) → aperçu du
    profil public au clic (v2.2, retour utilisateur), même langage visuel que
    .friend-film-row ci-dessus — voir wireFriendRowClicks(), js/friends.js. */
@@ -1806,6 +1807,29 @@ input[type="range"]::-moz-range-thumb{
   transition:background .15s, color .15s;
 }
 .install-banner-dismiss:hover{background:var(--surface-2); color:var(--text);}
+/* Bandeau de mise à jour (js/offline.js) — fixe, accent --gold comme
+   .digest-banner : une info à traiter, ni la marque (violet) ni un
+   avertissement (coral). z-index au-dessus des modales (300) : une
+   nouvelle version doit rester joignable même en pleine saisie d'une
+   fiche film. */
+.update-banner{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  position:fixed;
+  left:0; right:0; bottom:0;
+  z-index:400;
+  background:var(--surface-2);
+  border-top:1px solid var(--gold-dim);
+  padding:12px 20px;
+  font-size:13.5px;
+  box-shadow:0 -8px 24px rgba(0,0,0,0.3);
+}
+.update-banner span{color:var(--text);}
+@media (max-width:600px){
+  .update-banner{flex-direction:column; gap:8px; text-align:center; padding:14px 16px;}
+}
 .stats-section-title{
   font-family:'Bricolage Grotesque', sans-serif;
   font-weight:700;
@@ -1890,6 +1914,42 @@ input[type="range"]::-moz-range-thumb{
   text-transform:uppercase;
   margin-bottom:10px;
 }
+/* Détail d'une critique (#filmReviewOverlay, js/stats.js) — note par
+   critère + commentaire d'un film noté, en lecture seule. */
+.film-review-head{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:20px;
+}
+.film-review-head .film-poster{width:56px; flex:none;}
+.crit-review-list{display:flex; flex-direction:column; gap:12px; margin-bottom:22px;}
+.crit-review-row{display:flex; align-items:center; gap:12px;}
+.crit-review-label{
+  width:130px;
+  flex:none;
+  font-size:12.5px;
+  color:var(--text-muted);
+}
+.crit-review-bar{
+  flex:1;
+  height:6px;
+  background:rgba(0,0,0,0.28);
+  border-radius:3px;
+  overflow:hidden;
+}
+.crit-review-fill{height:100%; background:var(--violet); border-radius:3px;}
+.crit-review-comment{
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:14px 16px;
+  font-size:13.5px;
+  line-height:1.55;
+  white-space:pre-line;
+  margin-bottom:18px;
+}
+.film-review-open-detail{width:100%;}
 .stats-extremes{
   display:grid;
   grid-template-columns:1fr 1fr;

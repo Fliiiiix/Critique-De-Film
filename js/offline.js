@@ -96,6 +96,67 @@ window.addEventListener('online', () => {
 // pareil, juste sans le filet de secours "page qui s'ouvre sans réseau".
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => console.error('Échec de l\'enregistrement du service worker', err));
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => watchForUpdate(reg))
+      .catch(err => console.error('Échec de l\'enregistrement du service worker', err));
+  });
+}
+
+// --- Détection de nouvelle version (v2.1.x, retour utilisateur : l'app
+// restait sur une vieille version sans ctrl+maj+r, y compris chez des
+// gens qui laissent l'onglet/l'app installée ouverte des jours entiers,
+// donc rien ne redéclenche naturellement un chargement réseau) ---
+// sw.js change de CACHE_NAME à CHAQUE déploiement (voir ce fichier) : le
+// navigateur le détecte comme un fichier différent et installe un
+// nouveau service worker "en attente" à côté de celui qui contrôle déjà
+// la page — c'est cette installation qu'on écoute ici plutôt que de
+// comparer un numéro de version nous-mêmes.
+let updateReloadArmed = false;
+
+function showUpdateBanner(reg){
+  const el = document.getElementById('updateBanner');
+  if(!el || el.style.display === 'flex') return;
+  el.style.display = 'flex';
+  document.getElementById('updateBannerBtn').onclick = () => {
+    // skipWaiting() fait passer le SW en attente à "activé" ; le
+    // controllerchange qui suit (voir plus bas) recharge la page — c'est
+    // LUI qui sert enfin les nouveaux fichiers, pas ce clic en soi.
+    if(reg.waiting) reg.waiting.postMessage('skipWaiting');
+    else location.reload();
+  };
+}
+
+function watchForUpdate(reg){
+  if(reg.waiting && navigator.serviceWorker.controller) showUpdateBanner(reg);
+
+  reg.addEventListener('updatefound', () => {
+    const installing = reg.installing;
+    if(!installing) return;
+    installing.addEventListener('statechange', () => {
+      // "installed" + un controller déjà actif = une mise à jour vient
+      // d'arriver derrière la version en cours d'utilisation (le tout
+      // 1er install, sans controller, ne concerne personne qui utilise
+      // déjà l'app — rien à annoncer).
+      if(installing.state === 'installed' && navigator.serviceWorker.controller){
+        showUpdateBanner(reg);
+      }
+    });
+  });
+
+  // Revérifie à chaque retour au premier plan : sur un onglet/PWA resté
+  // ouvert plusieurs jours, c'est le seul moment où on a une chance
+  // raisonnable de retenter — le navigateur ne revérifie sw.js tout seul
+  // qu'au mieux une fois par jour.
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible') reg.update().catch(() => {});
+  });
+
+  // Le nouveau SW devient contrôleur juste après skipWaiting() ci-dessus —
+  // recharger ICI (pas dans le clic lui-même) garantit que la page
+  // rechargée est bien servie par le SW qui vient de prendre le relais.
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(updateReloadArmed) return;
+    updateReloadArmed = true;
+    location.reload();
   });
 }
