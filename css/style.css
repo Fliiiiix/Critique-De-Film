@@ -3093,9 +3093,19 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
      téléphone) — tri et genre repliés derrière #filtersToggleBtn, ouverts
      en feuille du bas (.toolbar-filters.open), voir le commentaire complet
      sur #toolbarFilters dans index.html. "+ Ajouter" quitte la barre pour
-     le bouton flottant (.fab) : un item de moins à caser sur cette ligne. */
+     le bouton flottant (.fab) : un item de moins à caser sur cette ligne.
+     .toolbar-search{min-width:240px} (desktop, plus haut dans ce fichier)
+     empêchait TOUT le groupe recherche+filtres de descendre sous 240px
+     même une fois l'input libre de rétrécir — sur un écran réellement
+     étroit (ex. Galaxy S25, ~360px de large), ça suffisait à faire
+     passer grille/liste + export sur une 2e ligne (retour utilisateur :
+     "j'ai 2 lignes... c'est pas top"). Cette redéfinition-ci lève le
+     plancher pour de vrai, tout tient sur une ligne. */
+  .toolbar-search{min-width:0; gap:6px;}
   .toolbar-search input[type="text"]{min-width:0; flex:1 1 auto;}
   #filtersToggleBtn{display:inline-flex; flex:none;}
+  .toolbar{gap:8px;}
+  .toolbar-actions{gap:6px;}
   #openAddBtn{display:none;}
   .fab{display:flex;}
 
