@@ -33,97 +33,99 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=86">
+<link rel="stylesheet" href="css/style.css?v=87">
 </head>
 <body>
 
 <header>
   <div class="container" style="padding:0;">
-    <!-- Bandeau utilitaire (v2.1.x, retour utilisateur desktop : "les
-         icônes on doit deviner à quoi ça correspond sauf si on passe la
-         souris", et "je les verrais bien plus haut ou en bas ça me
-         paraît plus logique" — même raisonnement que #mobileTabbar plus
-         bas, remonté ici côté desktop). PREMIER élément du header,
-         au-dessus même du logo : une vraie rangée à part, jamais mêlée au
-         bloc marque/titre — chaque bouton porte maintenant son libellé en
-         clair (voir .header-nav-btn span, plus bas) au lieu de ne compter
-         que sur l'infobulle title. L'eyebrow "Films & séries, à ta
-         façon" qui vivait ici est retirée (retour utilisateur : "de
-         trop" une fois cette rangée bien organisée). -->
-    <div class="user-bar" id="userBar" style="display:none;">
-      <!-- Amis contient Groupes (un groupe se fait avec des amis) — pas
-           d'icône Groupes séparée ici, voir la page Amis. Séries n'est
-           PLUS ici (retour utilisateur : "au même niveau que Top etc" ne
-           lui rendait pas justice) — voir #primaryTabs plus bas, sa
-           propre place au niveau du titre plutôt que noyée parmi les
-           pages utilitaires. -->
-      <!-- Pastille couleur (v2.1.x, draft "D" validé) : chaque destination
-           a désormais SA teinte propre (le rond derrière l'icône,
-           .nav-pip-*) en plus de son libellé — se reconnaît aussi à sa
-           couleur, pas seulement à sa forme/son texte, dans l'esprit
-           Halation (violet/or/bronze/teal déjà dans la palette, jamais de
-           nouvelle couleur ajoutée pour l'occasion). -->
-      <nav class="header-nav">
-        <button class="header-nav-btn" id="watchlistBtn" type="button" title="À voir" aria-label="À voir"><span class="nav-pip nav-pip-violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12a.5.5 0 01.5.5v16.2a.5.5 0 01-.77.42L12 16.2l-5.73 4.42a.5.5 0 01-.77-.42V4a.5.5 0 01.5-.5z"></path></svg></span><span>À voir</span></button>
-        <button class="header-nav-btn" id="upcomingBtn" type="button" title="Prochainement" aria-label="Prochainement"><span class="nav-pip nav-pip-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2"></rect><path d="M3.5 10h17"></path><path d="M8 3.5v4"></path><path d="M16 3.5v4"></path></svg></span><span>Bientôt</span></button>
-        <button class="header-nav-btn" id="friendsBtn" type="button" title="Amis" aria-label="Amis"><span class="nav-pip nav-pip-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.3" cy="8" r="3.3"></circle><path d="M16 3.8c1.5.7 2.5 2.2 2.5 4S17.5 11.1 16 11.8"></path><path d="M14.5 20.3c0-3-2.3-5-5.2-5s-5.2 2-5.2 5"></path><path d="M19 20c0-2.5-1.7-4.3-4-4.8"></path></svg></span><span>Amis</span></button>
-        <button class="header-nav-btn" id="topBtn" type="button" title="Top films" aria-label="Top films"><span class="nav-pip nav-pip-bronze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4a4 4 0 01-8 0V4z"></path><path d="M8 5H5.5a2.5 2.5 0 002.5 2.5"></path><path d="M16 5h2.5A2.5 2.5 0 0116 7.5"></path><path d="M12 12v3.5"></path><path d="M9.5 20h5"></path><path d="M10.3 15.5h3.4l.8 4.5H9.5l.8-4.5z"></path></svg></span><span>Top films</span></button>
-        <!-- Donner un avis (v2.1) — vivait dans "Mon activité" (modale
-             profil) ; demande explicite de le rendre accessible directement
-             depuis l'entête, au même niveau que le reste (voir
-             js/feedback.js, inchangé sinon). -->
-        <button class="header-nav-btn" id="feedbackBtn" type="button" title="Donner un avis" aria-label="Donner un avis"><span class="nav-pip nav-pip-violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4V5z"></path></svg></span><span>Avis</span></button>
-        <!-- Installer l'app (v2.1) — 3e surface après #installBanner (haut
-             de page, dismissible) et #installSection (modale profil,
-             référence permanente) : un accès direct depuis l'entête, sans
-             ouvrir le profil. Masqué par défaut (style inline) tant qu'on
-             ne sait pas encore si l'installation a un sens ici — même
-             logique que #installBanner, voir updateInstallHeaderBtn() dans
-             js/pwa.js. -->
-        <button class="header-nav-btn" id="installHeaderBtn" type="button" title="Installer l'app" aria-label="Installer l'app" style="display:none;"><span class="nav-pip nav-pip-bronze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M11 18h2"></path></svg></span><span>Installer</span></button>
-        <!-- Nouveautés (v2.1+) — annonces courtes des mises à jour, voir
-             js/changelog.js. Dernier de la rangée, juste avant la photo de
-             profil : demande explicite de la mettre "à côté des autres et
-             celle du profil". Badge .has-unread (js/activityState.js,
-             réutilisé tel quel) tant qu'il y a une Nouveauté non vue. -->
-        <button class="header-nav-btn" id="changelogBtn" type="button" title="Nouveautés" aria-label="Nouveautés"><span class="nav-pip nav-pip-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 18-5v12L3 14v-3z"></path><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"></path></svg></span><span>Nouveautés</span></button>
-      </nav>
-      <!-- .user-identity (v2.1, retour utilisateur) : avatar + pseudo groupés
-           dans UN SEUL item flex plutôt que deux frères directs de
-           .user-bar — sans ça, sous la media query 600px (.user-bar passe
-           en flex-wrap), le pseudo (dernier item) se retrouvait poussé
-           seul sur sa propre ligne, séparé de la photo, dès que la rangée
-           d'icônes prenait toute la largeur. Groupés : ils passent à la
-           ligne ENSEMBLE si besoin, jamais l'un sans l'autre. -->
-      <div class="user-identity">
-        <button class="user-avatar-btn" id="userAvatarBtn" type="button" title="Ton profil" aria-label="Ton profil">
-          <img id="userAvatar" class="user-avatar" alt="">
-          <span id="userAvatarFallback" class="user-avatar-fallback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"></circle><path d="M4.5 20c0-4.1 3.4-6.8 7.5-6.8s7.5 2.7 7.5 6.8"></path></svg></span>
-        </button>
-        <span id="userDisplayName"></span>
-      </div>
-    </div>
-    <div class="title-row">
-      <div class="brand-link" id="homeLink" role="link" tabindex="0" title="Retour à l'accueil">
-        <!-- Logo (v2.7 — retour utilisateur : le cadran/aiguille (v2.1)
-             perdait son idée à 32px, lu comme un cercle plein/spinner. Deux
-             cadres qui se superposent : un violet fixe (le présent), un or
-             plus petit qui pivote et s'échappe (le mouvement) — la
-             persistance rétinienne, le mécanisme même du cinéma. Là où ils
-             se recouvrent, le bronze n'est pas choisi à la main : c'est la
-             vraie transparence de l'or sur le violet (fill-opacity),
-             comme en double exposition argentique. Décoratif (le nom
-             "Kinet" juste à côté porte déjà le sens), donc aria-hidden.
-             Animation d'entrée + oscillation continue en CSS pur (voir
-             .brand-mark-* dans css/style.css) : rien ne dépend d'une
-             librairie externe chargée à temps. -->
-        <div class="brand-mark" aria-hidden="true">
-          <div class="brand-mark-violet"></div>
-          <div class="brand-mark-gold"></div>
+    <!-- Ligne du haut (v2.1.x, retour utilisateur : "l'organisation entre
+         icône, Kinet et série/film" — 3e agencement testé sur draft
+         (marque + icônes + profil ensemble tout en haut = "qui/où", les
+         onglets Films/Séries juste en dessous = "quoi", au plus près du
+         contenu qu'ils commandent). Marque et rangée utilitaire vivent
+         maintenant COTE À COTE (.header-top, voir css/style.css) plutôt
+         qu'empilées — mais restent 2 éléments DOM séparés : #userBar
+         continue de disparaître entièrement sous le seuil mobile
+         (remplacé par #mobileTabbar) alors que .title-row (le nom du
+         site) doit, lui, rester visible dans tous les cas — les fusionner
+         en un seul bloc aurait fait disparaître le logo avec les icônes. -->
+    <div class="header-top">
+      <div class="title-row">
+        <div class="brand-link" id="homeLink" role="link" tabindex="0" title="Retour à l'accueil">
+          <!-- Logo (v2.7 — retour utilisateur : le cadran/aiguille (v2.1)
+               perdait son idée à 32px, lu comme un cercle plein/spinner. Deux
+               cadres qui se superposent : un violet fixe (le présent), un or
+               plus petit qui pivote et s'échappe (le mouvement) — la
+               persistance rétinienne, le mécanisme même du cinéma. Là où ils
+               se recouvrent, le bronze n'est pas choisi à la main : c'est la
+               vraie transparence de l'or sur le violet (fill-opacity),
+               comme en double exposition argentique. Décoratif (le nom
+               "Kinet" juste à côté porte déjà le sens), donc aria-hidden.
+               Animation d'entrée + oscillation continue en CSS pur (voir
+               .brand-mark-* dans css/style.css) : rien ne dépend d'une
+               librairie externe chargée à temps. -->
+          <div class="brand-mark" aria-hidden="true">
+            <div class="brand-mark-violet"></div>
+            <div class="brand-mark-gold"></div>
+          </div>
+          <h1>Kinet</h1>
         </div>
-        <h1>Kinet</h1>
+        <div class="version-tag">v<b id="versionTagValue">2.0</b></div>
       </div>
-      <div class="version-tag">v<b id="versionTagValue">2.0</b></div>
+      <div class="user-bar" id="userBar" style="display:none;">
+        <!-- Amis contient Groupes (un groupe se fait avec des amis) — pas
+             d'icône Groupes séparée ici, voir la page Amis. Séries n'est
+             PLUS ici (retour utilisateur : "au même niveau que Top etc" ne
+             lui rendait pas justice) — voir #primaryTabs plus bas, sa
+             propre place au niveau du titre plutôt que noyée parmi les
+             pages utilitaires. -->
+        <!-- Pastille couleur (v2.1.x, draft "D" validé) : chaque destination
+             a désormais SA teinte propre (le rond derrière l'icône,
+             .nav-pip-*) en plus de son libellé — se reconnaît aussi à sa
+             couleur, pas seulement à sa forme/son texte, dans l'esprit
+             Halation (violet/or/bronze/teal déjà dans la palette, jamais de
+             nouvelle couleur ajoutée pour l'occasion). -->
+        <nav class="header-nav">
+          <button class="header-nav-btn" id="watchlistBtn" type="button" title="À voir" aria-label="À voir"><span class="nav-pip nav-pip-violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12a.5.5 0 01.5.5v16.2a.5.5 0 01-.77.42L12 16.2l-5.73 4.42a.5.5 0 01-.77-.42V4a.5.5 0 01.5-.5z"></path></svg></span><span>À voir</span></button>
+          <button class="header-nav-btn" id="upcomingBtn" type="button" title="Prochainement" aria-label="Prochainement"><span class="nav-pip nav-pip-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2"></rect><path d="M3.5 10h17"></path><path d="M8 3.5v4"></path><path d="M16 3.5v4"></path></svg></span><span>Bientôt</span></button>
+          <button class="header-nav-btn" id="friendsBtn" type="button" title="Amis" aria-label="Amis"><span class="nav-pip nav-pip-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.3" cy="8" r="3.3"></circle><path d="M16 3.8c1.5.7 2.5 2.2 2.5 4S17.5 11.1 16 11.8"></path><path d="M14.5 20.3c0-3-2.3-5-5.2-5s-5.2 2-5.2 5"></path><path d="M19 20c0-2.5-1.7-4.3-4-4.8"></path></svg></span><span>Amis</span></button>
+          <button class="header-nav-btn" id="topBtn" type="button" title="Top films" aria-label="Top films"><span class="nav-pip nav-pip-bronze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4a4 4 0 01-8 0V4z"></path><path d="M8 5H5.5a2.5 2.5 0 002.5 2.5"></path><path d="M16 5h2.5A2.5 2.5 0 0116 7.5"></path><path d="M12 12v3.5"></path><path d="M9.5 20h5"></path><path d="M10.3 15.5h3.4l.8 4.5H9.5l.8-4.5z"></path></svg></span><span>Top films</span></button>
+          <!-- Donner un avis (v2.1) — vivait dans "Mon activité" (modale
+               profil) ; demande explicite de le rendre accessible directement
+               depuis l'entête, au même niveau que le reste (voir
+               js/feedback.js, inchangé sinon). -->
+          <button class="header-nav-btn" id="feedbackBtn" type="button" title="Donner un avis" aria-label="Donner un avis"><span class="nav-pip nav-pip-violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4V5z"></path></svg></span><span>Avis</span></button>
+          <!-- Installer l'app (v2.1) — 3e surface après #installBanner (haut
+               de page, dismissible) et #installSection (modale profil,
+               référence permanente) : un accès direct depuis l'entête, sans
+               ouvrir le profil. Masqué par défaut (style inline) tant qu'on
+               ne sait pas encore si l'installation a un sens ici — même
+               logique que #installBanner, voir updateInstallHeaderBtn() dans
+               js/pwa.js. -->
+          <button class="header-nav-btn" id="installHeaderBtn" type="button" title="Installer l'app" aria-label="Installer l'app" style="display:none;"><span class="nav-pip nav-pip-bronze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M11 18h2"></path></svg></span><span>Installer</span></button>
+          <!-- Nouveautés (v2.1+) — annonces courtes des mises à jour, voir
+               js/changelog.js. Dernier de la rangée, juste avant la photo de
+               profil : demande explicite de la mettre "à côté des autres et
+               celle du profil". Badge .has-unread (js/activityState.js,
+               réutilisé tel quel) tant qu'il y a une Nouveauté non vue. -->
+          <button class="header-nav-btn" id="changelogBtn" type="button" title="Nouveautés" aria-label="Nouveautés"><span class="nav-pip nav-pip-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 18-5v12L3 14v-3z"></path><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"></path></svg></span><span>Nouveautés</span></button>
+        </nav>
+        <!-- .user-identity (v2.1, retour utilisateur) : avatar + pseudo groupés
+             dans UN SEUL item flex plutôt que deux frères directs de
+             .user-bar — sans ça, sous la media query 600px (.user-bar passe
+             en flex-wrap), le pseudo (dernier item) se retrouvait poussé
+             seul sur sa propre ligne, séparé de la photo, dès que la rangée
+             d'icônes prenait toute la largeur. Groupés : ils passent à la
+             ligne ENSEMBLE si besoin, jamais l'un sans l'autre. -->
+        <div class="user-identity">
+          <button class="user-avatar-btn" id="userAvatarBtn" type="button" title="Ton profil" aria-label="Ton profil">
+            <img id="userAvatar" class="user-avatar" alt="">
+            <span id="userAvatarFallback" class="user-avatar-fallback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"></circle><path d="M4.5 20c0-4.1 3.4-6.8 7.5-6.8s7.5 2.7 7.5 6.8"></path></svg></span>
+          </button>
+          <span id="userDisplayName"></span>
+        </div>
+      </div>
     </div>
     <!-- Sélecteur principal Films/Séries (v2.0.6) : les deux vraies
          "sections" de contenu de l'app (catalogue noté vs suivi
@@ -1254,93 +1256,93 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=86"></script>
+<script src="js/supabaseConfig.js?v=87"></script>
 <!-- Juste après supabaseConfig.js (a besoin de supabaseClient) et avant
      tout le reste : capte les erreurs de chargement des scripts suivants,
      pas seulement celles de l'app une fois démarrée — voir js/logging.js. -->
-<script src="js/logging.js?v=86"></script>
-<script src="js/tmdbConfig.js?v=86"></script>
-<script src="js/data.js?v=86"></script>
-<script src="js/happenings.js?v=86"></script>
+<script src="js/logging.js?v=87"></script>
+<script src="js/tmdbConfig.js?v=87"></script>
+<script src="js/data.js?v=87"></script>
+<script src="js/happenings.js?v=87"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=86"></script>
+<script src="js/ui.js?v=87"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=86"></script>
-<script src="js/app.js?v=86"></script>
-<script src="js/tmdb.js?v=86"></script>
-<script src="js/stats.js?v=86"></script>
-<script src="js/achievements.js?v=86"></script>
-<script src="js/journal.js?v=86"></script>
+<script src="js/offline.js?v=87"></script>
+<script src="js/app.js?v=87"></script>
+<script src="js/tmdb.js?v=87"></script>
+<script src="js/stats.js?v=87"></script>
+<script src="js/achievements.js?v=87"></script>
+<script src="js/journal.js?v=87"></script>
 <!-- Après app.js (showToast) — appelée par js/profile.js juste après. -->
-<script src="js/pwa.js?v=86"></script>
-<script src="js/profile.js?v=86"></script>
+<script src="js/pwa.js?v=87"></script>
+<script src="js/profile.js?v=87"></script>
 <!-- Après profile.js (closeProfileModal/openProfileModal) et data.js
      (FEEDBACK_CATEGORIES) — même raisonnement que pwa.js juste au-dessus. -->
-<script src="js/feedback.js?v=86"></script>
+<script src="js/feedback.js?v=87"></script>
 <!-- N'a besoin que de ui.js (openOverlay/closeOverlay) et app.js
      (showToast), chargés bien avant — placé ici pour rester groupé avec
      les autres modales accessibles depuis le chrome plutôt que pour une
      vraie dépendance. -->
-<script src="js/share.js?v=86"></script>
+<script src="js/share.js?v=87"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=86"></script>
-<script src="js/router.js?v=86"></script>
-<script src="js/publicProfile.js?v=86"></script>
-<script src="js/top.js?v=86"></script>
-<script src="js/friends.js?v=86"></script>
+<script src="js/admin.js?v=87"></script>
+<script src="js/router.js?v=87"></script>
+<script src="js/publicProfile.js?v=87"></script>
+<script src="js/top.js?v=87"></script>
+<script src="js/friends.js?v=87"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=86"></script>
-<script src="js/watchlist.js?v=86"></script>
+<script src="js/activity.js?v=87"></script>
+<script src="js/watchlist.js?v=87"></script>
 <!-- Après watchlist.js (loadWatchlist/watchlist, réutilisés pour exclure
      ce qui y est déjà) et app.js (getDisplayNote, chargé plus haut) — voir
      js/suggestions.js. Avant auth.js, qui appelle loadSuggestions() depuis
      showApp(). -->
-<script src="js/suggestions.js?v=86"></script>
+<script src="js/suggestions.js?v=87"></script>
 <!-- Import externe (Letterboxd pour l'instant) — après watchlist.js/app.js/
      tmdb.js/journal.js dont il réutilise films/watchlist/searchTmdb()/
      addViewing(). Voir js/importExternal.js. -->
-<script src="js/importExternal.js?v=86"></script>
+<script src="js/importExternal.js?v=87"></script>
 <!-- Fiche film (v2.1) — voir js/filmDetail.js. Regroupée ici avec
      friends.js/watchlist.js dont elle réutilise les helpers (même
      remarque que suggestions.js juste au-dessus : l'ordre exact n'importe
      pas au runtime, tout est en fonctions appelées après chargement
      complet — router.js, plus haut, appelle déjà openFriends()/
      openWatchlist() en aval de leur propre script de la même façon). -->
-<script src="js/filmDetail.js?v=86"></script>
+<script src="js/filmDetail.js?v=87"></script>
 <!-- Après watchlist.js : js/upcoming.js réutilise le tableau watchlist déjà
      chargé (voir plus bas). -->
-<script src="js/series.js?v=86"></script>
+<script src="js/series.js?v=87"></script>
 <!-- Après watchlist.js ET series.js — a besoin des deux tableaux chargés
      (loadWatchlist()/loadTrackedShows()), voir js/upcoming.js. -->
-<script src="js/upcoming.js?v=86"></script>
-<script src="js/groups.js?v=86"></script>
-<script src="js/proposals.js?v=86"></script>
+<script src="js/upcoming.js?v=87"></script>
+<script src="js/groups.js?v=87"></script>
+<script src="js/proposals.js?v=87"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=86"></script>
+<script src="js/invites.js?v=87"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=86"></script>
+<script src="js/activityState.js?v=87"></script>
 <!-- Après activityState.js (loadActivityState/activityState réutilisés
      pour son propre badge "vu") et avant auth.js qui appelle
      initChangelog() depuis showApp(). -->
-<script src="js/changelog.js?v=86"></script>
-<script src="js/auth.js?v=86"></script>
+<script src="js/changelog.js?v=87"></script>
+<script src="js/auth.js?v=87"></script>
 </body>
 </html>

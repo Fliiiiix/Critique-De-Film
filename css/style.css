@@ -201,20 +201,27 @@ header{
   .brand-mark-gold{transform:rotate(-12deg);}
   .brand-link:hover .brand-mark-gold{animation:none;}
 }
-/* Bandeau utilitaire (v2.1.x) — voir le commentaire complet sur #userBar
-   dans index.html : premier élément du header, rangée à part entière
-   (plus de position:absolute par-dessus le logo) plutôt que flottant au
-   même niveau que le titre — libellés désormais toujours visibles, plus
-   besoin de survoler pour deviner. */
-.user-bar{
+/* Ligne du haut (v2.1.x, retour utilisateur — "l'organisation entre
+   icône, Kinet et série/film") : marque (.title-row) et rangée
+   utilitaire (#userBar) COTE À COTE — la marque dit "qui/où", la rangée
+   utilitaire + le profil disent "où aller" ; #primaryTabs (juste après
+   dans le DOM) garde sa propre ligne, au plus près du contenu qu'il
+   commande. Voir le commentaire complet dans index.html. */
+.header-top{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:16px;
   flex-wrap:wrap;
-  padding-bottom:18px;
-  margin-bottom:22px;
-  border-bottom:1px solid var(--line-soft);
+}
+/* #userBar n'a plus besoin d'écarter ses propres enfants (nav + profil) :
+   .header-top ci-dessus s'en charge déjà à un niveau au-dessus, il ne
+   reste qu'à les tenir groupés et serrés. */
+.user-bar{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
   position:relative;
 }
 /* Nav de l'entête : les pages assez fréquentes pour mériter un accès
