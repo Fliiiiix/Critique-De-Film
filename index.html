@@ -33,7 +33,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=79">
+<link rel="stylesheet" href="css/style.css?v=80">
 </head>
 <body>
 
@@ -586,13 +586,13 @@
 
 <!-- Page Prochainement (films/séries suivis à venir) — écran à part
      entière comme Watchlist/Séries, voir js/router.js et js/upcoming.js. -->
-<div class="container page" id="upcomingPage" style="display:none;">
+<div class="container page reveal-stagger" id="upcomingPage" style="display:none;">
   <div class="page-header">
     <button class="btn secondary" id="upcomingPageBack">← Retour</button>
     <h2>Prochainement</h2>
   </div>
 
-  <div class="stats-section">
+  <div class="stats-section reveal">
     <div class="stats-section-title">Bientôt</div>
     <div class="wl-list" id="upcomingSoonList"></div>
   </div>
@@ -601,7 +601,7 @@
        plus jamais de nouvelle saison — affichées ici avec un badge clair
        plutôt que simplement omises, conformément à la demande explicite
        de pouvoir le savoir. -->
-  <div class="stats-section">
+  <div class="stats-section reveal">
     <div class="stats-section-title">Séries terminées</div>
     <div class="wl-list" id="upcomingEndedList"></div>
   </div>
@@ -623,23 +623,51 @@
     <div id="friendSearchResults" class="tmdb-results"></div>
   </div>
 
+  <!-- Groupes (v2.1.x, retour utilisateur : enterré tout en bas de la page,
+       invisible dès qu'on a plus que quelques amis à faire défiler avant
+       d'y arriver) — remonté juste après l'ajout d'ami, avant même les
+       demandes : un accès, pas une liste qui grandit avec le nombre
+       d'amis, ça ne coûte rien de le garder tout en haut. -->
+  <div class="stats-section">
+    <div class="stats-section-title">Groupes</div>
+    <div class="wl-row">
+      <div class="friend-avatar friend-avatar-placeholder">🎭</div>
+      <div class="wl-main">
+        <div class="wl-title">Groupes</div>
+        <div class="wl-note">Créer un groupe avec tes amis, proposer des films, voter</div>
+      </div>
+      <div class="wl-actions">
+        <button class="btn secondary" id="amisGroupsLink" type="button">Ouvrir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demandes (v2.1.x) : les 2 sections se masquent entièrement (voir
+       renderFriendsPage(), js/friends.js) tant qu'il n'y a rien dedans,
+       plutôt qu'un "Aucune demande en attente." vide qui prenait de la
+       place en permanence. -->
+  <div class="stats-section" id="friendRequestsInSection">
+    <div class="stats-section-title">Demandes reçues</div>
+    <div class="wl-list" id="friendRequestsIn"></div>
+  </div>
+
+  <div class="stats-section" id="friendRequestsOutSection">
+    <div class="stats-section-title">Demandes envoyées</div>
+    <div class="wl-list" id="friendRequestsOut"></div>
+  </div>
+
   <!-- Fil d'activité (js/activity.js, migrations/021) : qui de ton cercle a
-       noté quoi récemment — pour que la page ne serve pas qu'aux demandes. -->
+       noté quoi récemment — pour que la page ne serve pas qu'aux demandes.
+       Repliée au-delà de 4 (v2.1.x, retour utilisateur : "trop de chose"),
+       voir renderCollapsible(), js/ui.js. -->
   <div class="stats-section">
     <div class="stats-section-title">Activité récente</div>
     <div class="wl-list" id="friendActivityList"></div>
   </div>
 
-  <div class="stats-section">
-    <div class="stats-section-title">Demandes reçues</div>
-    <div class="wl-list" id="friendRequestsIn"></div>
-  </div>
-
-  <div class="stats-section">
-    <div class="stats-section-title">Demandes envoyées</div>
-    <div class="wl-list" id="friendRequestsOut"></div>
-  </div>
-
+  <!-- Mes amis : repliée au-delà de 6 (même retour utilisateur — une
+       grande liste d'amis ne doit pas, à elle seule, repousser
+       Suggestions/Recommandé hors champ). -->
   <div class="stats-section">
     <div class="stats-section-title">Mes amis</div>
     <div class="wl-list" id="friendsList"></div>
@@ -657,20 +685,6 @@
   <div class="stats-section">
     <div class="stats-section-title">Recommandé par tes amis</div>
     <div class="wl-list" id="friendRecommendationsList"></div>
-  </div>
-
-  <div class="stats-section">
-    <div class="stats-section-title">Groupes</div>
-    <div class="wl-row">
-      <div class="friend-avatar friend-avatar-placeholder">🎭</div>
-      <div class="wl-main">
-        <div class="wl-title">Groupes</div>
-        <div class="wl-note">Créer un groupe avec tes amis, proposer des films, voter</div>
-      </div>
-      <div class="wl-actions">
-        <button class="btn secondary" id="amisGroupsLink" type="button">Ouvrir</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -1150,93 +1164,93 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=79"></script>
+<script src="js/supabaseConfig.js?v=80"></script>
 <!-- Juste après supabaseConfig.js (a besoin de supabaseClient) et avant
      tout le reste : capte les erreurs de chargement des scripts suivants,
      pas seulement celles de l'app une fois démarrée — voir js/logging.js. -->
-<script src="js/logging.js?v=79"></script>
-<script src="js/tmdbConfig.js?v=79"></script>
-<script src="js/data.js?v=79"></script>
-<script src="js/happenings.js?v=79"></script>
+<script src="js/logging.js?v=80"></script>
+<script src="js/tmdbConfig.js?v=80"></script>
+<script src="js/data.js?v=80"></script>
+<script src="js/happenings.js?v=80"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=79"></script>
+<script src="js/ui.js?v=80"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=79"></script>
-<script src="js/app.js?v=79"></script>
-<script src="js/tmdb.js?v=79"></script>
-<script src="js/stats.js?v=79"></script>
-<script src="js/achievements.js?v=79"></script>
-<script src="js/journal.js?v=79"></script>
+<script src="js/offline.js?v=80"></script>
+<script src="js/app.js?v=80"></script>
+<script src="js/tmdb.js?v=80"></script>
+<script src="js/stats.js?v=80"></script>
+<script src="js/achievements.js?v=80"></script>
+<script src="js/journal.js?v=80"></script>
 <!-- Après app.js (showToast) — appelée par js/profile.js juste après. -->
-<script src="js/pwa.js?v=79"></script>
-<script src="js/profile.js?v=79"></script>
+<script src="js/pwa.js?v=80"></script>
+<script src="js/profile.js?v=80"></script>
 <!-- Après profile.js (closeProfileModal/openProfileModal) et data.js
      (FEEDBACK_CATEGORIES) — même raisonnement que pwa.js juste au-dessus. -->
-<script src="js/feedback.js?v=79"></script>
+<script src="js/feedback.js?v=80"></script>
 <!-- N'a besoin que de ui.js (openOverlay/closeOverlay) et app.js
      (showToast), chargés bien avant — placé ici pour rester groupé avec
      les autres modales accessibles depuis le chrome plutôt que pour une
      vraie dépendance. -->
-<script src="js/share.js?v=79"></script>
+<script src="js/share.js?v=80"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=79"></script>
-<script src="js/router.js?v=79"></script>
-<script src="js/publicProfile.js?v=79"></script>
-<script src="js/top.js?v=79"></script>
-<script src="js/friends.js?v=79"></script>
+<script src="js/admin.js?v=80"></script>
+<script src="js/router.js?v=80"></script>
+<script src="js/publicProfile.js?v=80"></script>
+<script src="js/top.js?v=80"></script>
+<script src="js/friends.js?v=80"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=79"></script>
-<script src="js/watchlist.js?v=79"></script>
+<script src="js/activity.js?v=80"></script>
+<script src="js/watchlist.js?v=80"></script>
 <!-- Après watchlist.js (loadWatchlist/watchlist, réutilisés pour exclure
      ce qui y est déjà) et app.js (getDisplayNote, chargé plus haut) — voir
      js/suggestions.js. Avant auth.js, qui appelle loadSuggestions() depuis
      showApp(). -->
-<script src="js/suggestions.js?v=79"></script>
+<script src="js/suggestions.js?v=80"></script>
 <!-- Import externe (Letterboxd pour l'instant) — après watchlist.js/app.js/
      tmdb.js/journal.js dont il réutilise films/watchlist/searchTmdb()/
      addViewing(). Voir js/importExternal.js. -->
-<script src="js/importExternal.js?v=79"></script>
+<script src="js/importExternal.js?v=80"></script>
 <!-- Fiche film (v2.1) — voir js/filmDetail.js. Regroupée ici avec
      friends.js/watchlist.js dont elle réutilise les helpers (même
      remarque que suggestions.js juste au-dessus : l'ordre exact n'importe
      pas au runtime, tout est en fonctions appelées après chargement
      complet — router.js, plus haut, appelle déjà openFriends()/
      openWatchlist() en aval de leur propre script de la même façon). -->
-<script src="js/filmDetail.js?v=79"></script>
+<script src="js/filmDetail.js?v=80"></script>
 <!-- Après watchlist.js : js/upcoming.js réutilise le tableau watchlist déjà
      chargé (voir plus bas). -->
-<script src="js/series.js?v=79"></script>
+<script src="js/series.js?v=80"></script>
 <!-- Après watchlist.js ET series.js — a besoin des deux tableaux chargés
      (loadWatchlist()/loadTrackedShows()), voir js/upcoming.js. -->
-<script src="js/upcoming.js?v=79"></script>
-<script src="js/groups.js?v=79"></script>
-<script src="js/proposals.js?v=79"></script>
+<script src="js/upcoming.js?v=80"></script>
+<script src="js/groups.js?v=80"></script>
+<script src="js/proposals.js?v=80"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=79"></script>
+<script src="js/invites.js?v=80"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=79"></script>
+<script src="js/activityState.js?v=80"></script>
 <!-- Après activityState.js (loadActivityState/activityState réutilisés
      pour son propre badge "vu") et avant auth.js qui appelle
      initChangelog() depuis showApp(). -->
-<script src="js/changelog.js?v=79"></script>
-<script src="js/auth.js?v=79"></script>
+<script src="js/changelog.js?v=80"></script>
+<script src="js/auth.js?v=80"></script>
 </body>
 </html>

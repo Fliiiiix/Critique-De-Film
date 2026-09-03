@@ -283,3 +283,67 @@ if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
     });
   });
 }
+
+// --- Listes repliées par défaut (v2.1.x, retour utilisateur : "on défile
+// beaucoup trop", l'activité récente et la liste d'amis pouvaient à elles
+// seules repousser le reste d'une page hors champ) ---
+// Généralise le principe déjà utilisé pour le catalogue replié d'un profil
+// d'ami (openFriendProfile(), js/friends.js) : affiche les `previewCount`
+// premiers éléments d'une liste déjà chargée, un bouton "Voir plus (N)"
+// démasque le reste — jamais de second appel réseau, tout est déjà là.
+// `container` reçoit le HTML rendu par `renderFn` ; le bouton "Voir
+// plus"/"Voir moins" est recréé à chaque appel juste après le conteneur,
+// identifié par un id dérivé du sien pour ne jamais en laisser deux.
+function renderCollapsible(container, items, renderFn, opts = {}){
+  const previewCount = opts.previewCount || 4;
+  const btnId = container.id + 'ToggleBtn';
+  const old = document.getElementById(btnId);
+  if(old) old.remove();
+
+  const expanded = !!opts.expanded;
+  const shown = expanded ? items : items.slice(0, previewCount);
+  container.innerHTML = shown.length === 0
+    ? (opts.emptyHtml || '')
+    : shown.map(renderFn).join('');
+  if(opts.wire) opts.wire(container);
+
+  if(items.length > previewCount){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = btnId;
+    btn.className = 'btn secondary list-toggle-btn';
+    btn.textContent = expanded ? 'Voir moins' : `Voir plus (${items.length - previewCount})`;
+    btn.addEventListener('click', () => renderCollapsible(container, items, renderFn, { ...opts, expanded: !expanded }));
+    container.insertAdjacentElement('afterend', btn);
+  }
+}
+
+// --- Révélation au scroll (v2.1.x, "Halation" plus loin — suite du
+// chantier design, retour utilisateur) ---
+// Un seul IntersectionObserver partagé pour toute l'app (root par défaut =
+// viewport — fonctionne aussi pour du contenu qui défile DANS une modale
+// .overlay, la géométrie clippée par son overflow:auto est prise en compte
+// automatiquement) plutôt qu'un par page : les éléments à révéler portent
+// la classe .reveal (état caché, voir css/style.css), observeReveal() les
+// enregistre après CHAQUE rendu qui vient d'en ajouter — le contenu de ces
+// pages est reconstruit via innerHTML à chaque changement de données,
+// jamais de DOM stable à observer une bonne fois pour toutes. Révélation à
+// sens unique : une fois visible, unobserve() — remonter/redescendre ne
+// doit pas faire re-clignoter le contenu, seule la toute première
+// apparition compte. Pas de support IntersectionObserver (très ancien
+// navigateur) : tout affiché directement, jamais de contenu qui resterait
+// invisible faute d'API.
+const revealObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      entry.target.classList.add('in-view');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' }) : null;
+
+function observeReveal(container){
+  const els = container.querySelectorAll('.reveal:not(.in-view)');
+  if(!revealObserver){ els.forEach(el => el.classList.add('in-view')); return; }
+  els.forEach(el => revealObserver.observe(el));
+}

@@ -112,45 +112,67 @@ function wireFriendRowClicks(container, onOpen = goToPublicProfile){
   });
 }
 
+// Câble les boutons Accepter/Refuser/Annuler d'une ligne de demande, plus
+// le clic-ligne vers l'aperçu public (onOpen par défaut de
+// wireFriendRowClicks — pas encore ami, jamais openFriendProfile ici).
+function wireRequestActions(el){
+  el.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => handleFriendAction(btn.dataset.action, parseInt(btn.dataset.id, 10)));
+  });
+  wireFriendRowClicks(el);
+}
+
 function renderFriendsPage(){
   const incoming = friendships.filter(f => f.status === 'pending' && f.addresseeId === currentUser.id);
   const outgoing = friendships.filter(f => f.status === 'pending' && f.requesterId === currentUser.id);
   const accepted = friendships.filter(f => f.status === 'accepted');
 
-  const inEl = document.getElementById('friendRequestsIn');
-  const outEl = document.getElementById('friendRequestsOut');
-  const listEl = document.getElementById('friendsList');
+  // Sections "Demandes" masquées entièrement quand vides (v2.1.x, retour
+  // utilisateur : "on défile beaucoup trop") plutôt qu'un "Aucune demande
+  // en attente." qui prenait de la place en permanence même sans rien à
+  // signaler.
+  document.getElementById('friendRequestsInSection').style.display = incoming.length === 0 ? 'none' : '';
+  document.getElementById('friendRequestsOutSection').style.display = outgoing.length === 0 ? 'none' : '';
 
-  inEl.innerHTML = incoming.length === 0
-    ? `<div class="tmdb-empty">Aucune demande en attente.</div>`
-    : incoming.map(f => friendRowHtml(otherUserId(f), `
-        <button class="btn" data-action="accept" data-id="${f.id}" type="button">Accepter</button>
-        <button class="btn secondary" data-action="decline" data-id="${f.id}" type="button">Refuser</button>
-      `)).join('');
+  renderCollapsible(
+    document.getElementById('friendRequestsIn'), incoming,
+    f => friendRowHtml(otherUserId(f), `
+      <button class="btn" data-action="accept" data-id="${f.id}" type="button">Accepter</button>
+      <button class="btn secondary" data-action="decline" data-id="${f.id}" type="button">Refuser</button>
+    `),
+    { previewCount: 4, wire: wireRequestActions }
+  );
 
-  outEl.innerHTML = outgoing.length === 0
-    ? `<div class="tmdb-empty">Aucune demande envoyée.</div>`
-    : outgoing.map(f => friendRowHtml(otherUserId(f), `
-        <button class="btn secondary" data-action="cancel" data-id="${f.id}" type="button">Annuler</button>
-      `, 'En attente')).join('');
+  renderCollapsible(
+    document.getElementById('friendRequestsOut'), outgoing,
+    f => friendRowHtml(otherUserId(f), `
+      <button class="btn secondary" data-action="cancel" data-id="${f.id}" type="button">Annuler</button>
+    `, 'En attente'),
+    { previewCount: 4, wire: wireRequestActions }
+  );
 
-  listEl.innerHTML = accepted.length === 0
-    ? `<div class="tmdb-empty">Pas encore d'amis. Cherche un pseudo ou un email ci-dessus.</div>`
-    : accepted.map(f => friendRowHtml(otherUserId(f), `
-        <button class="btn secondary" data-action="view" data-id="${f.id}" type="button">Voir</button>
-        <button class="btn danger" data-action="remove" data-id="${f.id}" type="button">Retirer</button>
-      `)).join('');
-
-  [inEl, outEl, listEl].forEach(el => {
-    el.querySelectorAll('button[data-action]').forEach(btn => {
-      btn.addEventListener('click', () => handleFriendAction(btn.dataset.action, parseInt(btn.dataset.id, 10)));
-    });
-  });
-  // listEl (amis déjà acceptés) : la ligne ouvre le vrai profil en lecture
-  // seule, pas l'aperçu public — voir le commentaire de wireFriendRowClicks().
-  wireFriendRowClicks(inEl);
-  wireFriendRowClicks(outEl);
-  wireFriendRowClicks(listEl, openFriendProfile);
+  // "Mes amis" (v2.1.x) : repliée au-delà de 6, même retour utilisateur —
+  // une grande liste d'amis ne doit plus, à elle seule, repousser
+  // Suggestions/Recommandé hors champ. La ligne ouvre le vrai profil en
+  // lecture seule, pas l'aperçu public — voir le commentaire de
+  // wireFriendRowClicks().
+  renderCollapsible(
+    document.getElementById('friendsList'), accepted,
+    f => friendRowHtml(otherUserId(f), `
+      <button class="btn secondary" data-action="view" data-id="${f.id}" type="button">Voir</button>
+      <button class="btn danger" data-action="remove" data-id="${f.id}" type="button">Retirer</button>
+    `),
+    {
+      previewCount: 6,
+      emptyHtml: `<div class="tmdb-empty">Pas encore d'amis. Cherche un pseudo ou un email ci-dessus.</div>`,
+      wire: (el) => {
+        el.querySelectorAll('button[data-action]').forEach(btn => {
+          btn.addEventListener('click', () => handleFriendAction(btn.dataset.action, parseInt(btn.dataset.id, 10)));
+        });
+        wireFriendRowClicks(el, openFriendProfile);
+      }
+    }
+  );
 }
 
 async function handleFriendAction(action, friendshipId){
@@ -455,7 +477,7 @@ async function openFriendProfile(userId){
   content.innerHTML = '';
   if(compat){
     const compatEl = document.createElement('div');
-    compatEl.className = 'ach-summary';
+    compatEl.className = 'ach-summary reveal';
     compatEl.innerHTML = `
       <div class="ach-summary-count">${compat.compatibility}%</div>
       <div class="ach-summary-label">Compatibilité ciné · ${compat.common_count} film${compat.common_count > 1 ? 's' : ''} en commun</div>
@@ -472,7 +494,7 @@ async function openFriendProfile(userId){
   // trop). Bouton dédié pour qui veut vraiment tout voir.
   if(friendFilms.length > 0){
     const listWrap = document.createElement('div');
-    listWrap.className = 'stats-section';
+    listWrap.className = 'stats-section reveal';
     listWrap.hidden = true;
     listWrap.innerHTML = `<div class="stats-section-title">Catalogue (${friendFilms.length})</div>${listHtml}`;
     // Ouvre le détail de la critique par-dessus le profil (voir le
@@ -488,7 +510,7 @@ async function openFriendProfile(userId){
 
     const toggleBtn = document.createElement('button');
     toggleBtn.type = 'button';
-    toggleBtn.className = 'btn secondary friend-films-toggle';
+    toggleBtn.className = 'btn secondary list-toggle-btn';
     toggleBtn.textContent = `Voir tous les films notés (${friendFilms.length})`;
     toggleBtn.addEventListener('click', () => {
       listWrap.hidden = !listWrap.hidden;
@@ -500,6 +522,12 @@ async function openFriendProfile(userId){
     content.appendChild(toggleBtn);
     content.appendChild(listWrap);
   }
+
+  // Après coup, jamais depuis renderStatsInto() : statsEl était encore
+  // détaché du document au moment où elle l'a peuplée (voir son
+  // commentaire) — observer maintenant couvre à la fois son propre
+  // contenu et compatEl/listWrap ci-dessus.
+  observeReveal(content);
 }
 
 // Amis est une page (pas une modal, voir plus haut) : la refermer suffit,

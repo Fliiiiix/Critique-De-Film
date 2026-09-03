@@ -85,8 +85,12 @@ function renderActivityRowHtml(e){
   `;
 }
 
+// Repliée au-delà de 4 (v2.1.x, retour utilisateur : "trop de chose") —
+// voir renderCollapsible(), js/ui.js. Partagée par l'activité Amis
+// (js/friends.js) ET Groupe (js/groups.js), donc les deux en profitent.
 function renderActivityListInto(el, events){
-  el.innerHTML = events.length === 0
-    ? `<div class="tmdb-empty">Rien à signaler pour l'instant.</div>`
-    : events.map(renderActivityRowHtml).join('');
+  renderCollapsible(el, events, renderActivityRowHtml, {
+    previewCount: 4,
+    emptyHtml: `<div class="tmdb-empty">Rien à signaler pour l'instant.</div>`
+  });
 }

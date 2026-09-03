@@ -131,6 +131,7 @@ async function openUpcoming(){
   document.getElementById('upcomingEndedList').innerHTML = `<div class="empty-state">Chargement…</div>`;
   await loadUpcoming();
   renderUpcoming();
+  observeReveal(document.getElementById('upcomingPage'));
 }
 
 document.getElementById('upcomingBtn').addEventListener('click', goToUpcoming);

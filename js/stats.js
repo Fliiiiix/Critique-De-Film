@@ -213,8 +213,15 @@ function renderStatsInto(content, list = films){
   const distItems = s.distribution.map(d => ({ label: d.value.toFixed(1), count: d.count }));
   const activityItems = s.activity.map(a => ({ label: monthLabel(a.month), count: a.count }));
 
+  // .reveal-stagger/.reveal (v2.1.x) : chaque bloc apparaît en cascade au
+  // scroll plutôt que tout d'un coup — voir observeReveal(), js/ui.js.
+  // Appelé par le SITE qui a rendu ce contenu (renderStats() ou
+  // openFriendProfile()), jamais ici : `content` peut encore être un
+  // <div> détaché (profil d'ami, construit avant d'être inséré), observer
+  // un élément qui n'est pas encore dans le document serait fragile.
+  content.classList.add('reveal-stagger');
   content.innerHTML = `
-    <div class="stat-tiles">
+    <div class="stat-tiles reveal">
       <div class="stat-tile accent-violet"><div class="stat-value">${s.total}</div><div class="stat-label">Films notés</div></div>
       <div class="stat-tile accent-gradient"><div class="stat-value">${s.avg !== null ? s.avg.toFixed(2) : '—'}</div><div class="stat-label">Note moyenne</div></div>
       <div class="stat-tile accent-bronze"><div class="stat-value">${s.favCount}</div><div class="stat-label">Favoris</div></div>
@@ -222,19 +229,19 @@ function renderStatsInto(content, list = films){
       <div class="stat-tile accent-gold"><div class="stat-value">${s.manualCount}</div><div class="stat-label">Note manuelle</div></div>
     </div>
 
-    <div class="stats-section stats-section-dist">
+    <div class="stats-section stats-section-dist reveal">
       <div class="stats-section-title">Distribution des notes</div>
       ${renderBarChart(distItems, { clickable: true })}
       <div class="stats-drilldown" hidden></div>
     </div>
 
     ${activityItems.length > 1 ? `
-    <div class="stats-section">
+    <div class="stats-section reveal">
       <div class="stats-section-title">Films ajoutés par mois</div>
       ${renderBarChart(activityItems)}
     </div>` : ''}
 
-    <div class="stats-section stats-extremes">
+    <div class="stats-section stats-extremes reveal">
       ${s.best ? `
       <div class="stats-extreme stats-extreme-best">
         ${s.best.posterUrl
@@ -264,7 +271,9 @@ function renderStatsInto(content, list = films){
 }
 
 function renderStats(){
-  renderStatsInto(document.getElementById('statsContent'), films);
+  const content = document.getElementById('statsContent');
+  renderStatsInto(content, films);
+  observeReveal(content);
 }
 
 function openStats(){

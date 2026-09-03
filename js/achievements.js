@@ -209,19 +209,23 @@ function renderAchievements(){
   const totalUnlocked = a.tiersUnlocked + a.hiddenUnlocked;
   const totalPossible = a.tiersTotal + a.hiddenTotal;
 
+  // .reveal-stagger/.reveal (v2.1.x) : voir le même commentaire dans
+  // renderStatsInto(), js/stats.js — même mécanisme, observeReveal()
+  // appelé juste après par openAchievements().
+  content.classList.add('reveal-stagger');
   content.innerHTML = `
-    <div class="ach-summary">
+    <div class="ach-summary reveal">
       <div class="ach-summary-count">${totalUnlocked} / ${totalPossible}</div>
       <div class="ach-summary-label">succès débloqués</div>
       <div class="ach-summary-bar"><div class="ach-summary-fill" style="width:${(totalUnlocked / totalPossible * 100).toFixed(1)}%"></div></div>
     </div>
 
-    <div class="stats-section">
+    <div class="stats-section reveal">
       <div class="stats-section-title">Paliers</div>
       <div class="ach-tier-grid">${a.cumulative.map(renderTierCard).join('')}</div>
     </div>
 
-    <div class="stats-section">
+    <div class="stats-section reveal">
       <div class="stats-section-title">Secrets (${a.hiddenUnlocked} / ${a.hiddenTotal} trouvés)</div>
       <div class="ach-hidden-grid">${a.hidden.map(renderHiddenCard).join('')}</div>
     </div>
@@ -234,6 +238,7 @@ function openAchievements(){
   closeProfileModal();
   renderAchievements();
   openOverlay('achievementsOverlay');
+  observeReveal(document.getElementById('achievementsContent'));
 }
 
 // Rouvre la modale profil (pas juste closeOverlay simple) : Succès n'est
