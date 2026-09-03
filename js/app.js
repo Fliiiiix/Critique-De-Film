@@ -149,6 +149,11 @@ function render(){
   const critFilterMin = isAdvanced ? parseFloat(document.getElementById('critFilterMin').value) : 0;
   const genreFilter = document.getElementById('genreFilter').value;
 
+  // Point d'état sur le bouton Filtres (v2.1.x, mobile — voir index.html) :
+  // seul indice qu'un tri/genre non-défaut est actif une fois la feuille
+  // repliée, tri "note-desc" étant la valeur par défaut de #sortBy.
+  document.getElementById('filtersToggleBtn').classList.toggle('has-active-filter', sortBy !== 'note-desc' || !!genreFilter);
+
   // Matche le titre FR ou le titre VO (ex. "créatures féroces" trouve aussi
   // "Fierce Creatures"), accents/casse ignorés — voir getSearchTerms().
   let filtered = films.filter(f => !search || getSearchTerms(f).some(t => t.includes(search)));
@@ -755,6 +760,28 @@ document.getElementById('sortBy').addEventListener('change', () => {
 });
 document.getElementById('sortCriterion').addEventListener('change', () => { currentPage = 1; render(); });
 document.getElementById('genreFilter').addEventListener('change', () => { currentPage = 1; render(); });
+
+// --- Feuille Filtres (v2.1.x, mobile) — voir #toolbarFilters, index.html ---
+// #sortBy/#genreFilter eux-mêmes gardent leurs listeners ci-dessus tels
+// quels (choisir une option ferme le picker natif mais pas cette feuille).
+// Fermeture manuelle seulement : bouton ✕ ou tap hors de la feuille,
+// jamais automatique au changement d'un select — "Par critère…" révèle
+// #sortAdvancedRow qui vit sous la toolbar, PAS dans cette feuille (prend
+// toute la largeur sur sa propre ligne, voir index.html) : se fermer tout
+// seul à ce moment-là masquerait le résultat au lieu de le montrer.
+function openToolbarFilters(){
+  document.getElementById('toolbarFilters').classList.add('open');
+  document.getElementById('filtersToggleBtn').setAttribute('aria-expanded', 'true');
+}
+function closeToolbarFilters(){
+  document.getElementById('toolbarFilters').classList.remove('open');
+  document.getElementById('filtersToggleBtn').setAttribute('aria-expanded', 'false');
+}
+document.getElementById('filtersToggleBtn').addEventListener('click', openToolbarFilters);
+document.getElementById('closeToolbarFilters').addEventListener('click', closeToolbarFilters);
+document.getElementById('toolbarFilters').addEventListener('click', (e) => {
+  if(e.target.id === 'toolbarFilters') closeToolbarFilters();
+});
 function setSortDir(dir){
   sortDir = dir;
   document.getElementById('sortDirDesc').classList.toggle('active', dir === 'desc');

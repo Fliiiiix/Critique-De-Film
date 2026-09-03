@@ -413,6 +413,28 @@ h1{
   min-width:240px;
 }
 .toolbar-search select{flex:none;}
+/* Filtres (v2.1.x) : sur desktop, #toolbarFilters/.toolbar-filters-sheet
+   sont transparents à la mise en page (display:contents) — #sortBy et
+   #genreFilter apparaissent comme des enfants directs de .toolbar-search,
+   identique au balisage d'origine. #filtersToggleBtn n'a de sens que
+   replié en feuille, jamais affiché ici. Le seuil mobile (dans le bloc
+   @media plus bas) inverse les deux. */
+#filtersToggleBtn{display:none; position:relative;}
+/* Point d'état (v2.1.x) : un tri/genre non-par-défaut est actif alors que
+   la feuille est repliée — même principe que .header-nav-btn.has-unread
+   (js/activityState.js), sans lequel changer un filtre puis fermer la
+   feuille ne laisserait plus aucune trace visible qu'un filtre est appliqué. */
+#filtersToggleBtn.has-active-filter::after{
+  content:'';
+  position:absolute;
+  top:6px; right:6px;
+  width:7px; height:7px;
+  border-radius:50%;
+  background:var(--violet);
+  border:1.5px solid var(--surface);
+}
+.toolbar-filters, .toolbar-filters-sheet{display:contents;}
+.toolbar-filters-head{display:none;}
 /* Tri par critère individuel (#sortBy = "advanced") — voir index.html et
    updateSortMode() dans js/app.js. Critère + sens + seuil ensemble plutôt
    que d'entasser 14 options (7 critères × ↓/↑) dans le sélecteur général.
@@ -3066,15 +3088,53 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   body[data-view-mode="list"] #seriesList .film-poster-placeholder,
   body[data-view-mode="list"] #topList .film-poster-placeholder{width:46px; height:68px;}
 
-  /* Recherche + tri restent côte à côte (v2.1, retour utilisateur), tous
-     les deux rétrécis pour laisser la rangée grille/liste juste à côté
-     sur la même ligne — voir le commentaire sur .toolbar-search à 760px
-     ci-dessus. "+ Ajouter" quitte la barre pour le bouton flottant
-     (.fab) : un item de moins à caser sur cette ligne serrée. */
-  .toolbar-search input[type="text"]{min-width:0; flex:1 1 90px;}
-  .toolbar-search select{flex:0 1 auto; max-width:132px;}
+  /* Recherche seule reste sur la ligne (v2.1.x, retour utilisateur :
+     recherche+tri+genre tous les 3 devenaient illisibles/tronqués sur
+     téléphone) — tri et genre repliés derrière #filtersToggleBtn, ouverts
+     en feuille du bas (.toolbar-filters.open), voir le commentaire complet
+     sur #toolbarFilters dans index.html. "+ Ajouter" quitte la barre pour
+     le bouton flottant (.fab) : un item de moins à caser sur cette ligne. */
+  .toolbar-search input[type="text"]{min-width:0; flex:1 1 auto;}
+  #filtersToggleBtn{display:inline-flex; flex:none;}
   #openAddBtn{display:none;}
   .fab{display:flex;}
+
+  .toolbar-filters{
+    display:none;
+    position:fixed; inset:0;
+    z-index:400;
+    align-items:flex-end;
+    justify-content:center;
+    background:rgba(6,5,10,0.55);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    padding:0;
+  }
+  .toolbar-filters.open{display:flex; animation:overlayIn .15s ease-out;}
+  .toolbar-filters-sheet{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    width:100%;
+    max-width:520px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:16px 16px 0 0;
+    padding:20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    animation:modalIn .18s cubic-bezier(.2,.8,.3,1);
+  }
+  .toolbar-filters-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-weight:700;
+    font-size:16px;
+  }
+  .toolbar-filters-sheet select{width:100%;}
+  @media (prefers-reduced-motion:reduce){
+    .toolbar-filters.open, .toolbar-filters-sheet{animation:none;}
+  }
 
   .overlay{padding:20px 12px;}
   .modal{padding:20px;}

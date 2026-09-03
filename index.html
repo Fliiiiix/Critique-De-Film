@@ -33,7 +33,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=80">
+<link rel="stylesheet" href="css/style.css?v=81">
 </head>
 <body>
 
@@ -281,24 +281,53 @@
   <div class="toolbar">
     <div class="toolbar-search">
       <input type="text" id="search" placeholder="Rechercher un film…">
-      <!-- Sélecteur général : les tris courants, plus une porte d'entrée
-           vers le tri par critère individuel (voir #sortAdvancedRow) plutôt
-           que d'entasser les 14 options (7 critères × ↓/↑) ici même. -->
-      <select id="sortBy">
-        <option value="note-desc">Note globale ↓</option>
-        <option value="note-asc">Note globale ↑</option>
-        <option value="title-asc">Titre A–Z</option>
-        <option value="fav-first">Favoris d'abord</option>
-        <option value="recent">Ajout récent</option>
-        <option value="advanced">Par critère…</option>
-      </select>
-      <!-- Filtre par genre (v2.1, retour utilisateur) — options générées
-           depuis les films déjà en catalogue (buildGenreFilterOptions(),
-           js/app.js), pas la liste TMDB complète : pas la peine de
-           proposer "Western" à quelqu'un qui n'a aucun film de ce genre. -->
-      <select id="genreFilter">
-        <option value="">Tous les genres</option>
-      </select>
+      <!-- Filtres (tri + genre) — v2.1.x, retour utilisateur mobile :
+           recherche+tri+genre tous les 3 sur une ligne devenaient
+           illisibles/tronqués sur téléphone, et les empiler verticalement
+           aurait juste déplacé le problème (repousse le catalogue hors
+           champ, exactement ce qu'on cherche à éviter). #toolbarFilters
+           ci-dessous garde les MÊMES <select> avec les MÊMES ids qu'avant
+           (rien ne change côté js/app.js) — seule leur présentation
+           change sous un certain seuil (voir css/style.css,
+           display:contents en dessous de ce seuil, "vrai" conteneur
+           au-dessus) : repliés derrière ce bouton, ouverts en feuille
+           depuis le bas façon .overlay plutôt qu'en ligne. Ce bouton
+           reste cependant caché sur desktop, où les <select> restent
+           visibles en ligne comme avant. -->
+      <button type="button" class="btn secondary icon-only" id="filtersToggleBtn" title="Filtres" aria-haspopup="true" aria-expanded="false" aria-controls="toolbarFilters">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"></path></svg>
+      </button>
+      <!-- display:contents par défaut (voir css/style.css) : sur desktop,
+           #toolbarFilters/.toolbar-filters-sheet n'existent pas visuellement,
+           les <select> apparaissent comme des enfants directs de
+           .toolbar-search, identique à avant. Devient une vraie feuille du
+           bas uniquement sous le seuil mobile. -->
+      <div class="toolbar-filters" id="toolbarFilters">
+        <div class="toolbar-filters-sheet">
+          <div class="toolbar-filters-head">
+            <span>Filtres</span>
+            <button type="button" class="close-x" id="closeToolbarFilters" aria-label="Fermer">✕</button>
+          </div>
+          <!-- Sélecteur général : les tris courants, plus une porte d'entrée
+               vers le tri par critère individuel (voir #sortAdvancedRow) plutôt
+               que d'entasser les 14 options (7 critères × ↓/↑) ici même. -->
+          <select id="sortBy">
+            <option value="note-desc">Note globale ↓</option>
+            <option value="note-asc">Note globale ↑</option>
+            <option value="title-asc">Titre A–Z</option>
+            <option value="fav-first">Favoris d'abord</option>
+            <option value="recent">Ajout récent</option>
+            <option value="advanced">Par critère…</option>
+          </select>
+          <!-- Filtre par genre (v2.1, retour utilisateur) — options générées
+               depuis les films déjà en catalogue (buildGenreFilterOptions(),
+               js/app.js), pas la liste TMDB complète : pas la peine de
+               proposer "Western" à quelqu'un qui n'a aucun film de ce genre. -->
+          <select id="genreFilter">
+            <option value="">Tous les genres</option>
+          </select>
+        </div>
+      </div>
     </div>
     <div class="toolbar-actions">
       <!-- À voir / Amis / Groupes / Statistiques / Succès / Journal vivent
@@ -1164,93 +1193,93 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=80"></script>
+<script src="js/supabaseConfig.js?v=81"></script>
 <!-- Juste après supabaseConfig.js (a besoin de supabaseClient) et avant
      tout le reste : capte les erreurs de chargement des scripts suivants,
      pas seulement celles de l'app une fois démarrée — voir js/logging.js. -->
-<script src="js/logging.js?v=80"></script>
-<script src="js/tmdbConfig.js?v=80"></script>
-<script src="js/data.js?v=80"></script>
-<script src="js/happenings.js?v=80"></script>
+<script src="js/logging.js?v=81"></script>
+<script src="js/tmdbConfig.js?v=81"></script>
+<script src="js/data.js?v=81"></script>
+<script src="js/happenings.js?v=81"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=80"></script>
+<script src="js/ui.js?v=81"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=80"></script>
-<script src="js/app.js?v=80"></script>
-<script src="js/tmdb.js?v=80"></script>
-<script src="js/stats.js?v=80"></script>
-<script src="js/achievements.js?v=80"></script>
-<script src="js/journal.js?v=80"></script>
+<script src="js/offline.js?v=81"></script>
+<script src="js/app.js?v=81"></script>
+<script src="js/tmdb.js?v=81"></script>
+<script src="js/stats.js?v=81"></script>
+<script src="js/achievements.js?v=81"></script>
+<script src="js/journal.js?v=81"></script>
 <!-- Après app.js (showToast) — appelée par js/profile.js juste après. -->
-<script src="js/pwa.js?v=80"></script>
-<script src="js/profile.js?v=80"></script>
+<script src="js/pwa.js?v=81"></script>
+<script src="js/profile.js?v=81"></script>
 <!-- Après profile.js (closeProfileModal/openProfileModal) et data.js
      (FEEDBACK_CATEGORIES) — même raisonnement que pwa.js juste au-dessus. -->
-<script src="js/feedback.js?v=80"></script>
+<script src="js/feedback.js?v=81"></script>
 <!-- N'a besoin que de ui.js (openOverlay/closeOverlay) et app.js
      (showToast), chargés bien avant — placé ici pour rester groupé avec
      les autres modales accessibles depuis le chrome plutôt que pour une
      vraie dépendance. -->
-<script src="js/share.js?v=80"></script>
+<script src="js/share.js?v=81"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=80"></script>
-<script src="js/router.js?v=80"></script>
-<script src="js/publicProfile.js?v=80"></script>
-<script src="js/top.js?v=80"></script>
-<script src="js/friends.js?v=80"></script>
+<script src="js/admin.js?v=81"></script>
+<script src="js/router.js?v=81"></script>
+<script src="js/publicProfile.js?v=81"></script>
+<script src="js/top.js?v=81"></script>
+<script src="js/friends.js?v=81"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=80"></script>
-<script src="js/watchlist.js?v=80"></script>
+<script src="js/activity.js?v=81"></script>
+<script src="js/watchlist.js?v=81"></script>
 <!-- Après watchlist.js (loadWatchlist/watchlist, réutilisés pour exclure
      ce qui y est déjà) et app.js (getDisplayNote, chargé plus haut) — voir
      js/suggestions.js. Avant auth.js, qui appelle loadSuggestions() depuis
      showApp(). -->
-<script src="js/suggestions.js?v=80"></script>
+<script src="js/suggestions.js?v=81"></script>
 <!-- Import externe (Letterboxd pour l'instant) — après watchlist.js/app.js/
      tmdb.js/journal.js dont il réutilise films/watchlist/searchTmdb()/
      addViewing(). Voir js/importExternal.js. -->
-<script src="js/importExternal.js?v=80"></script>
+<script src="js/importExternal.js?v=81"></script>
 <!-- Fiche film (v2.1) — voir js/filmDetail.js. Regroupée ici avec
      friends.js/watchlist.js dont elle réutilise les helpers (même
      remarque que suggestions.js juste au-dessus : l'ordre exact n'importe
      pas au runtime, tout est en fonctions appelées après chargement
      complet — router.js, plus haut, appelle déjà openFriends()/
      openWatchlist() en aval de leur propre script de la même façon). -->
-<script src="js/filmDetail.js?v=80"></script>
+<script src="js/filmDetail.js?v=81"></script>
 <!-- Après watchlist.js : js/upcoming.js réutilise le tableau watchlist déjà
      chargé (voir plus bas). -->
-<script src="js/series.js?v=80"></script>
+<script src="js/series.js?v=81"></script>
 <!-- Après watchlist.js ET series.js — a besoin des deux tableaux chargés
      (loadWatchlist()/loadTrackedShows()), voir js/upcoming.js. -->
-<script src="js/upcoming.js?v=80"></script>
-<script src="js/groups.js?v=80"></script>
-<script src="js/proposals.js?v=80"></script>
+<script src="js/upcoming.js?v=81"></script>
+<script src="js/groups.js?v=81"></script>
+<script src="js/proposals.js?v=81"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=80"></script>
+<script src="js/invites.js?v=81"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=80"></script>
+<script src="js/activityState.js?v=81"></script>
 <!-- Après activityState.js (loadActivityState/activityState réutilisés
      pour son propre badge "vu") et avant auth.js qui appelle
      initChangelog() depuis showApp(). -->
-<script src="js/changelog.js?v=80"></script>
-<script src="js/auth.js?v=80"></script>
+<script src="js/changelog.js?v=81"></script>
+<script src="js/auth.js?v=81"></script>
 </body>
 </html>
