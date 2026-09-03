@@ -3191,8 +3191,16 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
      étroit (ex. Galaxy S25, ~360px de large), ça suffisait à faire
      passer grille/liste + export sur une 2e ligne (retour utilisateur :
      "j'ai 2 lignes... c'est pas top"). Cette redéfinition-ci lève le
-     plancher pour de vrai, tout tient sur une ligne. */
-  .toolbar-search{min-width:0; gap:6px;}
+     plancher pour de vrai — MAIS ne suffisait encore qu'au catalogue
+     Films : la règle tablette (flex:1 1 200px, juste au-dessus, 760px)
+     restait active à toutes les largeurs ≤760px faute de flex-basis
+     réécrit ici, et sur Séries (recherche seule + "+ Suivre", pas de
+     bouton Filtres pour partager la ligne) ce basis de 200px suffisait à
+     lui seul à faire passer grille/liste + Suivre en dessous (constaté
+     en repartant du retour utilisateur — Films semblait réglé, Séries ne
+     l'était pas). flex-basis:0 ici referme vraiment l'écart, partout où
+     .toolbar-search est utilisée. */
+  .toolbar-search{min-width:0; flex-basis:0; gap:6px;}
   .toolbar-search input[type="text"]{min-width:0; flex:1 1 auto;}
   #filtersToggleBtn{display:inline-flex; flex:none;}
   .toolbar{gap:8px;}
