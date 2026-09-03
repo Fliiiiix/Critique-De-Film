@@ -236,7 +236,7 @@ function renderStatsInto(content, list = films){
 
     <div class="stats-section stats-extremes">
       ${s.best ? `
-      <div class="stats-extreme">
+      <div class="stats-extreme stats-extreme-best">
         ${s.best.posterUrl
           ? `<img class="stats-extreme-poster" src="${s.best.posterUrl}" alt="" loading="lazy">`
           : `<div class="stats-extreme-poster stats-extreme-poster-placeholder">${FILM_PLACEHOLDER_SVG}</div>`}

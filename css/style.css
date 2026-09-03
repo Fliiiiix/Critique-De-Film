@@ -1965,6 +1965,25 @@ input[type="range"]::-moz-range-thumb{
   border-radius:10px;
   padding:12px 14px;
 }
+/* v2.1.x — seul "Mieux noté" reçoit le halo (même logique de retenue que
+   .ach-tier-card.maxed : un moment à célébrer). "Moins bien noté" reste
+   neutre exprès — pas de dégradé rouge/négatif, juste l'info brute. */
+.stats-extreme-best{
+  position:relative;
+  border-color:transparent;
+  box-shadow:0 0 18px 2px rgba(231,178,76,0.16);
+}
+.stats-extreme-best::before{
+  content:'';
+  position:absolute; inset:0;
+  border-radius:inherit;
+  padding:1.5px;
+  background:linear-gradient(120deg, var(--gold), var(--bronze), var(--violet));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  pointer-events:none;
+}
 .stats-extreme-poster{
   width:42px; height:62px;
   object-fit:cover;
@@ -2180,7 +2199,31 @@ input[type="range"]::-moz-range-thumb{
   color:var(--text-muted);
   line-height:1.4;
 }
-.ach-hidden-card.unlocked{border-color:var(--gold-dim);}
+/* v2.1.x, "Halation" plus loin : même bordure en dégradé que .ach-summary
+   ci-dessus (par masque, voir le commentaire dessus), réservée aux 2 seuls
+   états "à célébrer" de cette grille — un palier poussé jusqu'à l'or, un
+   succès secret enfin débloqué. Jamais sur un palier en cours ni un succès
+   verrouillé : la carte reste neutre tant qu'il n'y a rien de spécial à
+   montrer, cohérent avec la restriction déjà appliquée ailleurs (jamais de
+   verre sur l'en-tête, jamais de dégradé de texte hors "Note moyenne"). */
+.ach-tier-card.maxed,
+.ach-hidden-card.unlocked{
+  position:relative;
+  border-color:transparent;
+  box-shadow:0 0 18px 2px rgba(231,178,76,0.16);
+}
+.ach-tier-card.maxed::before,
+.ach-hidden-card.unlocked::before{
+  content:'';
+  position:absolute; inset:0;
+  border-radius:inherit;
+  padding:1.5px;
+  background:linear-gradient(120deg, var(--gold), var(--bronze), var(--violet));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  pointer-events:none;
+}
 
 /* --- Interface admin (js/admin.js) : réutilise .wl-row (déjà utilisé pour
    la watchlist/propositions) pour les lignes succès/happenings, plutôt que
@@ -2223,6 +2266,15 @@ input[type="range"]::-moz-range-thumb{
    clic sur la ligne entière chez eux. */
 #seriesList .wl-row{cursor:pointer; transition:border-color .15s, transform .15s, box-shadow .15s;}
 #seriesList .wl-row:hover{border-color:var(--violet-dim); transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,0.35);}
+/* Suggestions (v2.1.x, js/suggestions.js) : halo au survol seulement — pas
+   en permanence, la liste reste calme au repos — pour distinguer "on te
+   propose ça" d'une ligne de watchlist normale juste en dessous. */
+#suggestionsList .wl-row{transition:border-color .15s, transform .15s, box-shadow .15s;}
+#suggestionsList .wl-row:hover{
+  border-color:var(--violet-dim);
+  transform:translateY(-1px);
+  box-shadow:0 10px 24px rgba(0,0,0,0.35), 0 0 24px 3px rgba(140,124,255,0.18);
+}
 .wl-main{flex:1; min-width:0;}
 .wl-title{
   font-family:'Bricolage Grotesque', sans-serif;

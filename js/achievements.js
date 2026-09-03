@@ -167,8 +167,11 @@ function renderTierCard(g){
   const span = g.next ? g.next.threshold - prevThreshold : 1;
   const progressPct = g.next ? Math.min(100, Math.max(0, ((g.value - prevThreshold) / span) * 100)) : 100;
 
+  // "maxed" (v2.1.x) : palier or déjà atteint — voir le traitement bordure
+  // en dégradé + halo réservé à cet état dans css/style.css.
+  const maxed = g.tierIndex === g.tiers.length - 1;
   return `
-    <div class="ach-tier-card">
+    <div class="ach-tier-card${maxed ? ' maxed' : ''}">
       <div class="ach-tier-head">
         <span class="ach-tier-icon">${g.icon}</span>
         <span class="ach-tier-label">${escapeHtml(g.label)}</span>
