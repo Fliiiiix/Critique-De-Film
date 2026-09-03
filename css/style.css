@@ -200,52 +200,59 @@ header{
   .brand-mark-gold{transform:rotate(-12deg);}
   .brand-link:hover .brand-mark-gold{animation:none;}
 }
+/* Bandeau utilitaire (v2.1.x) — voir le commentaire complet sur #userBar
+   dans index.html : premier élément du header, rangée à part entière
+   (plus de position:absolute par-dessus le logo) plutôt que flottant au
+   même niveau que le titre — libellés désormais toujours visibles, plus
+   besoin de survoler pour deviner. */
 .user-bar{
-  position:absolute;
-  top:14px;
-  right:32px;
   display:flex;
   align-items:center;
-  gap:12px;
-  font-family:'Space Mono', monospace;
-  font-size:11px;
-  color:var(--text-muted);
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+  padding-bottom:18px;
+  margin-bottom:22px;
+  border-bottom:1px solid var(--line-soft);
+  position:relative;
 }
 /* Nav de l'entête : les pages assez fréquentes pour mériter un accès
    direct depuis n'importe où (À voir, Séries, Prochainement, Amis — qui
-   contient Groupes, voir index.html). Icônes seules, sans cadre, pour
-   rester discrètes à côté du titre plutôt que de reformer une rangée de
-   boutons. */
+   contient Groupes, voir index.html). */
 .header-nav{
   display:flex;
-  gap:2px;
+  gap:4px;
+  flex-wrap:wrap;
 }
 .header-nav-btn{
   position:relative; /* point du badge .has-unread ci-dessous */
-  display:flex; align-items:center; justify-content:center;
+  display:flex; align-items:center; gap:7px;
   background:none;
   border:1px solid transparent;
   color:var(--text-muted);
-  width:38px; height:38px;
-  border-radius:10px;
+  padding:9px 13px;
+  border-radius:9px;
+  font-family:'Instrument Sans', sans-serif;
+  font-weight:600;
+  font-size:12.5px;
+  white-space:nowrap;
   cursor:pointer;
-  transition:background .15s, color .15s, border-color .15s, transform .15s;
+  transition:background .15s, color .15s, border-color .15s;
 }
 /* v2.8 : or plutôt que --text au survol (retour utilisateur — "où est la
    couleur ?", l'entête entière restait grise/violette) — présent sur
-   TOUTE page (entête persistante), plus le petit coup de zoom qui va
-   avec pour que ce ne soit pas qu'un changement de teinte statique. */
-.header-nav-btn:hover{background:var(--surface-2); border-color:var(--gold-dim); color:var(--gold); transform:scale(1.08);}
+   TOUTE page (entête persistante). */
+.header-nav-btn:hover{background:var(--surface-2); border-color:var(--gold-dim); color:var(--gold);}
 /* SVG (v2.0.14) plutôt qu'un emoji — voir le commentaire au-dessus de
    #primaryTabs dans index.html pour le pourquoi. */
-.header-nav-btn svg{width:18px; height:18px;}
+.header-nav-btn svg{width:17px; height:17px; flex:none;}
 /* Badge "non lu" (js/activityState.js) : un seul point, sur 👥, qui couvre
    Amis + Groupes (pas d'icône Groupes séparée dans l'entête). */
 .header-nav-btn.has-unread::after{
   content:'';
   position:absolute;
-  top:5px; right:5px;
-  width:8px; height:8px;
+  top:6px; right:6px;
+  width:7px; height:7px;
   border-radius:50%;
   background:var(--coral);
   border:1.5px solid var(--ink);
