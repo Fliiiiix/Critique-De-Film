@@ -53,3 +53,9 @@ document.getElementById('feedbackSubmitBtn').addEventListener('click', handleSub
 document.getElementById('feedbackOverlay').addEventListener('click', (e) => {
   if(e.target.id === 'feedbackOverlay') closeFeedbackModal();
 });
+// Lien de secours dans la modale profil (v2.1.x, mobile — voir le
+// commentaire sur #profileFeedbackLinkBtn, index.html).
+document.getElementById('profileFeedbackLinkBtn').addEventListener('click', () => {
+  closeProfileModal();
+  openFeedbackModal();
+});

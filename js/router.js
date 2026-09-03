@@ -68,6 +68,31 @@ function updatePrimaryTabs(routeName){
 document.getElementById('primaryTabFilms').addEventListener('click', goHome);
 document.getElementById('primaryTabSeries').addEventListener('click', goToSeries);
 
+// Barre de navigation mobile (v2.1.x, #mobileTabbar dans index.html) —
+// même principe qu'updatePrimaryTabs() ci-dessus : reflète la route
+// active à chaque rendu. "Accueil" couvre catalogue films ET séries (leur
+// bascule Films/Séries, #primaryTabs, reste affichée EN HAUT de la page
+// une fois sur "Accueil" — pas la peine d'un 2e onglet Séries ici, voir le
+// commentaire complet sur #mobileTabbar). "Profil" n'a pas d'état actif :
+// c'est une modale, pas une route.
+function updateMobileTabbar(routeName){
+  const homeActive = routeName === 'home' || routeName === 'seriesList' || routeName === 'seriesDetail' || routeName === 'filmDetail';
+  const map = {
+    mobileTabHome: homeActive,
+    mobileTabWatchlist: routeName === 'watchlist',
+    mobileTabUpcoming: routeName === 'upcoming',
+    mobileTabFriends: routeName === 'amis' || routeName === 'groupsList' || routeName === 'groupDetail' || routeName === 'proposalDetail'
+  };
+  Object.keys(map).forEach(id => {
+    document.getElementById(id).classList.toggle('active', map[id]);
+  });
+}
+document.getElementById('mobileTabHome').addEventListener('click', goHome);
+document.getElementById('mobileTabWatchlist').addEventListener('click', goToWatchlist);
+document.getElementById('mobileTabUpcoming').addEventListener('click', goToUpcoming);
+document.getElementById('mobileTabFriends').addEventListener('click', goToAmis);
+document.getElementById('mobileTabProfile').addEventListener('click', openProfileModal);
+
 function goHome(){ location.hash = ''; }
 function goToGroups(){ location.hash = '#/groupes'; }
 function goToGroup(groupId){ location.hash = `#/groupes/${groupId}`; }
@@ -154,6 +179,7 @@ async function renderRoute(){
   }
   if(!currentUser) return;
   updatePrimaryTabs(route.name);
+  updateMobileTabbar(route.name);
   if(route.name === 'home'){
     showOnlyPage('appContainer');
   }else if(route.name === 'watchlist'){

@@ -58,6 +58,12 @@
   --bronze-wash:rgba(217,170,103,0.12);
   --plum:#3a1f52;
   --plum-2:#4d2a68;
+  /* Hauteur de #mobileTabbar (v2.1.x) — référencée par elle-même et par
+     tout ce qui doit se décaler pour ne pas passer dessous une fois
+     qu'elle occupe le bas de l'écran (mobile only) : .fab,
+     .update-banner, le padding bas des pages. Un seul chiffre à changer
+     si la barre grandit un jour. */
+  --mobile-tabbar-h:60px;
 }
 *{box-sizing:border-box; margin:0; padding:0;}
 /* Fond de page : le violet du header seul ne suffisait pas (retour
@@ -279,6 +285,56 @@ header{
 }
 .user-avatar-fallback{display:flex; opacity:0.6;}
 .user-avatar-fallback svg{width:18px; height:18px;}
+/* Barre de navigation mobile (v2.1.x) — voir le commentaire complet sur
+   #mobileTabbar dans index.html. Cachée par défaut (desktop) : la media
+   query 600px plus bas la fait vivre pour de vrai (position fixe, 5
+   colonnes égales) et masque .user-bar en retour — jamais les deux à la
+   fois, quelle que soit la largeur. */
+.mobile-tabbar{display:none;}
+.mobile-tab{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  background:none;
+  border:none;
+  color:var(--text-muted);
+  padding:8px 4px 6px;
+  cursor:pointer;
+  font-family:'Instrument Sans', sans-serif;
+  font-size:10.5px;
+  transition:color .15s;
+}
+.mobile-tab svg{width:22px; height:22px;}
+.mobile-tab.active{color:var(--violet);}
+.mobile-tab:active{transform:scale(0.94);}
+.mobile-tab-avatar, .mobile-tab-avatar-fallback{
+  width:22px; height:22px;
+  border-radius:50%;
+  object-fit:cover;
+}
+.mobile-tab-avatar-fallback{display:flex; align-items:center; justify-content:center; background:var(--surface-2);}
+.mobile-tab-avatar-fallback svg{width:14px; height:14px;}
+/* Mêmes badges "non lu" que la rangée d'icônes desktop (.header-nav-btn.
+   has-unread plus haut) — #friendsBtn/#changelogBtn sont cachés sous le
+   seuil mobile, sans ça leur signal disparaîtrait avec eux (voir
+   refreshActivityBadge(), js/activityState.js et initChangelog(),
+   js/changelog.js, qui posent .has-unread ici aussi). #mobileTabProfile
+   n'a pas d'état .active suivi par route (c'est une modale, pas une
+   page) — porte quand même ce badge pour Nouveautés, désormais accessible
+   depuis "Mon activité" plutôt qu'un onglet à elle seule. */
+.mobile-tab{position:relative;}
+.mobile-tab.has-unread::after{
+  content:'';
+  position:absolute;
+  top:4px; right:22%;
+  width:8px; height:8px;
+  border-radius:50%;
+  background:var(--coral);
+  border:1.5px solid var(--ink);
+}
 /* Discret volontairement (v2.0) : le numéro de version reste affiché
    (l'utilisateur y tient) mais tassé contre le titre plutôt que mis en
    avant — ce n'est pas une donnée que quelqu'un vient chercher. */
@@ -3063,7 +3119,42 @@ body[data-view-mode="list"] #topList .top-rank{width:26px; font-size:16px;}
   .container{padding:0 18px;}
   h1{font-size:28px;}
   .stats-extremes{grid-template-columns:1fr;}
-  .user-bar{position:static; margin-top:10px; flex-wrap:wrap;}
+  /* v2.1.x, retour utilisateur : la rangée d'icônes + avatar/pseudo,
+     repositionnée sous les onglets Films/Séries par l'ancienne règle ici
+     (position:static + flex-wrap), restait confuse — "tout au même
+     endroit... ça fait très tâche", "étrange" que ce soit entre le titre
+     et la toolbar plutôt que tout en haut ou tout en bas. Remplacée par
+     #mobileTabbar (fixe, en bas — voir index.html pour le raisonnement
+     complet) : .user-bar disparaît entièrement ici plutôt que d'être
+     réagencée. */
+  .user-bar{display:none;}
+  .mobile-tabbar{
+    display:flex;
+    position:fixed;
+    left:0; right:0; bottom:0;
+    z-index:30; /* sous .overlay (50, modales) : une fiche/modale ouverte
+      doit couvrir la barre, pas l'inverse. Sous .fab (40) aussi, mais sans
+      conséquence : .fab est décalé au-dessus d'elle plus bas dans ce même
+      bloc, ils ne se chevauchent jamais spatialement. */
+    height:var(--mobile-tabbar-h);
+    padding-bottom:env(safe-area-inset-bottom, 0px);
+    background:rgba(27,24,38,0.86);
+    backdrop-filter:blur(20px) saturate(160%);
+    -webkit-backdrop-filter:blur(20px) saturate(160%);
+    border-top:1px solid var(--line);
+  }
+  /* Espace pour ne jamais laisser #mobileTabbar recouvrir le bas d'une
+     page/liste — .page avait déjà 60px de marge pour d'autres raisons
+     (voir plus haut), on y ajoute la hauteur de la barre + sa zone de
+     sécurité plutôt que de choisir entre les deux. */
+  .page{padding-bottom:calc(60px + var(--mobile-tabbar-h) + env(safe-area-inset-bottom, 0px));}
+  #appContainer{padding-bottom:calc(var(--mobile-tabbar-h) + env(safe-area-inset-bottom, 0px));}
+  /* .fab et .update-banner se décalent au-dessus de la barre plutôt que
+     de passer dessous — les deux restaient à bottom:22px/0 (pensés pour
+     un bas d'écran libre, avant #mobileTabbar). */
+  .fab{bottom:calc(22px + var(--mobile-tabbar-h) + env(safe-area-inset-bottom, 0px));}
+  .update-banner{bottom:calc(var(--mobile-tabbar-h) + env(safe-area-inset-bottom, 0px));}
+  .toast{bottom:calc(24px + var(--mobile-tabbar-h) + env(safe-area-inset-bottom, 0px));}
 
   /* Grille plus serrée sur mobile : 2 colonnes plutôt que la largeur
      minimale de 158px, qui laisserait une seule colonne trop large sur un

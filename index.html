@@ -33,7 +33,7 @@
      CHAQUE DÉPLOIEMENT touchant HTML + JS/CSS ensemble (donc quasi
      toujours) — un seul numéro pour tous les fichiers, pas la peine de
      suivre lequel a changé. -->
-<link rel="stylesheet" href="css/style.css?v=82">
+<link rel="stylesheet" href="css/style.css?v=83">
 </head>
 <body>
 
@@ -186,6 +186,44 @@
   <span>Une nouvelle version de Kinet est prête.</span>
   <button class="btn" id="updateBannerBtn" type="button">Actualiser</button>
 </div>
+
+<!-- Barre de navigation mobile (v2.1.x, retour utilisateur : "j'ai tout au
+     même endroit puis mon avatar et pseudo ça fait très tâche... on
+     trouve ces icônes en dessous de Films et Séries c'est étrange, il
+     faut que ça soit tout en haut ou tout en bas") — remplace ENTIÈREMENT
+     .header-nav + .user-identity sous le seuil mobile (masqués là, voir
+     css/style.css), jamais affichée sur desktop où la rangée d'icônes de
+     l'entête reste inchangée. 5 destinations seulement (contre 6 icônes +
+     avatar avant) : Top films/Avis/Nouveautés — moins fréquents — ont
+     rejoint "Mon activité" dans la modale profil plutôt que de forcer un
+     6e/7e onglet ici, cohérent avec le principe même d'une barre du bas
+     (jamais plus de 5, sinon chaque cible redevient trop étroite pour le
+     pouce — exactement le problème signalé). Fixe en bas d'écran, gérée
+     par updateMobileTabbar() (js/router.js) qui reflète la route active,
+     comme #primaryTabs (Films/Séries) le fait déjà plus haut. -->
+<nav class="mobile-tabbar" id="mobileTabbar" aria-label="Navigation principale" style="display:none;">
+  <button class="mobile-tab" id="mobileTabHome" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6 10v9.5a1 1 0 001 1h3.5v-6h3v6H17a1 1 0 001-1V10"></path></svg>
+    <span>Accueil</span>
+  </button>
+  <button class="mobile-tab" id="mobileTabWatchlist" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12a.5.5 0 01.5.5v16.2a.5.5 0 01-.77.42L12 16.2l-5.73 4.42a.5.5 0 01-.77-.42V4a.5.5 0 01.5-.5z"></path></svg>
+    <span>À voir</span>
+  </button>
+  <button class="mobile-tab" id="mobileTabUpcoming" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2"></rect><path d="M3.5 10h17"></path><path d="M8 3.5v4"></path><path d="M16 3.5v4"></path></svg>
+    <span>Bientôt</span>
+  </button>
+  <button class="mobile-tab" id="mobileTabFriends" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.3" cy="8" r="3.3"></circle><path d="M16 3.8c1.5.7 2.5 2.2 2.5 4S17.5 11.1 16 11.8"></path><path d="M14.5 20.3c0-3-2.3-5-5.2-5s-5.2 2-5.2 5"></path><path d="M19 20c0-2.5-1.7-4.3-4-4.8"></path></svg>
+    <span>Amis</span>
+  </button>
+  <button class="mobile-tab" id="mobileTabProfile" type="button">
+    <img id="mobileTabAvatar" class="mobile-tab-avatar" alt="">
+    <span id="mobileTabAvatarFallback" class="mobile-tab-avatar-fallback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"></circle><path d="M4.5 20c0-4.1 3.4-6.8 7.5-6.8s7.5 2.7 7.5 6.8"></path></svg></span>
+    <span>Profil</span>
+  </button>
+</nav>
 
 <!-- Écran de maintenance — masque tout le reste tant qu'actif, voir js/auth.js.
      Activé/désactivé depuis Supabase (Table Editor → site_status), pas de
@@ -1003,6 +1041,18 @@
         <button class="btn secondary" id="statsBtn" type="button">📊 Statistiques</button>
         <button class="btn secondary" id="achievementsBtn" type="button">🏆 Succès</button>
         <button class="btn secondary" id="journalBtn" type="button">📅 Journal</button>
+        <!-- v2.1.x — Top films/Avis/Nouveautés vivaient UNIQUEMENT dans la
+             rangée d'icônes de l'entête (#topBtn/#feedbackBtn/#changelogBtn,
+             toujours là sur desktop) — désormais accessibles ici aussi,
+             seul chemin qui leur reste sur mobile (voir #mobileTabbar plus
+             bas : la rangée d'icônes s'efface complètement en dessous du
+             seuil mobile, retour utilisateur — "tout au même endroit...
+             ça fait très tâche"). Referment cette modale avant de
+             naviguer/ouvrir une autre modale, comme Statistiques/Succès
+             juste au-dessus. -->
+        <button class="btn secondary" id="profileTopFilmsLinkBtn" type="button">🎖️ Top films</button>
+        <button class="btn secondary" id="profileFeedbackLinkBtn" type="button">💬 Donner un avis</button>
+        <button class="btn secondary" id="profileChangelogLinkBtn" type="button">📣 Nouveautés</button>
         <!-- Réservé au compte admin (ADMIN_EMAIL, js/admin.js) — masqué par
              défaut, affiché par openProfileModal() si isAdmin(). -->
         <button class="btn secondary" id="adminBtn" type="button" style="display:none;">🛠️ Admin</button>
@@ -1193,93 +1243,93 @@
 <!-- ?v=N sur chaque js/*.js ci-dessous (voir le commentaire dans <head>) —
      à incrémenter à chaque déploiement, même numéro pour tous les fichiers. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/supabaseConfig.js?v=82"></script>
+<script src="js/supabaseConfig.js?v=83"></script>
 <!-- Juste après supabaseConfig.js (a besoin de supabaseClient) et avant
      tout le reste : capte les erreurs de chargement des scripts suivants,
      pas seulement celles de l'app une fois démarrée — voir js/logging.js. -->
-<script src="js/logging.js?v=82"></script>
-<script src="js/tmdbConfig.js?v=82"></script>
-<script src="js/data.js?v=82"></script>
-<script src="js/happenings.js?v=82"></script>
+<script src="js/logging.js?v=83"></script>
+<script src="js/tmdbConfig.js?v=83"></script>
+<script src="js/data.js?v=83"></script>
+<script src="js/happenings.js?v=83"></script>
 <!-- Avant app.js et les 6 autres modules qui ouvrent/ferment une modale
      (openOverlay/closeOverlay) — l'ordre exact importe peu au runtime
      (rien n'y est appelé au chargement), gardé en premier des scripts
      "app" pour la lisibilité, comme un utilitaire partagé. -->
-<script src="js/ui.js?v=82"></script>
+<script src="js/ui.js?v=83"></script>
 <!-- Avant app.js/journal.js/watchlist.js, qui appellent saveOfflineCache()/
      loadOfflineCache()/blockIfOffline() (v1.6, mode hors ligne lecture
      seule) — l'ordre exact importe peu au runtime (rien n'y est appelé au
      chargement, seulement des listeners posés pour plus tard), gardé ici
      pour la lisibilité, comme ui.js juste au-dessus. -->
-<script src="js/offline.js?v=82"></script>
-<script src="js/app.js?v=82"></script>
-<script src="js/tmdb.js?v=82"></script>
-<script src="js/stats.js?v=82"></script>
-<script src="js/achievements.js?v=82"></script>
-<script src="js/journal.js?v=82"></script>
+<script src="js/offline.js?v=83"></script>
+<script src="js/app.js?v=83"></script>
+<script src="js/tmdb.js?v=83"></script>
+<script src="js/stats.js?v=83"></script>
+<script src="js/achievements.js?v=83"></script>
+<script src="js/journal.js?v=83"></script>
 <!-- Après app.js (showToast) — appelée par js/profile.js juste après. -->
-<script src="js/pwa.js?v=82"></script>
-<script src="js/profile.js?v=82"></script>
+<script src="js/pwa.js?v=83"></script>
+<script src="js/profile.js?v=83"></script>
 <!-- Après profile.js (closeProfileModal/openProfileModal) et data.js
      (FEEDBACK_CATEGORIES) — même raisonnement que pwa.js juste au-dessus. -->
-<script src="js/feedback.js?v=82"></script>
+<script src="js/feedback.js?v=83"></script>
 <!-- N'a besoin que de ui.js (openOverlay/closeOverlay) et app.js
      (showToast), chargés bien avant — placé ici pour rester groupé avec
      les autres modales accessibles depuis le chrome plutôt que pour une
      vraie dépendance. -->
-<script src="js/share.js?v=82"></script>
+<script src="js/share.js?v=83"></script>
 <!-- Après happenings.js/achievements.js (définitions) et profile.js
      (closeProfileModal) : admin.js s'appuie sur les trois au clic, jamais au
      chargement — l'ordre exact importe peu, gardé groupé ici pour la
      lisibilité. -->
-<script src="js/admin.js?v=82"></script>
-<script src="js/router.js?v=82"></script>
-<script src="js/publicProfile.js?v=82"></script>
-<script src="js/top.js?v=82"></script>
-<script src="js/friends.js?v=82"></script>
+<script src="js/admin.js?v=83"></script>
+<script src="js/router.js?v=83"></script>
+<script src="js/publicProfile.js?v=83"></script>
+<script src="js/top.js?v=83"></script>
+<script src="js/friends.js?v=83"></script>
 <!-- Après friends.js (cacheProfile/friendDisplayName/friendAvatarHtml) et
      journal.js (formatViewingDate), avant groups.js qui l'appelle depuis
      openGroupDetail() — l'ordre exact importe peu au runtime (tout est en
      fonctions globales appelées après chargement complet), gardé groupé
      ici pour la lisibilité. -->
-<script src="js/activity.js?v=82"></script>
-<script src="js/watchlist.js?v=82"></script>
+<script src="js/activity.js?v=83"></script>
+<script src="js/watchlist.js?v=83"></script>
 <!-- Après watchlist.js (loadWatchlist/watchlist, réutilisés pour exclure
      ce qui y est déjà) et app.js (getDisplayNote, chargé plus haut) — voir
      js/suggestions.js. Avant auth.js, qui appelle loadSuggestions() depuis
      showApp(). -->
-<script src="js/suggestions.js?v=82"></script>
+<script src="js/suggestions.js?v=83"></script>
 <!-- Import externe (Letterboxd pour l'instant) — après watchlist.js/app.js/
      tmdb.js/journal.js dont il réutilise films/watchlist/searchTmdb()/
      addViewing(). Voir js/importExternal.js. -->
-<script src="js/importExternal.js?v=82"></script>
+<script src="js/importExternal.js?v=83"></script>
 <!-- Fiche film (v2.1) — voir js/filmDetail.js. Regroupée ici avec
      friends.js/watchlist.js dont elle réutilise les helpers (même
      remarque que suggestions.js juste au-dessus : l'ordre exact n'importe
      pas au runtime, tout est en fonctions appelées après chargement
      complet — router.js, plus haut, appelle déjà openFriends()/
      openWatchlist() en aval de leur propre script de la même façon). -->
-<script src="js/filmDetail.js?v=82"></script>
+<script src="js/filmDetail.js?v=83"></script>
 <!-- Après watchlist.js : js/upcoming.js réutilise le tableau watchlist déjà
      chargé (voir plus bas). -->
-<script src="js/series.js?v=82"></script>
+<script src="js/series.js?v=83"></script>
 <!-- Après watchlist.js ET series.js — a besoin des deux tableaux chargés
      (loadWatchlist()/loadTrackedShows()), voir js/upcoming.js. -->
-<script src="js/upcoming.js?v=82"></script>
-<script src="js/groups.js?v=82"></script>
-<script src="js/proposals.js?v=82"></script>
+<script src="js/upcoming.js?v=83"></script>
+<script src="js/groups.js?v=83"></script>
+<script src="js/proposals.js?v=83"></script>
 <!-- Après groups.js (renderInviteBox appelée depuis renderGroupDetail) et
      proposals.js (chosenProposal) — voir js/invites.js. -->
-<script src="js/invites.js?v=82"></script>
+<script src="js/invites.js?v=83"></script>
 <!-- Après activity.js (rowToActivityEvent/renderActivityRowHtml) et
      friends.js (friendProfiles/cacheProfile) qu'elle réutilise pour le
      digest, avant auth.js qui appelle refreshActivityBadge()/
      maybeShowDigest() depuis showApp(). -->
-<script src="js/activityState.js?v=82"></script>
+<script src="js/activityState.js?v=83"></script>
 <!-- Après activityState.js (loadActivityState/activityState réutilisés
      pour son propre badge "vu") et avant auth.js qui appelle
      initChangelog() depuis showApp(). -->
-<script src="js/changelog.js?v=82"></script>
-<script src="js/auth.js?v=82"></script>
+<script src="js/changelog.js?v=83"></script>
+<script src="js/auth.js?v=83"></script>
 </body>
 </html>

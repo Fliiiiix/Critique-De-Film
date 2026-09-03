@@ -83,13 +83,23 @@ function renderUserBar(){
   // Caché ici (donnée déjà en main, aucun appel réseau de plus) plutôt que
   // dans chacun de ces endroits séparément.
   if(typeof cacheProfile === 'function') cacheProfile(currentUser.id, name, avatarUrl);
+  // Même photo/repli sur l'onglet Profil de la barre mobile (v2.1.x, voir
+  // #mobileTabbar, index.html) — un seul point de mise à jour plutôt que
+  // de dupliquer cette logique là où renderUserBar() est déjà appelée.
+  const mobileAvatarEl = document.getElementById('mobileTabAvatar');
+  const mobileFallbackEl = document.getElementById('mobileTabAvatarFallback');
   if(avatarUrl){
     avatarEl.src = avatarUrl;
     avatarEl.style.display = '';
     fallbackEl.style.display = 'none';
+    mobileAvatarEl.src = avatarUrl;
+    mobileAvatarEl.style.display = '';
+    mobileFallbackEl.style.display = 'none';
   }else{
     avatarEl.style.display = 'none';
     fallbackEl.style.display = '';
+    mobileAvatarEl.style.display = 'none';
+    mobileFallbackEl.style.display = '';
   }
 }
 

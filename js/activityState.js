@@ -107,7 +107,11 @@ async function refreshActivityBadge(){
   const [amis, groupes, pendingRequest] = await Promise.all([
     hasUnread('amis'), hasUnread('groupes'), hasPendingIncomingFriendRequest()
   ]);
-  document.getElementById('friendsBtn').classList.toggle('has-unread', amis || groupes || pendingRequest);
+  const unread = amis || groupes || pendingRequest;
+  document.getElementById('friendsBtn').classList.toggle('has-unread', unread);
+  // Même badge sur l'onglet Amis de la barre mobile (v2.1.x, #mobileTabbar
+  // — #friendsBtn est caché sous le seuil mobile, voir index.html).
+  document.getElementById('mobileTabFriends').classList.toggle('has-unread', unread);
 }
 
 // Plafonné aux 14 derniers jours OU 20 événements (le plus petit des deux)

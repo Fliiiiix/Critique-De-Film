@@ -79,6 +79,7 @@ async function markChangelogSeen(){
     .upsert({ user_id: currentUser.id, last_seen_changelog: now }, { onConflict: 'user_id' });
   if(error) console.error(error);
   document.getElementById('changelogBtn').classList.remove('has-unread');
+  document.getElementById('mobileTabProfile').classList.remove('has-unread');
 }
 
 async function hasUnreadChangelog(){
@@ -111,10 +112,20 @@ async function initChangelog(){
   updateVersionTag();
   const unread = await hasUnreadChangelog();
   document.getElementById('changelogBtn').classList.toggle('has-unread', unread);
+  // Même badge sur l'onglet Profil de la barre mobile (v2.1.x,
+  // #mobileTabbar — #changelogBtn est caché sous le seuil mobile, la
+  // Nouveauté vit désormais dans "Mon activité", voir index.html).
+  document.getElementById('mobileTabProfile').classList.toggle('has-unread', unread);
   if(unread) openChangelogModal();
 }
 
 document.getElementById('changelogBtn').addEventListener('click', openChangelogModal);
+// Lien de secours dans la modale profil (v2.1.x, mobile — voir le
+// commentaire sur #profileChangelogLinkBtn, index.html).
+document.getElementById('profileChangelogLinkBtn').addEventListener('click', () => {
+  closeProfileModal();
+  openChangelogModal();
+});
 document.getElementById('closeChangelog').addEventListener('click', closeChangelogModal);
 document.getElementById('changelogOverlay').addEventListener('click', (e) => {
   if(e.target.id === 'changelogOverlay') closeChangelogModal();

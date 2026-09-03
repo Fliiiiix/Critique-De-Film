@@ -69,6 +69,12 @@ function setTopScope(scope){
 }
 
 document.getElementById('topBtn').addEventListener('click', goToTop);
+// Lien de secours dans la modale profil (v2.1.x, mobile — voir le
+// commentaire sur #profileTopFilmsLinkBtn, index.html).
+document.getElementById('profileTopFilmsLinkBtn').addEventListener('click', () => {
+  closeProfileModal();
+  goToTop();
+});
 document.getElementById('topPageBack').addEventListener('click', goHome);
 document.getElementById('topTabGlobal').addEventListener('click', () => setTopScope('global'));
 document.getElementById('topTabFriends').addEventListener('click', () => setTopScope('friends'));
