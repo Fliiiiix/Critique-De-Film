@@ -38,6 +38,7 @@
      (badge manuel/revisionnage, aide, succès) — pas remplacé sans raison,
      juste retenté légèrement plus froid pour s'accorder au nouveau fond. */
   --teal:#6fa39f;
+  --teal-wash:rgba(111,163,159,0.14);
   --coral:#ff6b57;
   --coral-dim:#8a3f34;
   /* Barème du cadran (.counter, noteColorClass() dans js/ui.js) : rouge
@@ -226,32 +227,50 @@ header{
 }
 .header-nav-btn{
   position:relative; /* point du badge .has-unread ci-dessous */
-  display:flex; align-items:center; gap:7px;
+  display:flex; align-items:center; gap:8px;
   background:none;
   border:1px solid transparent;
   color:var(--text-muted);
-  padding:9px 13px;
-  border-radius:9px;
+  padding:6px 13px 6px 6px;
+  border-radius:999px;
   font-family:'Instrument Sans', sans-serif;
   font-weight:600;
   font-size:12.5px;
   white-space:nowrap;
   cursor:pointer;
-  transition:background .15s, color .15s, border-color .15s;
+  transition:background .15s, border-color .15s;
 }
-/* v2.8 : or plutôt que --text au survol (retour utilisateur — "où est la
-   couleur ?", l'entête entière restait grise/violette) — présent sur
-   TOUTE page (entête persistante). */
-.header-nav-btn:hover{background:var(--surface-2); border-color:var(--gold-dim); color:var(--gold);}
-/* SVG (v2.0.14) plutôt qu'un emoji — voir le commentaire au-dessus de
-   #primaryTabs dans index.html pour le pourquoi. */
-.header-nav-btn svg{width:17px; height:17px; flex:none;}
+/* v2.1.x, "pastille couleur" (draft D validé) — remplace le fond/liseré
+   or uniforme au survol : la teinte propre à CHAQUE bouton (voir
+   .nav-pip-* plus bas) porte déjà la couleur, inutile de la répéter ici.
+   Seul le libellé s'éclaircit, pour rester lisible sans dominer la
+   pastille. */
+.header-nav-btn:hover{background:var(--surface-2); border-color:var(--line);}
+.header-nav-btn:hover span:not(.nav-pip){color:var(--text);}
+/* Pastille (v2.1.x) : le rond teinté derrière chaque icône — la
+   destination se reconnaît aussi à sa couleur, pas seulement à sa forme/
+   son texte. Couleurs reprises telles quelles de la palette Halation
+   (violet/or/bronze/teal), jamais une nouvelle couleur ajoutée pour
+   l'occasion — voir index.html pour l'attribution de chacune. */
+.nav-pip{
+  width:26px; height:26px; flex:none;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+}
+.nav-pip svg{width:14px; height:14px;}
+.nav-pip-violet{background:var(--violet-wash); color:var(--violet);}
+.nav-pip-gold{background:var(--gold-wash); color:var(--gold);}
+.nav-pip-bronze{background:var(--bronze-wash); color:var(--bronze);}
+.nav-pip-teal{background:var(--teal-wash); color:var(--teal);}
 /* Badge "non lu" (js/activityState.js) : un seul point, sur 👥, qui couvre
-   Amis + Groupes (pas d'icône Groupes séparée dans l'entête). */
+   Amis + Groupes (pas d'icône Groupes séparée dans l'entête) — calé sur
+   le coin de la pastille (26px, 6px de marge gauche) plutôt que le bord
+   du bouton entier, sinon un libellé long ("Nouveautés") l'isole loin de
+   l'icône qu'il signale. */
 .header-nav-btn.has-unread::after{
   content:'';
   position:absolute;
-  top:6px; right:6px;
+  top:2px; left:24px;
   width:7px; height:7px;
   border-radius:50%;
   background:var(--coral);
