@@ -67,6 +67,14 @@ function detectLetterboxdType(filename, headers){
   if(name.includes('reviews')) return 'reviews';
   if(name.includes('watchlist')) return 'watchlist';
   if(name.includes('watched')) return 'watched';
+  // Le zip Letterboxd contient aussi ces fichiers-là, sans aucune donnée de
+  // film à en tirer (juste du compte/social) — reconnus explicitement pour
+  // afficher un message clair plutôt qu'un "fichier non reconnu" qui laisse
+  // penser à un bug (retour utilisateur : "l'import du profile ne marche
+  // pas" après avoir déposé profile.csv, trouvé dans le même zip que
+  // diary.csv/ratings.csv).
+  if(name.includes('profile')) return 'profile';
+  if(name.includes('comments')) return 'comments';
   if(headers.includes('Rewatch') && headers.includes('Watched Date')) return 'diary';
   if(headers.includes('Review')) return 'reviews';
   if(headers.includes('Rating')) return 'ratings';
@@ -363,8 +371,16 @@ async function importLetterboxdFile(file){
     showToast('Fichier non reconnu — dépose un CSV de l\'export Letterboxd (ratings.csv, diary.csv, reviews.csv ou watchlist.csv)');
     return;
   }
-  if(type === 'watched'){
-    showToast('watched.csv n\'a pas de note — utilise ratings.csv ou diary.csv pour tes films notés, watchlist.csv pour ta liste à voir');
+  // Fichiers réels du zip Letterboxd, mais sans aucune note/critique de film
+  // dedans (compte, commentaires…) — rien à importer, on l'explique plutôt
+  // que de laisser croire à un bug.
+  const UNSUPPORTED_MESSAGES = {
+    watched: 'watched.csv n\'a pas de note — utilise ratings.csv ou diary.csv pour tes films notés, watchlist.csv pour ta liste à voir',
+    profile: 'profile.csv contient tes infos de compte Letterboxd (pseudo, bio, date d\'inscription…), pas tes films — rien à importer depuis ce fichier. Utilise diary.csv, ratings.csv, reviews.csv ou watchlist.csv',
+    comments: 'comments.csv contient tes commentaires sous des films, pas tes notes — utilise diary.csv, ratings.csv, reviews.csv ou watchlist.csv'
+  };
+  if(UNSUPPORTED_MESSAGES[type]){
+    showToast(UNSUPPORTED_MESSAGES[type]);
     return;
   }
   showToast('Import en cours…');
