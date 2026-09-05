@@ -102,7 +102,8 @@ document.addEventListener('keydown', (e) => {
     journalOverlay: () => closeJournal(),
     friendProfileOverlay: () => closeFriendProfile(),
     feedbackOverlay: () => closeFeedbackModal(),
-    shareOverlay: () => closeShareModal()
+    shareOverlay: () => closeShareModal(),
+    importLetterboxdTutoOverlay: () => closeOverlay('importLetterboxdTutoOverlay')
   };
   for(const id in closers){
     if(document.getElementById(id).classList.contains('open')){

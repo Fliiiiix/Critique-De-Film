@@ -282,7 +282,35 @@ async function importLetterboxdFile(file){
   }
 }
 
-document.getElementById('importLetterboxdBtn').addEventListener('click', () => document.getElementById('importLetterboxdFile').click());
+// --- Tutoriel d'import (retour utilisateur) ---
+// Un ami de l'utilisateur a testé l'import sans aide et ça a marché, mais
+// rien n'explique où trouver son export Letterboxd ni quel fichier choisir
+// dans le zip pour quelqu'un qui découvre. Affiché seulement au clic sur
+// "Importer depuis Letterboxd" (jamais avant : à la connexion, en bannière,
+// etc. — ça gênerait tous ceux qui n'importent rien). "Ne plus afficher"
+// mémorisé en localStorage (préférence d'affichage locale à l'appareil, pas
+// une donnée utilisateur à synchroniser en base).
+const LETTERBOXD_TUTO_HIDE_KEY = 'kinet_hide_letterboxd_tuto';
+
+document.getElementById('importLetterboxdBtn').addEventListener('click', () => {
+  if(localStorage.getItem(LETTERBOXD_TUTO_HIDE_KEY) === '1'){
+    document.getElementById('importLetterboxdFile').click();
+  } else {
+    openOverlay('importLetterboxdTutoOverlay');
+  }
+});
+document.getElementById('closeLetterboxdTuto').addEventListener('click', () => closeOverlay('importLetterboxdTutoOverlay'));
+document.getElementById('letterboxdTutoCancelBtn').addEventListener('click', () => closeOverlay('importLetterboxdTutoOverlay'));
+document.getElementById('importLetterboxdTutoOverlay').addEventListener('click', (e) => {
+  if(e.target.id === 'importLetterboxdTutoOverlay') closeOverlay('importLetterboxdTutoOverlay');
+});
+document.getElementById('letterboxdTutoContinueBtn').addEventListener('click', () => {
+  if(document.getElementById('hideLetterboxdTutoCheck').checked){
+    localStorage.setItem(LETTERBOXD_TUTO_HIDE_KEY, '1');
+  }
+  closeOverlay('importLetterboxdTutoOverlay');
+  document.getElementById('importLetterboxdFile').click();
+});
 document.getElementById('importLetterboxdFile').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if(file) importLetterboxdFile(file);
