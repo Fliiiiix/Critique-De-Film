@@ -121,7 +121,7 @@ async function matchLetterboxdToTmdb(title, year){
   }
 }
 
-// --- Import films notés (ratings.csv / diary.csv / reviews.csv) ---
+// --- Import films notés (ratings.csv / diary.csv) ---
 async function importLetterboxdRatings(records){
   const groups = groupLetterboxdEntries(records);
   if(groups.length === 0){ showToast('Aucune entrée trouvée dans ce fichier'); return; }
@@ -191,6 +191,99 @@ async function importLetterboxdRatings(records){
   buildGenreFilterOptions();
   render();
   showToast(`${matched} film(s) importé(s) depuis Letterboxd (${skipped} déjà présent(s), ${unmatched} introuvable(s) sur TMDB)`);
+}
+
+// --- Import reviews.csv ---
+// Bug remonté par l'utilisateur : "l'import review ne marche pas". Cause
+// réelle — reviews.csv liste les MÊMES films que ratings.csv/diary.csv (une
+// critique accompagne toujours une note déjà exportée ailleurs), donc dans
+// l'ordre d'import naturel (diary/ratings d'abord, reviews ensuite pour
+// récupérer le texte), importLetterboxdRatings() les aurait tous trouvés
+// déjà présents et purement SKIPPÉS — le texte de la critique ne partait
+// jamais nulle part, l'import semblait ne rien faire ("0 importé(s), tous
+// déjà présents"). Ici on distingue les deux cas : film déjà au catalogue →
+// on COMPLÈTE l'entrée existante (review, et manual_note si absente),
+// jamais on n'écrase une critique déjà écrite dans Kinet ; film absent → on
+// l'importe comme importLetterboxdRatings (avec sa note et sa critique).
+async function importLetterboxdReviews(records){
+  const groups = groupLetterboxdEntries(records);
+  if(groups.length === 0){ showToast('Aucune entrée trouvée dans ce fichier'); return; }
+
+  const filmsByTmdbId = new Map(films.filter(f => f.tmdbId).map(f => [f.tmdbId, f]));
+  let updated = 0, added = 0, unchanged = 0, unmatched = 0, done = 0;
+  const toInsert = [];
+  const datesForInsert = [];
+  const toUpdate = [];
+
+  let idx = 0;
+  async function worker(){
+    while(idx < groups.length){
+      const g = groups[idx++];
+      done++;
+      if(done % 3 === 0 || done === groups.length) showToast(`Import des critiques Letterboxd… ${done}/${groups.length}`);
+      if(!g.review){ unchanged++; continue; } // reviews.csv sans texte : rien à récupérer ici
+      const m = await matchLetterboxdToTmdb(g.title, g.year);
+      if(!m){ unmatched++; continue; }
+      const existing = filmsByTmdbId.get(m.id);
+      if(existing){
+        const patch = {};
+        if(!existing.review) patch.review = g.review;
+        if(existing.manualNote == null && g.rating != null) patch.manual_note = g.rating;
+        if(Object.keys(patch).length === 0){ unchanged++; continue; } // déjà complet côté Kinet
+        toUpdate.push({ id: existing.id, patch });
+        continue;
+      }
+      toInsert.push({
+        title: m.title,
+        crit: {},
+        fav: false,
+        added: g.dates.length ? new Date([...g.dates].sort().pop()).getTime() : Date.now(),
+        manual_note: g.rating,
+        review: g.review,
+        tmdb_id: m.id,
+        poster_url: m.poster_path ? TMDB_IMG_BASE + m.poster_path : null,
+        overview: m.overview,
+        release_year: m.release_year,
+        original_title: m.original_title,
+        genre_ids: m.genre_ids || []
+      });
+      datesForInsert.push(g.dates);
+    }
+  }
+  await Promise.all(Array.from({ length: 4 }, worker));
+
+  for(const u of toUpdate){
+    const { error } = await supabaseClient.from('films').update(u.patch).eq('id', u.id);
+    if(error){ console.error(error); continue; }
+    const f = films.find(x => x.id === u.id);
+    if(f){
+      if('review' in u.patch) f.review = u.patch.review;
+      if('manual_note' in u.patch) f.manualNote = parseFloat(u.patch.manual_note);
+    }
+    updated++;
+  }
+
+  if(toInsert.length){
+    const { data: inserted, error } = await supabaseClient.from('films').insert(toInsert).select();
+    if(error){
+      showToast('Erreur pendant l\'import, réessaie');
+      console.error(error);
+    } else {
+      inserted.forEach((row, i) => {
+        films.push(rowToFilm(row));
+        const dates = datesForInsert[i];
+        if(dates && dates.length) dates.forEach(d => addViewing(row.id, new Date(d).getTime()));
+        else addViewing(row.id, row.added);
+      });
+      added = inserted.length;
+    }
+  }
+
+  if(updated || added){
+    buildGenreFilterOptions();
+    render();
+  }
+  showToast(`${updated} critique(s) complétée(s) sur des films déjà présents, ${added} film(s) importé(s), ${unmatched} introuvable(s) sur TMDB`);
 }
 
 // --- Import watchlist.csv ---
@@ -277,6 +370,8 @@ async function importLetterboxdFile(file){
   showToast('Import en cours…');
   if(type === 'watchlist'){
     await importLetterboxdWatchlist(records);
+  } else if(type === 'reviews'){
+    await importLetterboxdReviews(records);
   } else {
     await importLetterboxdRatings(records);
   }
