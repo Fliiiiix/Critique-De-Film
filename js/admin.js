@@ -251,33 +251,33 @@ function renderAdminHappeningsTab(){
       <div class="stats-section-title">Nouveau happening (message simple, sans coder)</div>
       <form id="adminNewHappeningForm">
         <div class="field">
-          <label>Film</label>
+          <label for="adminHapFilm">Film</label>
           <select id="adminHapFilm" required>
             <option value="">Choisir un film noté avec fiche TMDB</option>
             ${filmOptions}
           </select>
         </div>
         <div class="field">
-          <label>Déclencheur</label>
+          <label for="adminHapTrigger">Déclencheur</label>
           <select id="adminHapTrigger">
             <option value="click">Clic sur un badge à côté du titre</option>
             <option value="dwell">Rester un moment sur la fiche</option>
           </select>
         </div>
         <div class="field" id="adminHapDwellField" style="display:none;">
-          <label>Délai (secondes)</label>
+          <label for="adminHapDwellSecs">Délai (secondes)</label>
           <input type="number" id="adminHapDwellSecs" min="3" value="15">
         </div>
         <div class="field">
-          <label>Icône (emoji du badge)</label>
+          <label for="adminHapIcon">Icône (emoji du badge)</label>
           <input type="text" id="adminHapIcon" value="✨" maxlength="4" style="width:80px;">
         </div>
         <div class="field">
-          <label>Titre</label>
+          <label for="adminHapTitle">Titre</label>
           <input type="text" id="adminHapTitle" placeholder="Ex. Un dernier mot" required>
         </div>
         <div class="field">
-          <label>Message</label>
+          <label for="adminHapMessage">Message</label>
           <input type="text" id="adminHapMessage" placeholder="Le texte affiché" required>
         </div>
         <button class="btn" type="submit">Créer</button>
@@ -428,15 +428,15 @@ function renderAdminChangelogTab(){
       <div class="stats-section-title">${editing ? "Modifier l'entrée" : 'Nouvelle entrée (brouillon)'}</div>
       <form id="adminChangelogForm">
         <div class="field">
-          <label>Version</label>
+          <label for="adminChangelogVersion">Version</label>
           <input type="text" id="adminChangelogVersion" placeholder="Ex. 2.1" value="${editing ? escapeHtml(editing.version) : ''}" required>
         </div>
         <div class="field">
-          <label>Titre</label>
+          <label for="adminChangelogTitle">Titre</label>
           <input type="text" id="adminChangelogTitle" placeholder="Ex. Suivi des séries" value="${editing ? escapeHtml(editing.title) : ''}" required>
         </div>
         <div class="field">
-          <label>Description</label>
+          <label for="adminChangelogBody">Description</label>
           <textarea id="adminChangelogBody" placeholder="Ce qui a changé…" rows="4" required>${editing ? escapeHtml(editing.body) : ''}</textarea>
         </div>
         <button class="btn" type="submit">${editing ? 'Enregistrer' : 'Créer en brouillon'}</button>

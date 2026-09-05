@@ -262,3 +262,14 @@ homeLinkEl.addEventListener('click', goHomeOrAuth);
 homeLinkEl.addEventListener('keydown', (e) => {
   if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goHomeOrAuth(); }
 });
+
+// Lien d'évitement (#skipToContentLink, index.html — audit accessibilité) :
+// une seule page de PAGE_IDS est visible à la fois (showOnlyPage()), pas
+// d'id de "contenu" fixe à viser directement en <a href="#...">. On
+// retrouve donc la page actuellement affichée au moment du clic plutôt
+// qu'à la construction de la page (la route change sans recharger).
+document.getElementById('skipToContentLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  const visible = PAGE_IDS.map(id => document.getElementById(id)).find(el => el && el.style.display !== 'none');
+  if(visible) visible.focus();
+});
