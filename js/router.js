@@ -93,7 +93,21 @@ document.getElementById('mobileTabUpcoming').addEventListener('click', goToUpcom
 document.getElementById('mobileTabFriends').addEventListener('click', goToAmis);
 document.getElementById('mobileTabProfile').addEventListener('click', openProfileModal);
 
-function goHome(){ location.hash = ''; }
+// Retour utilisateur : cliquer sur le logo/l'onglet Films en pleine
+// pagination (page 3, 4...) alors qu'on est DÉJÀ sur le catalogue ne
+// ramenait pas en page 1 — `location.hash = ''` ne change rien quand le
+// hash est déjà vide, donc `hashchange` ne se déclenche pas, et
+// renderRoute() (seul endroit qui remettait currentPage à 1) ne tournait
+// jamais. Partagée par renderRoute() (vraie navigation, hash différent) et
+// goHome() (cas où le hash ne change pas) plutôt que dupliquée.
+function resetHomeView(){
+  currentPage = 1;
+  render();
+}
+function goHome(){
+  if(parseRoute().name === 'home'){ resetHomeView(); return; }
+  location.hash = '';
+}
 function goToGroups(){ location.hash = '#/groupes'; }
 function goToGroup(groupId){ location.hash = `#/groupes/${groupId}`; }
 function goToProposal(groupId, proposalId){ location.hash = `#/groupes/${groupId}/propositions/${proposalId}`; }
@@ -182,19 +196,13 @@ async function renderRoute(){
   updateMobileTabbar(route.name);
   if(route.name === 'home'){
     showOnlyPage('appContainer');
-    // Retour utilisateur : cliquer sur un film en page 7 du catalogue puis
-    // revenir (bouton retour de la fiche film, logo, onglet Films...)
-    // laissait le catalogue sur la page où on l'avait quitté — il fallait
-    // recliquer "Précédent" 6 fois pour retrouver la page 1. showOnlyPage()
-    // seul ne fait que réafficher le DOM déjà rendu (contrairement aux
-    // autres routes ci-dessous, qui rappellent toutes leur openX() à
-    // chaque navigation) : repartir de la page 1 exige un vrai nouvel
-    // appel à render(). currentPage reste en revanche préservé pour un
-    // simple re-rendu SANS changement de route (ex. cocher un favori,
-    // voir render() dans js/app.js) — seule une navigation ici (hashchange)
-    // remet à 1.
-    currentPage = 1;
-    render();
+    // Repart de la page 1 à chaque vraie navigation vers le catalogue
+    // (retour depuis une fiche film, logo/onglet Films cliqué depuis une
+    // AUTRE page) — voir resetHomeView() plus haut pour le cas où on est
+    // déjà sur le catalogue (hash inchangé, ce bloc ne tourne alors pas).
+    // currentPage reste préservé pour un simple re-rendu SANS changement de
+    // route (ex. cocher un favori, voir render() dans js/app.js).
+    resetHomeView();
   }else if(route.name === 'watchlist'){
     showOnlyPage('watchlistPage');
     await openWatchlist();
