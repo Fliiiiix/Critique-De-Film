@@ -84,7 +84,7 @@ function renderViewingsSection(filmId){
       <span class="viewing-date">${formatViewingDate(v.watchedAt)}</span>
       ${idx === 0 ? '<span class="viewing-first">1er visionnage</span>' : '<span class="rewatch-badge" title="Revisionnage">↻ revu</span>'}
       ${v.note ? `<span class="viewing-note">${escapeHtml(v.note)}</span>` : ''}
-      <button class="viewing-remove" data-id="${v.id}" title="Retirer ce visionnage" type="button">✕</button>
+      <button class="viewing-remove" data-id="${v.id}" title="Retirer ce visionnage" aria-label="Retirer ce visionnage" type="button">✕</button>
     </div>
   `).join('');
   list.querySelectorAll('.viewing-remove').forEach(btn => {

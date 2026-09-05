@@ -89,7 +89,7 @@ async function renderPublicProfilePage(userId){
   `;
 
   content.querySelectorAll('.top-films-showcase-item[data-tmdb-id]').forEach(item => {
-    item.addEventListener('click', () => goToFilmDetail(parseInt(item.dataset.tmdbId, 10)));
+    makeRowClickable(item, () => goToFilmDetail(parseInt(item.dataset.tmdbId, 10)));
   });
 }
 

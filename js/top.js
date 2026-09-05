@@ -49,7 +49,7 @@ function renderTopFilms(){
   `).join('');
   // Fiche film (v2.1, retour utilisateur) — voir js/filmDetail.js.
   list.querySelectorAll('[data-tmdb-id]').forEach(row => {
-    row.addEventListener('click', () => goToFilmDetail(parseInt(row.dataset.tmdbId, 10)));
+    makeRowClickable(row, () => goToFilmDetail(parseInt(row.dataset.tmdbId, 10)));
   });
 }
 

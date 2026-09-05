@@ -131,7 +131,7 @@ function renderTrackedShows(){
     `;
   }).join('');
   list.querySelectorAll('.wl-row[data-id]').forEach(row => {
-    row.addEventListener('click', () => goToSeriesDetail(parseInt(row.dataset.id, 10)));
+    makeRowClickable(row, () => goToSeriesDetail(parseInt(row.dataset.id, 10)));
   });
 }
 

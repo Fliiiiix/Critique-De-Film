@@ -228,7 +228,7 @@ function render(){
       <button class="star-btn ${f.fav ? 'active' : ''}" data-id="${f.id}" type="button" title="Favori" aria-label="${f.fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}" aria-pressed="${f.fav}">${f.fav ? '★' : '☆'}</button>
       <div class="counter ${noteColorClass(note)}">${note !== null ? note.toFixed(1) : '—'}</div>
     `;
-    row.addEventListener('click', (e) => {
+    makeRowClickable(row, (e) => {
       if(e.target.classList.contains('star-btn')) return;
       openModal(f.id);
     });

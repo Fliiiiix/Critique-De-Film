@@ -91,7 +91,7 @@ function runCustomHappening(entry){
     <div class="modal happening-modal">
       <div class="modal-head">
         <h2>${escapeHtml(entry.icon || '✨')} ${escapeHtml(entry.title || 'Un petit quelque chose')}</h2>
-        <button class="close-x" data-close>✕</button>
+        <button class="close-x" data-close aria-label="Fermer">✕</button>
       </div>
       <p class="happening-caption">${escapeHtml(entry.message || '')}</p>
     </div>
@@ -140,7 +140,7 @@ function runOldBoyHappening(){
     <div class="modal happening-modal">
       <div class="modal-head">
         <h2>Un seul plan.</h2>
-        <button class="close-x" data-close>✕</button>
+        <button class="close-x" data-close aria-label="Fermer">✕</button>
       </div>
       <div class="oldboy-corridor">
         <div class="oldboy-corridor-track${prefersReducedMotion() ? ' static' : ''}">
@@ -257,7 +257,7 @@ function runOdysseyHappening(){
     <div class="modal happening-modal">
       <div class="modal-head">
         <h2>L'épreuve de l'arc</h2>
-        <button class="close-x" data-close>✕</button>
+        <button class="close-x" data-close aria-label="Fermer">✕</button>
       </div>
       <p class="happening-caption" id="odysseyCaption">Douze anneaux de hache, un seul arc à bander : plie-le et accroche la corde à l'encoche du sommet, vite et sans t'arrêter, ou elle retombe.</p>
       <svg class="odyssey-bow" viewBox="0 0 220 200" aria-hidden="true">
@@ -339,7 +339,7 @@ function runCityOfGodHappening(film){
     <div class="modal happening-modal cog-modal">
       <div class="modal-head">
         <h2>Le défi photo, façon favela</h2>
-        <button class="close-x" data-close>✕</button>
+        <button class="close-x" data-close aria-label="Fermer">✕</button>
       </div>
       <p class="happening-caption" id="cogCaption">Prends une photo, une vraie : qui raconte quelque chose, comme un plan de Cidade de Deus. On s'occupe de l'ambiance.</p>
       <div id="cogIntro">

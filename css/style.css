@@ -735,8 +735,12 @@ input[type="file"]::file-selector-button:hover{color:var(--text); border-color:v
 .btn.danger{background:transparent; color:var(--coral); border:1px solid var(--coral-dim);}
 .btn.danger:hover{background:rgba(255,107,87,0.1); border-color:var(--coral);}
 
-/* Focus clavier cohérent avec le thème, à la place de l'anneau bleu par défaut. */
-a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+/* Focus clavier cohérent avec le thème, à la place de l'anneau bleu par défaut.
+   [role="button"] inclus : les lignes de liste rendues focusables par
+   makeRowClickable() (js/ui.js, audit d'accessibilité) sont des <div>, pas
+   des <button> — sans cette règle elles deviendraient atteignables au Tab
+   mais totalement invisibles une fois focalisées. */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [role="button"]:focus-visible{
   outline:2px solid var(--violet-dim);
   outline-offset:2px;
 }

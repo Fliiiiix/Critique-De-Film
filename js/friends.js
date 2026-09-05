@@ -105,7 +105,7 @@ function friendRowHtml(userId, actionsHtml, subLabel){
 // jamais volé par la ligne — voir le garde-fou .wl-actions ci-dessous.
 function wireFriendRowClicks(container, onOpen = goToPublicProfile){
   container.querySelectorAll('.wl-row[data-user-id]').forEach(row => {
-    row.addEventListener('click', (e) => {
+    makeRowClickable(row, (e) => {
       if(e.target.closest('.wl-actions')) return;
       onOpen(row.dataset.userId);
     });
@@ -502,7 +502,7 @@ async function openFriendProfile(userId){
     // fermer ce profil avant, contrairement à l'ancien lien direct vers la
     // fiche TMDB.
     listWrap.querySelectorAll('[data-film-id]').forEach(row => {
-      row.addEventListener('click', () => {
+      makeRowClickable(row, () => {
         const film = sortedFriendFilms.find(f => f.id === Number(row.dataset.filmId));
         if(film) openFilmReviewDetail(film);
       });

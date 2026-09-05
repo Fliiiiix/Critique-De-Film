@@ -121,7 +121,7 @@ function wireStatsDistribution(content, list, distribution){
       `;
       drilldown.hidden = false;
       drilldown.querySelectorAll('.friend-film-row[data-film-id]').forEach(row => {
-        row.addEventListener('click', () => {
+        makeRowClickable(row, () => {
           const film = matches.find(f => f.id === Number(row.dataset.filmId));
           if(film) openFilmReviewDetail(film);
         });

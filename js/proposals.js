@@ -366,7 +366,7 @@ function renderProposalComments(){
         <div class="comment-author">${escapeHtml(friendDisplayName(c.userId))}</div>
         <div class="comment-body">${escapeHtml(c.body)}</div>
       </div>
-      ${c.userId === currentUser.id ? `<button class="comment-delete" data-id="${c.id}" type="button" title="Supprimer">✕</button>` : ''}
+      ${c.userId === currentUser.id ? `<button class="comment-delete" data-id="${c.id}" type="button" title="Supprimer" aria-label="Supprimer ce commentaire">✕</button>` : ''}
     </div>
   `).join('');
   list.querySelectorAll('button[data-id]').forEach(btn => {

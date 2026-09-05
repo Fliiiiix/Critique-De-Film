@@ -348,3 +348,29 @@ function observeReveal(container){
   if(!revealObserver){ els.forEach(el => el.classList.add('in-view')); return; }
   els.forEach(el => revealObserver.observe(el));
 }
+
+// --- Lignes de liste cliquables, accessibles au clavier ---
+// Audit d'accessibilité (retour utilisateur) : beaucoup de lignes de liste
+// à travers l'app (catalogue, top films, séries, catalogue d'un ami,
+// distribution des stats...) ne sont que des <div> avec un simple clic
+// souris — injoignables au clavier/lecteur d'écran (Tab les saute, Entrée
+// n'y fait rien), alors que c'est souvent la SEULE façon d'ouvrir le
+// détail depuis cette ligne. Un seul endroit (le graphique de distribution,
+// js/stats.js) le faisait déjà bien (role="button" + tabindex="0" + clic +
+// Entrée/Espace) — généralisé ici plutôt que réécrit à la main à chaque
+// site d'appel. Reste une <div> (pas de <button>) : ces lignes contiennent
+// souvent déjà un vrai bouton (favori, actions...), et un <button> ne peut
+// pas légalement en contenir un autre.
+function makeRowClickable(el, handler){
+  el.setAttribute('role', 'button');
+  el.setAttribute('tabindex', '0');
+  el.addEventListener('click', handler);
+  el.addEventListener('keydown', (e) => {
+    // Ignore Entrée/Espace venant d'un bouton enfant (favori, actions...) —
+    // seul le clavier sur la ligne ELLE-MÊME doit déclencher l'ouverture,
+    // exactement comme le clic ne se déclenche que sur la ligne (voir les
+    // gardes-fous e.target.closest(...) déjà en place à chaque site d'appel).
+    if(e.target !== el) return;
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); handler(e); }
+  });
+}
