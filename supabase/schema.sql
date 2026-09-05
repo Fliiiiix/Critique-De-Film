@@ -523,7 +523,8 @@ create policy "Author or group owner can delete a comment"
     )
   );
 
--- Top films : deux classements agrégés (voir js/top.js, migrations/015).
+-- Top films : deux classements agrégés (voir js/top.js, migrations/015,
+-- corrigé en migrations/033 — voir ce fichier pour le détail du bug).
 -- Comme is_group_member plus haut, ces fonctions SECURITY DEFINER lisent
 -- `films` de tout le monde en interne (RLS contournée volontairement) mais
 -- ne renvoient QUE des agrégats — jamais user_id ni review, donc pas de
@@ -533,6 +534,12 @@ create policy "Author or group owner can delete a comment"
 -- La note de chaque utilisateur est recalculée avec la même formule que
 -- computeNote() côté client (js/app.js) : moyenne des 7 critères (0..1)
 -- arrondie au demi-point sur 5, ou manual_note directement si renseignée.
+-- Le calcul par ligne (CTE `rated`) est filtré `where note is not null`
+-- AVANT le group by : un film jamais noté par personne (manual_note null
+-- ET crit vide/incomplet — ex. import Letterboxd sans Rating) n'a pas de
+-- note à moyenner, ne doit pas apparaître dans un classement, et ne doit
+-- surtout pas se retrouver en tête via le tri par défaut de Postgres (qui
+-- place les null en premier sur un "order by ... desc").
 
 create or replace function public.get_global_top_films(p_limit int default 30)
 returns table(
@@ -548,19 +555,29 @@ security definer
 set search_path = public
 stable
 as $$
+  with rated as (
+    select
+      f.tmdb_id,
+      f.title,
+      f.poster_url,
+      f.release_year,
+      coalesce(f.manual_note, (
+        select round(avg(v.value::numeric) * 10) / 2
+        from jsonb_each_text(f.crit) as v
+      )) as note
+    from public.films f
+    where f.tmdb_id is not null
+  )
   select
-    f.tmdb_id,
-    max(f.title) as title,
-    max(f.poster_url) as poster_url,
-    max(f.release_year) as release_year,
-    round(avg(coalesce(f.manual_note, (
-      select round(avg(v.value::numeric) * 10) / 2
-      from jsonb_each_text(f.crit) as v
-    ))), 2) as avg_note,
+    tmdb_id,
+    max(title) as title,
+    max(poster_url) as poster_url,
+    max(release_year) as release_year,
+    round(avg(note), 2) as avg_note,
     count(*)::integer as rating_count
-  from public.films f
-  where f.tmdb_id is not null
-  group by f.tmdb_id
+  from rated
+  where note is not null
+  group by tmdb_id
   order by avg_note desc, rating_count desc
   limit p_limit;
 $$;
@@ -594,21 +611,31 @@ as $$
     union
     select requester_id from public.friendships
       where addressee_id = auth.uid() and status = 'accepted'
+  ),
+  rated as (
+    select
+      f.tmdb_id,
+      f.title,
+      f.poster_url,
+      f.release_year,
+      coalesce(f.manual_note, (
+        select round(avg(v.value::numeric) * 10) / 2
+        from jsonb_each_text(f.crit) as v
+      )) as note
+    from public.films f
+    join my_circle mc on mc.uid = f.user_id
+    where f.tmdb_id is not null
   )
   select
-    f.tmdb_id,
-    max(f.title) as title,
-    max(f.poster_url) as poster_url,
-    max(f.release_year) as release_year,
-    round(avg(coalesce(f.manual_note, (
-      select round(avg(v.value::numeric) * 10) / 2
-      from jsonb_each_text(f.crit) as v
-    ))), 2) as avg_note,
+    tmdb_id,
+    max(title) as title,
+    max(poster_url) as poster_url,
+    max(release_year) as release_year,
+    round(avg(note), 2) as avg_note,
     count(*)::integer as rating_count
-  from public.films f
-  join my_circle mc on mc.uid = f.user_id
-  where f.tmdb_id is not null
-  group by f.tmdb_id
+  from rated
+  where note is not null
+  group by tmdb_id
   order by avg_note desc, rating_count desc
   limit p_limit;
 $$;
