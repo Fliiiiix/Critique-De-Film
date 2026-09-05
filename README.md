@@ -7,29 +7,49 @@ d'être influencé après coup par les avis lus ailleurs. Remplace l'ancien fich
 
 ```
 critique-films/
-├── index.html               → structure de la page (écran de connexion + app)
-├── css/style.css             → tout le style (thème pellicule/salle de projection)
-├── js/data.js                  → les 7 critères (définitions, repères, questions) + SEED (films de l'Excel, migration uniquement)
-├── js/happenings.js            → easter eggs par film (tmdb_id), façon Letterboxd
-├── js/supabaseConfig.js        → clés du projet Supabase (URL + clé publique anon)
-├── js/tmdbConfig.js             → clé API TMDB
-├── js/auth.js                    → connexion par lien magique, bascule écran connexion/app
-├── js/profile.js                  → profil par utilisateur (pseudo + avatar)
-├── js/app.js                       → logique (rendu, CRUD via Supabase, formulaire de notation)
-├── js/tmdb.js                       → recherche TMDB (affiche, résumé, année)
-├── js/stats.js                       → page statistiques
-├── js/achievements.js                → page succès (paliers + secrets)
-├── js/watchlist.js                    → liste "à voir", séparée du catalogue noté (page routée, voir router.js)
-├── js/journal.js                       → journal des visionnages, revisionnages
-├── js/friends.js                        → amis (demande/acceptation) + profil en lecture seule (page routée, voir router.js)
-├── js/router.js                          → routeur par hash (#/groupes/..., #/watchlist, #/amis, #/top, #/u/:id), toutes les pages
-├── js/top.js                              → top films (tout le monde / mes amis), page routée
-├── js/publicProfile.js                     → profil public (#/u/:userId), seule page accessible sans connexion
-├── js/groups.js                          → groupes (famille/amis) : création, membres
-├── js/proposals.js                        → propositions de films dans un groupe : votes + discussion
-├── js/admin.js                             → interface admin (succès + happenings), réservée au compte propriétaire
-├── js/activity.js                           → fil d'activité (amis + groupes), lecture seule côté client
-├── js/invites.js                             → lien d'invitation de groupe (#/invite/:token)
+├── index.html                  → structure de la page (écran de connexion + app + toutes les pages routées)
+├── manifest.json                → PWA (icônes, nom, couleurs) — voir js/pwa.js
+├── sw.js                          → service worker (cache hors ligne + détection de mise à jour, voir js/offline.js)
+├── icons/                          → icônes PWA/favicon (générées depuis le vrai logo Kinet, .brand-mark)
+├── css/style.css                    → tout le style ("Halation" — violet/ambre, fond animé, verre)
+├── js/data.js                         → les 7 critères (définitions, repères, questions) + SEED (films de l'Excel, migration uniquement)
+├── js/supabaseConfig.js                → clés du projet Supabase (URL + clé publique anon)
+├── js/tmdbConfig.js                     → clé API TMDB
+├── js/auth.js                             → connexion (lien magique + Google), bascule écran connexion/app
+├── js/ui.js                                → helpers UI partagés : ouverture/fermeture des modales (focus clavier inclus),
+│                                              lignes de liste cliquables au clavier (makeRowClickable), listes "voir plus/moins",
+│                                              animations d'apparition au scroll
+├── js/profile.js                            → profil par utilisateur (pseudo + avatar + top films)
+├── js/app.js                                 → catalogue noté : rendu, CRUD via Supabase, formulaire de notation, pagination
+├── js/tmdb.js                                 → recherche TMDB (affiche, résumé, année, popularité) — films ET séries
+├── js/filmDetail.js                            → fiche film dédiée (#/film/:tmdbId) : note moyenne communautaire, j'aime, commentaires
+├── js/stats.js                                  → page statistiques (dont détail d'une critique par critère)
+├── js/achievements.js                            → page succès (paliers + secrets)
+├── js/watchlist.js                                → liste "à voir", séparée du catalogue noté (page routée)
+├── js/suggestions.js                               → recommandations discrètes sous le catalogue (à partir des favoris)
+├── js/series.js                                     → séries suivies à l'épisode près (page routée, table `tv_shows`)
+├── js/upcoming.js                                    → "Prochainement" (#/prochainement) : sorties watchlist + séries à venir
+├── js/journal.js                                      → journal des visionnages, revisionnages
+├── js/friends.js                                       → amis (demande/acceptation) + profil en lecture seule (page routée)
+├── js/router.js                                         → routeur par hash (#/watchlist, #/series/:id, #/film/:id, #/amis, #/top,
+│                                                            #/groupes/..., #/u/:id, #/invite/:token), toutes les pages
+├── js/top.js                                             → top films (tout le monde / mes amis), page routée
+├── js/publicProfile.js                                    → profil public (#/u/:userId), seule page accessible sans connexion
+├── js/groups.js                                            → groupes (famille/amis) : création, membres, "Goûts du groupe"
+├── js/proposals.js                                          → propositions de films dans un groupe : votes + discussion
+├── js/activity.js                                            → fil d'activité (amis + groupes), lecture seule côté client
+├── js/activityState.js                                        → badges "non lu" + digest de retour (état "vu" par utilisateur)
+├── js/changelog.js                                             → "Nouveautés" : modale auto à la connexion + accessible à tout moment
+├── js/feedback.js                                               → formulaire de retour utilisateur (catégorie + message)
+├── js/importExternal.js                                          → import Letterboxd (CSV) — voir la section dédiée plus bas
+├── js/share.js                                                    → partage de l'app (QR + lien), accessible sans connexion
+├── js/pwa.js                                                       → installation en app (bandeau + icône d'entête)
+├── js/offline.js                                                    → mode hors ligne (lecture seule) + bannière de mise à jour
+├── js/logging.js                                                     → capture des erreurs JS non interceptées (admin, `app_events`)
+├── js/happenings.js                                                   → easter eggs par film (tmdb_id), façon Letterboxd
+├── js/admin.js                                                         → interface admin (succès, happenings, nouveautés, avis, stats)
+├── js/invites.js                                                        → lien d'invitation de groupe (#/invite/:token)
+├── tests/                                                                 → suite de tests de régression (voir tests/README.md)
 └── supabase/
     ├── schema.sql                  → schéma complet (nouveau projet)
     └── migrations/                 → changements incrémentaux (projet déjà provisionné)
@@ -51,6 +71,20 @@ python3 -m http.server 8000
 
 En ligne : https://fliiiiix.github.io/Kinet/ (GitHub Pages, déployé
 depuis la branche `main`).
+
+### Tests
+
+Suite de régression pour les bugs déjà corrigés une fois (import
+Letterboxd, matching TMDB, pagination) — aucune dépendance npm, Node seul
+suffit :
+
+```bash
+node tests/run-all.js
+```
+
+Voir `tests/README.md` pour le détail (comment ajouter un test, le piège
+`assert.deepStrictEqual` entre realms `vm`, le test optionnel contre la
+vraie API TMDB).
 
 ### Mode maintenance
 
@@ -352,38 +386,43 @@ Nécessite `supabase/migrations/024_add_tv_shows.sql` et
 
 ## Interface responsive
 
-Chaque chose a sa place plutôt que d'aligner tous les boutons en vrac au même
-niveau (v1.5) :
+Desktop et mobile ont chacun leur propre navigation plutôt qu'une seule
+mise en page qui se contorsionne aux petites tailles (v2.16-v2.20, retours
+utilisateur directs sur téléphone réel — Galaxy S25) :
 
-- **Entête** : le titre (retour accueil en un clic) à gauche ; à droite, les
-  pages assez fréquentes pour mériter un accès direct — 🎞️ À voir, 🗓️
-  Prochainement, 👥 Amis (qui contient Groupes) et 🏅 Top films — puis la
-  photo de profil + pseudo (ouvre la modale profil). Sous le titre, le
-  sélecteur **🎬 Films / 📺 Séries** (v2.0.6) : les deux vraies sections de
-  contenu de l'app, mises en avant séparément des pages utilitaires
-  ci-dessus plutôt qu'une icône parmi d'autres — retour utilisateur direct
-  après le lancement de Séries.
-- **Modale profil** : identité (pseudo/avatar), section "Mon activité" (vues
-  sur le catalogue passé — Statistiques/Succès/Journal, pas des actions du
-  quotidien), déconnexion (sur la même ligne qu'Annuler/Enregistrer, pas
-  isolée sur sa propre ligne).
-- **Toolbar du catalogue** : ne garde que ce qui agit sur la liste affichée —
-  recherche/tri, un menu **⋯** pour Export/Import, **+ Ajouter un film**.
+**Desktop** — `.header-top` regroupe sur UNE ligne le logo Kinet
+(`.title-row`) et `#userBar` : 6 icônes utilitaires libellées, chacune dans
+une pastille de couleur reprise de la palette Halation (`.nav-pip-violet/
+-gold/-bronze/-teal` — À voir, Bientôt, Amis, Top films, Avis, Nouveautés),
+puis avatar + pseudo (ouvre la modale profil). Le sélecteur **Films /
+Séries** (`#primaryTabs`, v2.0.6) vit juste en dessous, sur sa propre
+ligne — les deux vraies sections de contenu, pas une page utilitaire parmi
+d'autres. `.title-row` et `#userBar` restent deux éléments DOM séparés à
+dessein : `#userBar` disparaît entièrement sur mobile (remplacé par la
+barre du bas ci-dessous) alors que le logo doit, lui, rester visible
+partout — les fusionner en un seul bloc ferait disparaître les deux
+ensemble.
 
-Sur grand écran, une double colonne de pastilles façon perforations de
-pellicule longe les deux bords de l'écran (voir `.sprockets-side` dans
-`css/style.css`, généré par `fillSprockets()` dans `js/app.js`) — comble le
-vide plutôt que d'élargir `.container` (qui resterait confortable à lire).
-Masquée sous 1200px de large, où il n'y a plus la place.
+**Mobile** (< 600px) — la même liste de boutons en haut, illisible sur un
+petit écran, est remplacée par une **barre de navigation fixe en bas**
+(`#mobileTabbar`, 5 entrées max, convention mobile classique) : Accueil
+(catalogue + séries), À voir, Bientôt, Amis, Profil (avatar). `--mobile-
+tabbar-h` (variable CSS) décale au-dessus tout ce qui flotte en bas (FAB
+"+ Ajouter", bannière de mise à jour, toast) pour ne rien recouvrir. La
+toolbar du catalogue (recherche + tri + filtre genre) tient sur une seule
+ligne même sur petit écran (`min-width:0` + `flex-basis:0` sur
+`.toolbar-search`, deux itérations avant que ce soit vraiment le cas
+partout — Films *et* les autres pages) ; tri et filtre genre se déplacent
+dans une feuille (`.toolbar-filters`) qui glisse depuis le bas au tap sur
+l'icône filtre, réutilisant le MÊME `<select>` que sur desktop
+(`display:contents`) plutôt que d'en dupliquer un deuxième à synchroniser.
 
-En dessous de 600px de large, la toolbar passe en colonne et **+ Ajouter un
-film** est remplacé par un bouton flottant (FAB) en bas à droite — l'entête
-et les grilles (statistiques, succès) se réorganisent elles aussi
-automatiquement. Le footer de la modale d'ajout/édition (note calculée +
-boutons) passe lui aussi sur deux lignes en dessous de 600px plutôt que de
-laisser le texte de la note se faire écraser. Un peu d'animation (ouverture
-des fenêtres, survol des lignes de la liste, retour tactile sur les boutons)
-pour que ça reste agréable à l'usage.
+Les grandes listes (accueil, watchlist, top, séries, amis) apparaissent
+avec une légère animation au scroll (`observeReveal()`, `js/ui.js`,
+`IntersectionObserver`, une fois par élément) et respectent
+`prefers-reduced-motion`. Les listes trop longues (activité, demandes
+d'amis, liste d'amis) se replient au-delà d'un seuil avec un bouton "Voir
+plus" (`renderCollapsible()`, `js/ui.js`) plutôt que de défiler à l'infini.
 
 ## Journal & revisionnages
 
@@ -497,7 +536,9 @@ différence des amis, les membres d'un groupe n'ont normalement aucun accès
 en lecture au catalogue individuel des autres — un film noté par une seule
 personne n'apparaît donc jamais, ça reviendrait de fait à exposer sa note
 à tout le groupe. Nécessite
-`supabase/migrations/022_add_compat_and_group_stats.sql`.
+`supabase/migrations/022_add_compat_and_group_stats.sql`, corrigé par
+`034_fix_group_top_films_null_notes.sql` (voir la note dans la section Top
+films juste avant).
 
 ## Propositions de films (dans un groupe)
 
@@ -627,7 +668,29 @@ Pas de seuil minimum de votes pour l'instant (une seule note à 5/5 suffit à
 arriver en tête) : le nombre de notes est affiché à côté pour que ça reste
 lisible, plutôt qu'une formule pondérée façon IMDB, overkill vu l'échelle
 (usage personnel entre amis). Nécessite
-`supabase/migrations/015_add_top_films.sql`.
+`supabase/migrations/015_add_top_films.sql`, corrigé par
+`033_fix_top_films_null_notes.sql` : un film ajouté par quelqu'un mais
+jamais réellement noté (`manual_note` vide et grille de critères
+incomplète) calculait une moyenne SQL `null` pour ce film — et Postgres
+trie les `null` **en premier** sur un tri décroissant par défaut, donc ce
+film ressortait en tête de classement avec un faux "0" affiché
+(`Number(null)` côté JS). Les lignes sans note calculable sont maintenant
+filtrées avant l'agrégation plutôt qu'après : un film jamais noté par
+personne n'apparaît simplement plus dans le classement.
+
+## Fiche film (détail, v2.1)
+
+Route `#/film/:tmdbId` (`js/filmDetail.js`) : résumé, genres, note moyenne
+**communautaire** (tous comptes confondus, même fonction `SECURITY
+DEFINER` que Top films, restreinte à un seul `tmdb_id` — jamais qui a mis
+quelle note), et trois actions pour le compte connecté : noter ce film
+dans son propre catalogue s'il n'y est pas déjà, l'aimer (❤️, visible des
+amis), le commenter (fil de commentaires entre amis, chacun peut supprimer
+les siens). Accessible en cliquant un film **n'importe où** dans l'app —
+catalogue, Top films, profil d'un ami, distribution des stats — plutôt que
+de dupliquer un mini-aperçu à chaque endroit. Nécessite
+`supabase/migrations/030_add_film_detail.sql` (table `film_likes` +
+`film_comments`, corrigée par `031_fix_film_likes_comments_default.sql`).
 
 ## Profil public
 
@@ -746,6 +809,48 @@ pas un risque). Ajouter un happening codé en dur = une entrée dans le
 tableau `HAPPENINGS` (tmdb_id, type de déclenchement, fonction associée) ;
 un happening simple ("un badge → un message") peut aussi se créer sans
 coder, voir Interface admin ci-dessous.
+
+## Nouveautés / changelog (v2.1)
+
+Courtes annonces de version, rédigées et publiées depuis l'onglet
+**Nouveautés** de la modale admin (`js/admin.js`, table `changelog_entries`,
+`supabase/migrations/028`) — une entrée est un brouillon (`published:
+false`) tant qu'elle n'est pas explicitement publiée, pour la relire avant
+que les utilisateurs ne la voient. Deux surfaces côté public
+(`js/changelog.js`) : une modale qui s'ouvre automatiquement à la
+connexion s'il y a du contenu publié plus récent que la dernière
+connexion (comparé à `last_seen_changelog`, même mécanisme que le digest
+de retour ci-dessus), et l'icône **📣** de l'entête/de la barre mobile à
+tout moment sinon (avec un point "non lu" tant que non consultée). Le
+numéro de version affiché à côté du logo (`#versionTagValue`) reflète
+automatiquement la dernière entrée publiée plutôt qu'une valeur à changer
+à la main à chaque déploiement. Le corps de chaque entrée est du texte
+brut (`white-space:pre-line` en CSS, pas de Markdown) : des lignes vides
+séparent les sections (ex. `FONCTIONNALITÉS`, `DESIGN`, `CORRECTIONS`).
+
+## Détection de mise à jour (v2.20+)
+
+Avant cette version, rien ne prévenait un onglet déjà ouvert (ou une PWA
+installée) qu'une nouvelle version venait d'être déployée — le
+`CACHE_NAME` du service worker (`sw.js`) ne changeait jamais, donc le
+navigateur ne détectait jamais sw.js comme "modifié", et GitHub Pages sert
+le HTML avec 10 minutes de cache HTTP (`Cache-Control: max-age=600`), donc
+même un simple F5 dans cette fenêtre pouvait resservir l'ancienne version.
+Double correction : `CACHE_NAME` bumpé à **chaque** déploiement (maintenant
+une discipline documentée en commentaire dans `sw.js`) pour que le
+navigateur détecte toujours un nouveau service worker, et les `fetch()` du
+service worker passés en `{ cache: 'no-store' }` pour contourner le cache
+HTTP de GitHub Pages.
+
+Côté client (`js/offline.js`, `watchForUpdate()`) : dès qu'un nouveau
+service worker fini d'installer derrière celui en cours d'utilisation, une
+bannière persistante ("Une nouvelle version de Kinet est prête") propose
+d'**Actualiser** — le clic envoie `skipWaiting` au nouveau service worker,
+qui prend la main (`controllerchange`) et déclenche un unique rechargement
+de page. Revérifié aussi à chaque retour au premier plan de l'onglet
+(`visibilitychange`) : sur un onglet/une PWA resté ouvert plusieurs jours,
+c'est le seul moment où retenter a une chance raisonnable d'aboutir (le
+navigateur ne revérifie sw.js tout seul qu'au mieux une fois par jour).
 
 ## Feedback (v2.1)
 
@@ -990,6 +1095,20 @@ contraste de couleurs, lui, était déjà large sur tout le thème sombre) :
   spécificité CSS faisait perdre le focus clavier visible sur ces sliders
   spécifiquement (`input[type="range"]{outline:none;}` l'emportait
   silencieusement sur la règle générique de focus) — corrigé.
+- **Lignes de liste cliquables au clavier** (v2.28, `makeRowClickable()`,
+  `js/ui.js`) : le catalogue, le Top films, les séries suivies, le
+  catalogue d'un ami, la distribution des stats et le profil public
+  n'étaient que des `<div>` avec un simple clic souris pour ouvrir le
+  détail — injoignables au clavier (Tab les sautait, Entrée n'y faisait
+  rien). Généralisé le pattern déjà bien fait à un seul endroit
+  (histogramme des stats) : `role="button"` + `tabindex="0"` + activation
+  Entrée/Espace, plus `[role="button"]:focus-visible` (`css/style.css`)
+  pour un anneau de focus visible sur ces lignes comme sur un vrai bouton.
+- **Boutons icône sans libellé fiable** : plusieurs boutons de fermeture/
+  suppression n'avaient qu'un `title` (jamais annoncé de façon fiable par
+  tous les lecteurs d'écran, absent au toucher) ou, pour 4 des 5 boutons
+  de fermeture des "happenings", rien du tout — `aria-label` ajouté
+  partout où il manquait.
 
 ## Export vers Letterboxd (v1.6)
 
@@ -1013,37 +1132,57 @@ revisionnage — l'app ne garde qu'une note par film, pas une par
 visionnage, copier la même note sur plusieurs entrées de journal aurait
 été plus trompeur qu'utile.
 
-## Import depuis Letterboxd (v2.2)
+## Import depuis Letterboxd (v2.2, plusieurs corrections en v2.2x)
 
 Sens inverse de la section précédente. Bouton **🎬 Importer depuis
-Letterboxd (CSV)** (même menu "⋯") : lit un CSV du "Exporter vos données"
-Letterboxd (réglages du compte → télécharge un `.zip`) — extraire le zip
-localement et déposer un seul CSV à la fois, pas de dézippage automatique
-côté app (aucune dépendance externe ajoutée, l'app reste 100% vanilla).
-Fichier reconnu par son nom exact (`ratings.csv`, `diary.csv`,
-`reviews.csv`, `watchlist.csv`), colonnes en repli s'il a été renommé.
+Letterboxd (CSV)** (même menu "⋯") : au premier clic, un **tutoriel**
+explique où trouver son export ("Exporter vos données" dans les réglages
+du compte Letterboxd → télécharge un `.zip`) et quel fichier choisir dans
+le zip selon ce qu'on veut importer ("Ne plus afficher" mémorisé en
+local). Extraire le zip localement et déposer un seul CSV à la fois, pas
+de dézippage automatique côté app (aucune dépendance externe ajoutée,
+l'app reste 100% vanilla). Fichier reconnu par son nom exact, colonnes en
+repli s'il a été renommé (`js/importExternal.js`, `detectLetterboxdType()`).
 
-- `ratings.csv` / `diary.csv` / `reviews.csv` → importés dans le catalogue
-  noté, avec recherche TMDB automatique par titre + année (±1 an toléré,
-  Letterboxd affiche parfois l'année de sortie US/festival plutôt que la
-  sortie France que TMDB retient par défaut) pour récupérer affiche/
-  résumé/genres, exactement comme un ajout manuel. Note copiée dans
-  `manual_note` (même échelle 0.5-5.0), commentaire dans `review` si
-  présent. `diary.csv` : les revisionnages d'un même film sont regroupés
-  en une seule fiche (note la plus récente) mais chaque date devient une
-  entrée de journal séparée (`viewings`), alimentant le badge "revu ×N"
-  comme n'importe quel visionnage ajouté depuis l'app.
+- `ratings.csv` / `diary.csv` → importés dans le catalogue noté, avec
+  recherche TMDB automatique par titre + année (±1 an toléré, Letterboxd
+  affiche parfois l'année de sortie US/festival plutôt que la sortie
+  France que TMDB retient par défaut) pour récupérer affiche/résumé/genres,
+  exactement comme un ajout manuel. Note copiée dans `manual_note` (même
+  échelle 0.5-5.0), commentaire dans `review` si présent. `diary.csv` : les
+  revisionnages d'un même film sont regroupés en une seule fiche (note la
+  plus récente) mais chaque date devient une entrée de journal séparée
+  (`viewings`), alimentant le badge "revu ×N" comme n'importe quel
+  visionnage ajouté depuis l'app.
+- `watched.csv` (films marqués vus, notés ou non) → importé par le même
+  chemin, comme un film sans note (`manual_note` reste `null`) : liste des
+  films jamais logués au journal ni notés sur Letterboxd, une vraie partie
+  de l'historique qu'il serait dommage de perdre (anciennement refusé à
+  tort — voir CHANGELOG).
+- `reviews.csv` → chemin dédié (`importLetterboxdReviews()`) : comme ces
+  films sont quasi toujours déjà présents via ratings/diary, cette fonction
+  **complète** l'entrée existante avec le texte de la critique (et la note
+  si elle manquait) plutôt que de l'ignorer comme un doublon — sans jamais
+  écraser une critique déjà écrite dans Kinet. Un film absent du catalogue
+  est importé normalement (note + critique).
 - `watchlist.csv` → importé dans la Watchlist (même correspondance TMDB).
-- `watched.csv` (liste des films vus sans note) volontairement refusé avec
-  un message explicite : l'app n'a pas de notion de "film vu sans note",
-  importer ces lignes créerait des fiches vides trompeuses — utiliser
-  `ratings.csv`/`diary.csv` à la place.
+- `profile.csv` / `comments.csv` (infos de compte, commentaires — sans
+  aucune note de film) → message explicite plutôt qu'un "fichier non
+  reconnu" trompeur : rien à en tirer ici.
 
 Films déjà présents dans le catalogue (par `tmdb_id`) ou déjà dans la
 watchlist (par titre) : ignorés silencieusement plutôt que dupliqués — le
 récapitulatif final (toast) donne le détail (importés / déjà présents /
 introuvables sur TMDB). Recherches TMDB faites 4 à la fois (assez rapide
 sur un gros catalogue sans bombarder l'API).
+
+**Matching TMDB** (`bestTmdbCandidate()`) : plusieurs fiches TMDB peuvent
+correspondre au même titre/année (le vrai film, mais aussi un making-of,
+une featurette homonyme...) — départagé par **popularité TMDB** (avec un
+bonus si le titre est exactement identique à la recherche, FR ou VO) plutôt
+que par le premier résultat renvoyé par l'API, qui n'est pas forcément le
+bon (cas réel : "The Handmaiden" renvoyait d'abord un making-of avant le
+vrai film, "Mademoiselle"). Voir `tests/tmdb-matching.test.js`.
 
 **Trakt** : chantier suivant. Pas d'export fichier, seulement une API
 OAuth : nécessite une appli Trakt enregistrée par l'utilisateur propriétaire
