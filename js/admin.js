@@ -717,6 +717,17 @@ async function openAdminModal(){
   if(!isAdmin()) return;
   closeProfileModal();
   if(!adminConfigLoaded) await loadAdminConfig();
+  // L'onglet Succès (ouvert par défaut ci-dessous) affiche la valeur
+  // ACTUELLE de chaque palier, dont Sérievore/Sociable (js/achievements.js,
+  // v2.29) qui lisent trackedShows/friendships — normalement chargés
+  // seulement sur leur propre page. Même préchargement que
+  // openAchievements() : sans lui, un admin qui n'a pas visité Séries/Amis
+  // cette session verrait ces seuils à "0" par erreur.
+  await Promise.all([
+    (typeof loadTrackedShows === 'function') ? loadTrackedShows() : Promise.resolve(),
+    (typeof loadFriendships === 'function') ? loadFriendships() : Promise.resolve(),
+    (typeof loadGroups === 'function') ? loadGroups() : Promise.resolve()
+  ]);
   setAdminTab('achievements');
   openOverlay('adminOverlay');
 }
