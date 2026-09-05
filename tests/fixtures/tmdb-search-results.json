@@ -1,0 +1,14 @@
+{
+  "The Handmaiden": [
+    { "id": 1603305, "title": "Making of The Handmaiden", "original_title": "Making of The Handmaiden", "release_year": 2016, "popularity": 1.1333 },
+    { "id": 290098, "title": "Mademoiselle", "original_title": "아가씨", "release_year": 2016, "popularity": 22.6156 },
+    { "id": 417941, "title": "La leyenda de la doncella", "original_title": "La leyenda de la doncella", "release_year": 1994, "popularity": 0.9679 },
+    { "id": 392439, "title": "Les servantes du bon Dieu", "original_title": "Les servantes du bon Dieu", "release_year": 1978, "popularity": 0.6059 }
+  ],
+  "Fight Club": [
+    { "id": 550, "title": "Fight Club", "original_title": "Fight Club", "release_year": 1999, "popularity": 46.3356 }
+  ],
+  "Parasite": [
+    { "id": 496243, "title": "Parasite", "original_title": "기생충", "release_year": 2019, "popularity": 39.12 }
+  ]
+}
