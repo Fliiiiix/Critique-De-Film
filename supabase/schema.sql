@@ -409,10 +409,20 @@ create table public.group_proposals (
   poster_url text,
   overview text,
   release_year integer,
+  -- "Séance élue" (v1.6, migrations/020) : le créateur du groupe marque une
+  -- proposition comme le prochain film à voir, avec une date optionnelle.
+  chosen boolean not null default false,
+  chosen_at timestamptz,
+  watch_date date,
   created_at timestamptz not null default now()
 );
 
 alter table public.group_proposals enable row level security;
+
+-- Un seul film "élu" à la fois par groupe (index partiel plutôt qu'une
+-- colonne à part sur `groups`, qui obligerait une transaction séparée pour
+-- rester cohérente avec cette table).
+create unique index group_proposals_one_chosen on public.group_proposals(group_id) where chosen;
 
 create table public.group_proposal_votes (
   id bigint generated always as identity primary key,
@@ -522,6 +532,540 @@ create policy "Author or group owner can delete a comment"
       where gp.id = proposal_id and g.owner_id = auth.uid()
     )
   );
+
+-- =========================================================================
+-- Bloc synchronisé après coup (audit) : tables/fonctions des migrations
+-- 018-023 qui existaient déjà sur le projet réel mais n'avaient jamais été
+-- reportées ici — schema.sql n'était donc plus vraiment "le schéma complet
+-- pour un nouveau projet" pour tout ce qui suit (invitations de groupe,
+-- séance élue, fil d'activité, compatibilité ciné, suggestions/
+-- recommandations d'amis, config admin, badges "vu"). Contenu inchangé par
+-- rapport aux migrations d'origine, sauf get_group_top_films qui reprend
+-- directement sa version corrigée (migrations/034 — voir la note sur les
+-- notes null triées en premier, section Top films plus bas).
+-- =========================================================================
+
+-- --- Séance élue : owner-only vérifié en dur dans la fonction (pas une
+-- policy UPDATE dédiée, pour garder l'unset-puis-set atomique dans la même
+-- transaction et éviter une course contre l'index partiel unique
+-- ci-dessus). Log aussi l'événement dans activity_events (voir plus bas).
+create or replace function public.set_chosen_proposal(p_group_id bigint, p_proposal_id bigint, p_watch_date date default null)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $func$
+begin
+  if not exists (select 1 from public.groups where id = p_group_id and owner_id = auth.uid()) then
+    raise exception 'not group owner';
+  end if;
+
+  update public.group_proposals set chosen = false, chosen_at = null, watch_date = null
+    where group_id = p_group_id and chosen = true;
+  update public.group_proposals set chosen = true, chosen_at = now(), watch_date = p_watch_date
+    where id = p_proposal_id and group_id = p_group_id;
+
+  insert into public.activity_events (scope, actor_id, group_id, event_type, target_label, target_poster_url, created_at)
+  select 'group', auth.uid(), group_id, 'proposal_chosen', title, poster_url, now()
+  from public.group_proposals where id = p_proposal_id and group_id = p_group_id;
+end;
+$func$;
+
+revoke all on function public.set_chosen_proposal(bigint, bigint, date) from public;
+grant execute on function public.set_chosen_proposal(bigint, bigint, date) to authenticated;
+
+create or replace function public.unset_chosen_proposal(p_group_id bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $func$
+begin
+  if not exists (select 1 from public.groups where id = p_group_id and owner_id = auth.uid()) then
+    raise exception 'not group owner';
+  end if;
+
+  update public.group_proposals set chosen = false, chosen_at = null, watch_date = null
+    where group_id = p_group_id and chosen = true;
+end;
+$func$;
+
+revoke all on function public.unset_chosen_proposal(bigint) from public;
+grant execute on function public.unset_chosen_proposal(bigint) to authenticated;
+
+-- --- Lien d'invitation de groupe --- pgcrypto pour gen_random_uuid() —
+-- quasi toujours déjà actif sur un projet Supabase (auth.users en dépend),
+-- "if not exists" par prudence uniquement.
+create extension if not exists pgcrypto;
+
+create table public.group_invites (
+  id bigint generated always as identity primary key,
+  group_id bigint not null references public.groups(id) on delete cascade,
+  token uuid not null default gen_random_uuid() unique,
+  created_by uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  expires_at timestamptz,
+  max_uses integer,
+  use_count integer not null default 0
+);
+
+alter table public.group_invites enable row level security;
+
+create policy "Owner can manage invites"
+  on public.group_invites for all
+  using (exists (select 1 from public.groups g where g.id = group_id and g.owner_id = auth.uid()))
+  with check (exists (select 1 from public.groups g where g.id = group_id and g.owner_id = auth.uid()));
+
+-- Aperçu avant connexion : doit marcher sans session, comme
+-- get_public_profile plus bas — ne renvoie que de quoi afficher "tu es
+-- invité·e à rejoindre X", jamais les colonnes internes de l'invite.
+create or replace function public.get_group_invite_preview(p_token uuid)
+returns table(group_id bigint, group_name text, valid boolean)
+language sql
+security definer
+set search_path = public
+stable
+as $func$
+  select g.id, g.name,
+    (gi.expires_at is null or gi.expires_at > now())
+      and (gi.max_uses is null or gi.use_count < gi.max_uses) as valid
+  from public.group_invites gi
+  join public.groups g on g.id = gi.group_id
+  where gi.token = p_token;
+$func$;
+
+revoke all on function public.get_group_invite_preview(uuid) from public;
+grant execute on function public.get_group_invite_preview(uuid) to anon, authenticated;
+
+-- Rejoindre : connecté uniquement. N'ajoute QUE group_members (jamais
+-- friendships, décision confirmée) — l'insertion déclenche déjà
+-- trg_log_group_joined plus bas, pas besoin de logger l'activité ici en
+-- plus. "on conflict do nothing" : rouvrir son propre lien une fois déjà
+-- membre ne doit pas planter ni créer de doublon.
+create or replace function public.accept_group_invite(p_token uuid)
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $func$
+declare
+  v_group_id bigint;
+  v_ok boolean;
+begin
+  select gi.group_id,
+    (gi.expires_at is null or gi.expires_at > now()) and (gi.max_uses is null or gi.use_count < gi.max_uses)
+  into v_group_id, v_ok
+  from public.group_invites gi where gi.token = p_token;
+
+  if v_group_id is null or not v_ok then
+    return null;
+  end if;
+
+  insert into public.group_members (group_id, user_id) values (v_group_id, auth.uid())
+    on conflict (group_id, user_id) do nothing;
+  update public.group_invites set use_count = use_count + 1 where token = p_token;
+
+  return v_group_id;
+end;
+$func$;
+
+revoke all on function public.accept_group_invite(uuid) from public;
+grant execute on function public.accept_group_invite(uuid) to authenticated;
+
+-- --- Fil d'activité (Amis + Groupes) --- Une seule table pour les deux
+-- portées (`scope`) : "note de film" (portée amis) n'a aucun horodatage
+-- serveur fiable ailleurs (films.added est une horloge CLIENT, falsifiable,
+-- jamais à utiliser pour un flux inter-utilisateurs). Aucune ligne n'est
+-- jamais insérée par le client (pas de policy insert pour `authenticated`) :
+-- tout passe par des fonctions trigger SECURITY DEFINER, même gabarit que
+-- add_group_owner_as_member plus haut. Lignes dénormalisées (titre/affiche
+-- copiés à l'écriture) plutôt qu'un FK polymorphe vers films/
+-- group_proposals/group_proposal_comments (impossible proprement en SQL).
+create table public.activity_events (
+  id bigint generated always as identity primary key,
+  scope text not null check (scope in ('friend', 'group')),
+  actor_id uuid not null references auth.users(id) on delete cascade,
+  group_id bigint references public.groups(id) on delete cascade, -- null si scope='friend'
+  event_type text not null check (event_type in (
+    'proposal_created', 'proposal_commented', 'proposal_chosen', 'group_joined', 'film_rated'
+  )),
+  target_label text,
+  target_poster_url text,
+  target_note numeric,
+  created_at timestamptz not null default now()
+);
+
+alter table public.activity_events enable row level security;
+
+-- Portée "group" : visible par tout membre du groupe concerné. Portée
+-- "friend" : visible par l'auteur lui-même, et par ses amis acceptés —
+-- même sous-requête que "Friends can view shared films" plus haut.
+create policy "Visible activity events"
+  on public.activity_events for select
+  using (
+    (scope = 'group' and group_id is not null and public.is_group_member(group_id))
+    or (scope = 'friend' and (
+      actor_id = auth.uid()
+      or exists (
+        select 1 from public.friendships f
+        where f.status = 'accepted'
+          and ((f.requester_id = auth.uid() and f.addressee_id = activity_events.actor_id)
+            or (f.addressee_id = auth.uid() and f.requester_id = activity_events.actor_id))
+      )
+    ))
+  );
+
+create or replace function public.log_proposal_created()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $func$
+begin
+  insert into public.activity_events (scope, actor_id, group_id, event_type, target_label, target_poster_url, created_at)
+  values ('group', new.proposed_by, new.group_id, 'proposal_created', new.title, new.poster_url, new.created_at);
+  return new;
+end;
+$func$;
+
+create trigger trg_log_proposal_created
+  after insert on public.group_proposals
+  for each row execute function public.log_proposal_created();
+
+-- group_proposal_comments n'a pas de group_id direct : on le retrouve via
+-- la proposition (comme le font déjà les policies RLS de cette table).
+create or replace function public.log_proposal_commented()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $func$
+declare
+  v_group_id bigint;
+  v_title text;
+  v_poster_url text;
+begin
+  select gp.group_id, gp.title, gp.poster_url into v_group_id, v_title, v_poster_url
+  from public.group_proposals gp where gp.id = new.proposal_id;
+
+  insert into public.activity_events (scope, actor_id, group_id, event_type, target_label, target_poster_url, created_at)
+  values ('group', new.user_id, v_group_id, 'proposal_commented', v_title, v_poster_url, new.created_at);
+  return new;
+end;
+$func$;
+
+create trigger trg_log_proposal_commented
+  after insert on public.group_proposal_comments
+  for each row execute function public.log_proposal_commented();
+
+-- Couvre aussi le créateur (ajouté par add_group_owner_as_member plus
+-- haut) : c'est un vrai "a rejoint" pour le fil du groupe, sert de tout
+-- premier événement visible dans un groupe fraîchement créé.
+create or replace function public.log_group_joined()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $func$
+begin
+  insert into public.activity_events (scope, actor_id, group_id, event_type, created_at)
+  values ('group', new.user_id, new.group_id, 'group_joined', new.joined_at);
+  return new;
+end;
+$func$;
+
+create trigger trg_log_group_joined
+  after insert on public.group_members
+  for each row execute function public.log_group_joined();
+
+-- Note de film (portée "friend") : nouvelle ligne seulement, pas une
+-- modification — une note qui change sur un film déjà noté ne redéclenche
+-- rien, pour éviter le bruit d'un ajustement mineur.
+create or replace function public.log_film_rated()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $func$
+declare
+  v_note numeric;
+begin
+  v_note := coalesce(new.manual_note, (
+    select round(avg(v.value::numeric) * 10) / 2
+    from jsonb_each_text(new.crit) as v
+  ));
+  insert into public.activity_events (scope, actor_id, group_id, event_type, target_label, target_poster_url, target_note, created_at)
+  values ('friend', new.user_id, null, 'film_rated', new.title, new.poster_url, v_note, new.created_at);
+  return new;
+end;
+$func$;
+
+create trigger trg_log_film_rated
+  after insert on public.films
+  for each row execute function public.log_film_rated();
+
+-- --- Suggestions d'amis : amis de mes amis, pas déjà amis / en attente ---
+-- Le cas "profils existants qu'on n'a encore jamais ajoutés" ne demande
+-- aucune fonction ici : profiles est déjà lisible par tout compte connecté,
+-- une requête client simple suffit (voir js/friends.js).
+create or replace function public.get_friend_suggestions(p_limit int default 10)
+returns table(user_id uuid, display_name text, avatar_url text, mutual_count integer)
+language sql
+security definer
+set search_path = public
+stable
+as $func$
+  with my_friends as (
+    select addressee_id as uid from public.friendships
+      where requester_id = auth.uid() and status = 'accepted'
+    union
+    select requester_id as uid from public.friendships
+      where addressee_id = auth.uid() and status = 'accepted'
+  ),
+  candidates as (
+    select f.addressee_id as uid from public.friendships f
+      join my_friends mf on mf.uid = f.requester_id
+      where f.status = 'accepted'
+    union all
+    select f.requester_id as uid from public.friendships f
+      join my_friends mf on mf.uid = f.addressee_id
+      where f.status = 'accepted'
+  )
+  select c.uid, p.display_name, p.avatar_url, count(*)::integer as mutual_count
+  from candidates c
+  join public.profiles p on p.user_id = c.uid
+  where c.uid <> auth.uid()
+    and c.uid not in (select uid from my_friends)
+    and not exists (
+      select 1 from public.friendships f
+      where f.status = 'pending'
+        and ((f.requester_id = auth.uid() and f.addressee_id = c.uid)
+          or (f.addressee_id = auth.uid() and f.requester_id = c.uid))
+    )
+  group by c.uid, p.display_name, p.avatar_url
+  order by mutual_count desc
+  limit p_limit;
+$func$;
+
+revoke all on function public.get_friend_suggestions(int) from public;
+grant execute on function public.get_friend_suggestions(int) to authenticated;
+
+-- --- Recommandations croisées : films aimés (>=4) par mon cercle, que je
+-- n'ai pas encore notés --- même gabarit que get_friends_top_films plus
+-- bas, mais exclut mon propre catalogue et applique un seuil. Le having
+-- sur une moyenne qui peut être null exclut déjà, de fait, tout film sans
+-- aucune note calculable (null >= 4 n'est jamais vrai) — contrairement à
+-- get_group_top_films/get_global_top_films, pas concerné par le bug des
+-- notes null triées en premier (voir migrations/033).
+create or replace function public.get_friend_recommendations(p_limit int default 20)
+returns table(
+  tmdb_id integer,
+  title text,
+  poster_url text,
+  release_year integer,
+  avg_note numeric,
+  rating_count integer
+)
+language sql
+security definer
+set search_path = public
+stable
+as $func$
+  with my_circle as (
+    select auth.uid() as uid
+    union
+    select addressee_id from public.friendships
+      where requester_id = auth.uid() and status = 'accepted'
+    union
+    select requester_id from public.friendships
+      where addressee_id = auth.uid() and status = 'accepted'
+  ),
+  mine as (
+    select tmdb_id from public.films where user_id = auth.uid() and tmdb_id is not null
+  )
+  select
+    f.tmdb_id,
+    max(f.title) as title,
+    max(f.poster_url) as poster_url,
+    max(f.release_year) as release_year,
+    round(avg(coalesce(f.manual_note, (
+      select round(avg(v.value::numeric) * 10) / 2
+      from jsonb_each_text(f.crit) as v
+    ))), 2) as avg_note,
+    count(*)::integer as rating_count
+  from public.films f
+  join my_circle mc on mc.uid = f.user_id and mc.uid <> auth.uid()
+  where f.tmdb_id is not null
+    and f.tmdb_id not in (select tmdb_id from mine)
+  group by f.tmdb_id
+  having avg(coalesce(f.manual_note, (
+      select round(avg(v.value::numeric) * 10) / 2
+      from jsonb_each_text(f.crit) as v
+    ))) >= 4
+  order by avg_note desc, rating_count desc
+  limit p_limit;
+$func$;
+
+revoke all on function public.get_friend_recommendations(int) from public;
+grant execute on function public.get_friend_recommendations(int) to authenticated;
+
+-- --- Compatibilité ciné entre deux amis : moyenne des écarts de note sur
+-- les films notés par les deux (recoupés par tmdb_id). Vérifie l'amitié
+-- acceptée via un CTE qui reste vide si ce n'est pas le cas : le WHERE
+-- exists(...) qui en dépend élimine alors toutes les lignes AVANT
+-- l'agrégation, donc la fonction ne peut jamais exposer de comparaison de
+-- notes entre deux comptes qui ne sont pas amis, même si elle lit les deux
+-- catalogues en interne (SECURITY DEFINER, contournement RLS assumé).
+create or replace function public.get_friend_compatibility(p_friend_id uuid)
+returns table(compatibility numeric, common_count integer)
+language sql
+security definer
+set search_path = public
+stable
+as $func$
+  with ok as (
+    select 1 from public.friendships
+    where status = 'accepted'
+      and ((requester_id = auth.uid() and addressee_id = p_friend_id)
+        or (addressee_id = auth.uid() and requester_id = p_friend_id))
+  ),
+  mine as (
+    select tmdb_id, coalesce(manual_note, (
+      select round(avg(v.value::numeric) * 10) / 2
+      from jsonb_each_text(crit) as v
+    )) as note
+    from public.films where user_id = auth.uid() and tmdb_id is not null
+  ),
+  theirs as (
+    select tmdb_id, coalesce(manual_note, (
+      select round(avg(v.value::numeric) * 10) / 2
+      from jsonb_each_text(crit) as v
+    )) as note
+    from public.films where user_id = p_friend_id and tmdb_id is not null
+  )
+  select
+    round(100 * (1 - avg(abs(m.note - t.note)) / 5), 1) as compatibility,
+    count(*)::integer as common_count
+  from mine m
+  join theirs t on t.tmdb_id = m.tmdb_id
+  where exists (select 1 from ok);
+$func$;
+
+revoke all on function public.get_friend_compatibility(uuid) from public;
+grant execute on function public.get_friend_compatibility(uuid) to authenticated;
+
+-- --- Goûts du groupe : films notés par au moins 2 membres (jamais un
+-- seul — les membres d'un groupe n'ont normalement aucun accès en lecture
+-- au catalogue individuel des autres, exposer un film noté par une seule
+-- personne reviendrait à exposer sa note à tout le groupe). Version
+-- corrigée directement (migrations/022 puis 034) : les lignes sans note
+-- calculable sont filtrées AVANT le group by (CTE `rated`) plutôt qu'après
+-- — voir la note sur les notes null triées en premier, section Top films
+-- juste après.
+create or replace function public.get_group_top_films(p_group_id bigint, p_limit int default 20)
+returns table(
+  tmdb_id integer,
+  title text,
+  poster_url text,
+  release_year integer,
+  avg_note numeric,
+  rating_count integer
+)
+language sql
+security definer
+set search_path = public
+stable
+as $func$
+  with rated as (
+    select
+      f.tmdb_id,
+      f.title,
+      f.poster_url,
+      f.release_year,
+      coalesce(f.manual_note, (
+        select round(avg(v.value::numeric) * 10) / 2
+        from jsonb_each_text(f.crit) as v
+      )) as note
+    from public.films f
+    join public.group_members gm on gm.user_id = f.user_id and gm.group_id = p_group_id
+    where f.tmdb_id is not null
+      and public.is_group_member(p_group_id)
+  )
+  select
+    tmdb_id,
+    max(title) as title,
+    max(poster_url) as poster_url,
+    max(release_year) as release_year,
+    round(avg(note), 2) as avg_note,
+    count(*)::integer as rating_count
+  from rated
+  where note is not null
+  group by tmdb_id
+  having count(*) >= 2
+  order by avg_note desc, rating_count desc
+  limit p_limit;
+$func$;
+
+revoke all on function public.get_group_top_films(bigint, int) from public;
+grant execute on function public.get_group_top_films(bigint, int) to authenticated;
+
+-- --- Config admin (succès + happenings, v2.1) : un seul blob JSON par
+-- utilisateur — les succès/happenings restent définis dans le code
+-- (js/achievements.js, js/happenings.js), cette table ne stocke que les
+-- écarts (seuil modifié, activé/désactivé, happenings "génériques" créés
+-- depuis l'interface). Accessible à n'importe quel compte côté RLS
+-- (chacun ne voit/modifie que sa propre ligne) — la restriction à un seul
+-- email admin (ADMIN_EMAIL, js/admin.js) est un choix d'affichage côté
+-- client, pas une vraie séparation de rôle en base, suffisant pour un
+-- usage perso.
+create table public.admin_config (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.admin_config enable row level security;
+
+create policy "Users can view own admin config"
+  on public.admin_config for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own admin config"
+  on public.admin_config for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own admin config"
+  on public.admin_config for update
+  using (auth.uid() = user_id);
+
+-- --- Digest de retour + badges de notification (v1.6) : une seule ligne
+-- par utilisateur, jamais localStorage — l'utilisateur se connecte déjà
+-- depuis plusieurs appareils (upload d'avatar, etc.), un badge "vu" doit
+-- suivre partout plutôt que rester coincé sur un seul appareil. Voir
+-- js/activityState.js. last_seen_changelog ajouté par migrations/028, ici
+-- directement dans la table plutôt qu'en ALTER après coup.
+create table public.user_activity_state (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  last_seen_amis timestamptz,
+  last_seen_groupes timestamptz,
+  last_seen_changelog timestamptz,
+  last_digest_at timestamptz,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.user_activity_state enable row level security;
+
+create policy "Users can view own activity state"
+  on public.user_activity_state for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own activity state"
+  on public.user_activity_state for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own activity state"
+  on public.user_activity_state for update
+  using (auth.uid() = user_id);
 
 -- Top films : deux classements agrégés (voir js/top.js, migrations/015,
 -- corrigé en migrations/033 — voir ce fichier pour le détail du bug).
