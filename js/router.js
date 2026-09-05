@@ -182,6 +182,19 @@ async function renderRoute(){
   updateMobileTabbar(route.name);
   if(route.name === 'home'){
     showOnlyPage('appContainer');
+    // Retour utilisateur : cliquer sur un film en page 7 du catalogue puis
+    // revenir (bouton retour de la fiche film, logo, onglet Films...)
+    // laissait le catalogue sur la page où on l'avait quitté — il fallait
+    // recliquer "Précédent" 6 fois pour retrouver la page 1. showOnlyPage()
+    // seul ne fait que réafficher le DOM déjà rendu (contrairement aux
+    // autres routes ci-dessous, qui rappellent toutes leur openX() à
+    // chaque navigation) : repartir de la page 1 exige un vrai nouvel
+    // appel à render(). currentPage reste en revanche préservé pour un
+    // simple re-rendu SANS changement de route (ex. cocher un favori,
+    // voir render() dans js/app.js) — seule une navigation ici (hashchange)
+    // remet à 1.
+    currentPage = 1;
+    render();
   }else if(route.name === 'watchlist'){
     showOnlyPage('watchlistPage');
     await openWatchlist();
