@@ -41,7 +41,11 @@ async function searchTmdbGeneric(query, mediaType){
       // Ids bruts TMDB (voir GENRE_MAP, js/data.js) — /search/movie les
       // renvoie déjà, aucun appel supplémentaire nécessaire. Non pertinent
       // côté séries (taxonomie TMDB différente, jamais utilisé pour elles).
-      genre_ids: r.genre_ids || []
+      genre_ids: r.genre_ids || [],
+      // Popularité TMDB brute — utilisée par bestTmdbCandidate() (js/
+      // importExternal.js) pour départager plusieurs fiches candidates au
+      // même titre/année (ex. le vrai film vs un making-of homonyme).
+      popularity: typeof r.popularity === 'number' ? r.popularity : 0
     };
   });
 }

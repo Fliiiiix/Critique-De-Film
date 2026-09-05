@@ -110,19 +110,42 @@ function groupLetterboxdEntries(records){
   return [...map.values()];
 }
 
+// Départage plusieurs fiches TMDB candidates pour un même titre/année —
+// bug réel constaté (retour utilisateur) : "The Handmaiden" (2016) renvoie
+// EN PREMIER "Making of The Handmaiden" (un making-of, même titre littéral,
+// même année 2016), avant "Mademoiselle" (le vrai film, indexé sous son
+// titre français, 4472 votes) — l'ancien code prenait `.find()`, donc le
+// PREMIER match d'année peu importe lequel des deux c'est. Un titre
+// littéralement identique à la recherche ne suffit pas à départager (ça
+// aurait justement favorisé le making-of ici) : on retient la popularité
+// TMDB (proxy de "c'est le vrai film que tout le monde connaît, pas une
+// featurette/un bonus obscur") comme critère principal, avec un bonus pour
+// un titre EXACTEMENT identique (FR ou VO) qui reste un signal fiable sans
+// être trompé par une simple inclusion de texte comme ci-dessus.
+function bestTmdbCandidate(results, title){
+  const queryNorm = normalizeSearch(title);
+  let best = null, bestScore = -Infinity;
+  for(const r of results){
+    const exactMatch = normalizeSearch(r.title || '') === queryNorm || normalizeSearch(r.original_title || '') === queryNorm;
+    const score = (exactMatch ? 1e6 : 0) + (r.popularity || 0);
+    if(score > bestScore){ bestScore = score; best = r; }
+  }
+  return best;
+}
+
 async function matchLetterboxdToTmdb(title, year){
   try{
     const results = await searchTmdb(title);
     if(results.length === 0) return null;
     if(year){
-      const exact = results.find(r => r.release_year === year);
-      if(exact) return exact;
+      const exact = results.filter(r => r.release_year === year);
+      if(exact.length) return bestTmdbCandidate(exact, title);
       // ±1 an toléré : Letterboxd affiche parfois l'année de sortie US/
       // festival plutôt que la sortie France que TMDB retient par défaut.
-      const close = results.find(r => r.release_year && Math.abs(r.release_year - year) <= 1);
-      if(close) return close;
+      const close = results.filter(r => r.release_year && Math.abs(r.release_year - year) <= 1);
+      if(close.length) return bestTmdbCandidate(close, title);
     }
-    return results[0];
+    return bestTmdbCandidate(results, title);
   }catch(e){
     console.error(e);
     return null;
@@ -373,9 +396,15 @@ async function importLetterboxdFile(file){
   }
   // Fichiers réels du zip Letterboxd, mais sans aucune note/critique de film
   // dedans (compte, commentaires…) — rien à importer, on l'explique plutôt
-  // que de laisser croire à un bug.
+  // que de laisser croire à un bug. watched.csv N'EST PAS dans ce cas (retour
+  // utilisateur : "l'import de film vu et non noté ne marche pas non plus et
+  // ça c'est mauvais") — il liste les films marqués vus, notés ou non,
+  // certains n'existant nulle part ailleurs dans l'export (jamais loggés au
+  // journal ni notés). Kinet gère très bien un film sans note (voir Top
+  // films, migrations/033) : le rejeter ici privait l'import d'une partie
+  // réelle de l'historique. Il suit donc le même chemin que diary.csv/
+  // ratings.csv (importLetterboxdRatings gère déjà manual_note null).
   const UNSUPPORTED_MESSAGES = {
-    watched: 'watched.csv n\'a pas de note — utilise ratings.csv ou diary.csv pour tes films notés, watchlist.csv pour ta liste à voir',
     profile: 'profile.csv contient tes infos de compte Letterboxd (pseudo, bio, date d\'inscription…), pas tes films — rien à importer depuis ce fichier. Utilise diary.csv, ratings.csv, reviews.csv ou watchlist.csv',
     comments: 'comments.csv contient tes commentaires sous des films, pas tes notes — utilise diary.csv, ratings.csv, reviews.csv ou watchlist.csv'
   };
@@ -389,6 +418,7 @@ async function importLetterboxdFile(file){
   } else if(type === 'reviews'){
     await importLetterboxdReviews(records);
   } else {
+    // diary / ratings / watched : films vus, notés ou non.
     await importLetterboxdRatings(records);
   }
 }
