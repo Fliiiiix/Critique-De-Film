@@ -51,15 +51,23 @@ film" a été diagnostiqué (voir le commentaire en tête de ce fichier).
 - `tests/fixtures/` — données figées (ex. une vraie réponse TMDB capturée
   en session) pour des tests hors-ligne, déterministes, reproductibles.
 
-### Piège vm à connaître
+### Pièges vm à connaître
 
-Du code exécuté dans un `vm.createContext()` produit des objets/tableaux
-dont le prototype vient d'un **autre realm** que celui du fichier de test
-lui-même — `assert.deepStrictEqual` les considère différents même avec un
-contenu identique. Repasser par
-`JSON.parse(JSON.stringify(actual))` avant de comparer (voir
-`deepEqualAcrossRealms` dans `letterboxd-import.test.js`) contourne le
-problème en comparant la structure, peu importe quel realm l'a produite.
+- **Realms différents** : du code exécuté dans un `vm.createContext()`
+  produit des objets/tableaux dont le prototype vient d'un **autre realm**
+  que celui du fichier de test lui-même — `assert.deepStrictEqual` les
+  considère différents même avec un contenu identique. Repasser par
+  `JSON.parse(JSON.stringify(actual))` avant de comparer (voir
+  `deepEqualAcrossRealms` dans `letterboxd-import.test.js`) contourne le
+  problème en comparant la structure, peu importe quel realm l'a produite.
+- **`let` de script masque une propriété de contexte du même nom** : un
+  fichier `js/*.js` qui déclare lui-même `let proposals = []` en haut de
+  fichier écrase, AU CHARGEMENT, toute valeur du même nom passée à
+  `createContext({ proposals: [...] })` — la liaison lexicale du `let`
+  prend le dessus sur la propriété d'objet. Utiliser `setState(ctx, {
+  proposals: [...] })` (vm-harness.js) **après** `loadFiles()` : ça assigne
+  sans redéclarer, donc la résolution de portée retrouve la bonne liaison
+  et la mute pour de vrai (voir `proposals-voting.test.js`).
 
 ## Ajouter un test
 

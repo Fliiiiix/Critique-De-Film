@@ -27,6 +27,26 @@ const CUMULATIVE_GROUPS = [
     key: 'archiviste', icon: '🖼️', label: 'Archiviste', unit: 'fiches TMDB liées',
     metric: s => s.tmdbCount,
     tiers: [{ name: 'Bronze', threshold: 10 }, { name: 'Argent', threshold: 30 }, { name: 'Or', threshold: 75 }]
+  },
+  // Séries (v2.0.5) et Amis n'avaient encore aucun succès associé — ajoutés
+  // ici plutôt qu'un système à part, même traitement que le reste (retour
+  // utilisateur : "je veux de nouveaux succès vu qu'on a des nouvelles
+  // features"). trackedShows/watchedEpisodeCounts (js/series.js) et
+  // friendships (js/friends.js) ne sont normalement chargés QUE sur leur
+  // propre page — openAchievements() les précharge explicitement pour ces
+  // deux nouveaux paliers, sinon un compte qui n'a jamais visité Séries/Amis
+  // dans la session verrait "0" par erreur (même classe de bug que le "0"
+  // corrigé dans Top films : ne jamais confondre "pas encore chargé" et
+  // "vraiment zéro").
+  {
+    key: 'serievore', icon: '📺', label: 'Sérievore', unit: 'épisodes vus',
+    metric: s => s.episodesWatched,
+    tiers: [{ name: 'Bronze', threshold: 25 }, { name: 'Argent', threshold: 100 }, { name: 'Or', threshold: 300 }]
+  },
+  {
+    key: 'sociable', icon: '🤝', label: 'Sociable', unit: 'amis',
+    metric: s => s.friendCount,
+    tiers: [{ name: 'Bronze', threshold: 3 }, { name: 'Argent', threshold: 10 }, { name: 'Or', threshold: 25 }]
   }
 ];
 
@@ -108,6 +128,23 @@ const HIDDEN_ACHIEVEMENTS = [
       viewings.forEach(v => { counts[v.filmId] = (counts[v.filmId] || 0) + 1; });
       return Object.values(counts).some(c => c >= 3);
     }
+  },
+  {
+    key: 'showrunner', icon: '🍿', title: 'Showrunner',
+    desc: 'Suivre au moins 10 séries différentes.',
+    check: () => typeof trackedShows !== 'undefined' && trackedShows.length >= 10
+  },
+  {
+    key: 'serie-terminee', icon: '🏆', title: 'Jusqu\'au bout',
+    desc: 'Avoir vu 100% des épisodes d\'une série suivie.',
+    check: () => typeof trackedShows !== 'undefined' && trackedShows.some(s =>
+      s.numberOfEpisodes && (watchedEpisodeCounts[s.id] || 0) >= s.numberOfEpisodes
+    )
+  },
+  {
+    key: 'table-ronde', icon: '🎟️', title: 'Table ronde',
+    desc: 'Faire partie d\'au moins un groupe.',
+    check: () => typeof groups !== 'undefined' && groups.length >= 1
   }
 ];
 
@@ -138,7 +175,13 @@ function computeAchievements(){
     total: films.length,
     favCount: films.filter(f => f.fav).length,
     reviewCount: films.filter(f => f.review && f.review.trim()).length,
-    tmdbCount: films.filter(f => f.tmdbId).length
+    tmdbCount: films.filter(f => f.tmdbId).length,
+    episodesWatched: (typeof watchedEpisodeCounts !== 'undefined')
+      ? Object.values(watchedEpisodeCounts).reduce((sum, c) => sum + c, 0)
+      : 0,
+    friendCount: (typeof friendships !== 'undefined')
+      ? friendships.filter(f => f.status === 'accepted').length
+      : 0
   };
 
   const cumulative = getEffectiveCumulativeGroups().map(g => {
@@ -232,12 +275,25 @@ function renderAchievements(){
   `;
 }
 
-function openAchievements(){
+async function openAchievements(){
   // Accessible depuis la modale profil ("Mon activité") — la refermer
   // d'abord évite deux modales de tailles différentes superposées.
   closeProfileModal();
-  renderAchievements();
   openOverlay('achievementsOverlay');
+  document.getElementById('achievementsContent').innerHTML = `<div class="tmdb-empty">Chargement…</div>`;
+  // Séries/Amis (achievements 'serievore', 'sociable', 'showrunner',
+  // 'serie-terminee', 'table-ronde') ne sont normalement chargés QUE sur
+  // leur propre page — sans ce préchargement, un compte qui n'a pas encore
+  // visité Séries/Amis/Groupes cette session verrait ces succès à "0" par
+  // erreur plutôt que leur vraie valeur. Groupes chargé aussi pour "Table
+  // ronde" (mêmes tables, coût réseau minime, cohérent avec le reste :
+  // chaque openX() de l'app recharge sa page à chaque visite, pas de cache).
+  await Promise.all([
+    (typeof loadTrackedShows === 'function') ? loadTrackedShows() : Promise.resolve(),
+    (typeof loadFriendships === 'function') ? loadFriendships() : Promise.resolve(),
+    (typeof loadGroups === 'function') ? loadGroups() : Promise.resolve()
+  ]);
+  renderAchievements();
   observeReveal(document.getElementById('achievementsContent'));
 }
 

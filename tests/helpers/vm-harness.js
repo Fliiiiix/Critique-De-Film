@@ -76,4 +76,23 @@ function createContext(overrides = {}){
   return vm.createContext(ctx);
 }
 
-module.exports = { createContext, loadFiles, stubElement, stubDocument, fakeLocalStorage, REPO_ROOT };
+// Assigne l'état interne (`let x = ...` en haut d'un fichier js/) d'un
+// contexte APRÈS l'avoir chargé — un `let` de script top-level crée une
+// liaison lexicale qui MASQUE une éventuelle propriété du même nom déjà
+// posée sur l'objet contexte (donc la passer à createContext() AVANT de
+// charger le fichier ne sert à rien, elle est écrasée par le `let x = ...`
+// du fichier au chargement). En assignant SANS mot-clé (`x = valeur;`,
+// exécuté dans le contexte via cette fonction) plutôt qu'en re-déclarant,
+// la résolution de portée retrouve la bonne liaison `let` et la mute pour
+// de vrai. `valeur` est passée via une propriété temporaire du contexte
+// (jamais masquée puisque jamais déclarée par un `let` du fichier chargé).
+function setState(context, values){
+  for(const key in values){
+    const tempKey = `__set_${key}`;
+    context[tempKey] = values[key];
+    vm.runInContext(`${key} = ${tempKey};`, context);
+    delete context[tempKey];
+  }
+}
+
+module.exports = { createContext, loadFiles, setState, stubElement, stubDocument, fakeLocalStorage, REPO_ROOT };
